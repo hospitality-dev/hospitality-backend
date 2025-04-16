@@ -12,3 +12,4 @@ Cargo.lock
 *.json
 **/bru
 **/dev_initializer.sql
+**/*.md
