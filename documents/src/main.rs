@@ -13,6 +13,8 @@ use axum::{
     serve,
 };
 use dotenv::{dotenv, var};
+use models::state::AppState;
+use tera::Tera;
 use tokio::net::TcpListener;
 use tower_http::{
     cors::{AllowOrigin, CorsLayer},
@@ -21,6 +23,9 @@ use tower_http::{
 use tracing::debug_span;
 use tracing_loki::url::Url;
 use tracing_subscriber::{EnvFilter, layer::SubscriberExt, util::SubscriberInitExt};
+
+mod models;
+mod routes;
 
 #[tokio::main]
 
@@ -73,9 +78,14 @@ async fn app() -> Result<Router> {
         .allow_methods([Method::POST])
         .allow_origin(AllowOrigin::list(origins));
 
+    let state = AppState {
+        tera: Tera::default(),
+    };
+
     let app = Router::new()
         .route("/healthcheck", get(|| async { "OK" }))
         .nest("/api/v1", Router::new())
+        .with_state(state)
         .layer(
             TraceLayer::new_for_http().make_span_with(|request: &Request<_>| {
                 let matched_path = request
