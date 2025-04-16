@@ -1,0 +1,167 @@
+use serde::{Deserialize, Serialize};
+
+// "work_email",
+//     "personal_email",
+//     "support_email",
+//     "billing_email",
+//     "work_phone",
+//     "personal_phone",
+//     "mobile_phone",
+//     "fax",
+//     "home_phone",
+//     "whatsapp",
+//     "slack",
+//     "work_address",
+//     "home_address",
+//     "billing_address",
+//     "shipping_address",
+//     "website",
+//     "linkedin",
+//     "twitter",
+//     "facebook",
+//     "instagram",
+
+//     // Business contact types
+//     "office_address",
+//     "headquarters_address",
+//     "warehouse_address",
+//     "sales_email",
+//     "marketing_email",
+//     "hr_email",
+//     "contact_email",
+//     "sales_phone",
+//     "support_phone",
+//     "customer_service_phone",
+//     "general_inquiry_phone",
+//     "company_website",
+//     "support_website",
+
+#[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Hash, Clone)]
+#[serde(rename_all = "snake_case")]
+pub enum ContactTypes {
+    WorkEmail,
+    PersonalEmail,
+    SupportEmail,
+    BillingEmail,
+    SalesEmail,
+    MarketingEmail,
+    HrEmail,
+    ContactEmail,
+
+    WorkPhone,
+    PersonalPhone,
+    MobilePhone,
+    Fax,
+    HomePhone,
+    Whatsapp,
+    Slack,
+
+    SupportPhone,
+    SalesPhone,
+    CustomerServicePhone,
+    GeneralInquiryPhone,
+
+    WorkAddress,
+    HomeAddress,
+    BillingAddress,
+    ShippingAddress,
+    OfficeAddress,
+    HeadquartersAddress,
+    WarehouseAddress,
+
+    Website,
+    CompanyWebsite,
+    SupportWebsite,
+
+    Linkedin,
+    Twitter,
+    Facebook,
+    Instagram,
+
+    #[serde(other)]
+    Unknown,
+}
+
+impl std::fmt::Display for ContactTypes {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let s = match self {
+            ContactTypes::WorkEmail => "work_email",
+            ContactTypes::PersonalEmail => "personal_email",
+            ContactTypes::SupportEmail => "support_email",
+            ContactTypes::BillingEmail => "billing_email",
+            ContactTypes::WorkPhone => "work_phone",
+            ContactTypes::PersonalPhone => "personal_phone",
+            ContactTypes::MobilePhone => "mobile_phone",
+            ContactTypes::Fax => "fax",
+            ContactTypes::HomePhone => "home_phone",
+            ContactTypes::Whatsapp => "whatsapp",
+            ContactTypes::Slack => "slack",
+            ContactTypes::WorkAddress => "work_address",
+            ContactTypes::HomeAddress => "home_address",
+            ContactTypes::BillingAddress => "billing_address",
+            ContactTypes::ShippingAddress => "shipping_address",
+            ContactTypes::Website => "website",
+            ContactTypes::Linkedin => "linkedin",
+            ContactTypes::Twitter => "twitter",
+            ContactTypes::Facebook => "facebook",
+            ContactTypes::Instagram => "instagram",
+            ContactTypes::OfficeAddress => "office_address",
+            ContactTypes::HeadquartersAddress => "headquarters_address",
+            ContactTypes::WarehouseAddress => "warehouse_address",
+            ContactTypes::SalesEmail => "sales_email",
+            ContactTypes::MarketingEmail => "marketing_email",
+            ContactTypes::HrEmail => "hr_email",
+            ContactTypes::ContactEmail => "contact_email",
+            ContactTypes::SalesPhone => "sales_phone",
+            ContactTypes::SupportPhone => "support_phone",
+            ContactTypes::CustomerServicePhone => "customer_service_phone",
+            ContactTypes::GeneralInquiryPhone => "general_inquiry_phone",
+            ContactTypes::CompanyWebsite => "company_website",
+            ContactTypes::SupportWebsite => "support_website",
+
+            ContactTypes::Unknown => "unknown",
+        };
+        write!(f, "{s}")
+    }
+}
+
+impl From<String> for ContactTypes {
+    fn from(s: String) -> Self {
+        match s.as_str() {
+            "work_email" => ContactTypes::WorkEmail,
+            "personal_email" => ContactTypes::PersonalEmail,
+            "support_email" => ContactTypes::SupportEmail,
+            "billing_email" => ContactTypes::BillingEmail,
+            "work_phone" => ContactTypes::WorkPhone,
+            "personal_phone" => ContactTypes::PersonalPhone,
+            "mobile_phone" => ContactTypes::MobilePhone,
+            "fax" => ContactTypes::Fax,
+            "home_phone" => ContactTypes::HomePhone,
+            "whatsapp" => ContactTypes::Whatsapp,
+            "slack" => ContactTypes::Slack,
+            "work_address" => ContactTypes::WorkAddress,
+            "home_address" => ContactTypes::HomeAddress,
+            "billing_address" => ContactTypes::BillingAddress,
+            "shipping_address" => ContactTypes::ShippingAddress,
+            "website" => ContactTypes::Website,
+            "linkedin" => ContactTypes::Linkedin,
+            "twitter" => ContactTypes::Twitter,
+            "facebook" => ContactTypes::Facebook,
+            "instagram" => ContactTypes::Instagram,
+            "office_address" => ContactTypes::OfficeAddress,
+            "headquarters_address" => ContactTypes::HeadquartersAddress,
+            "warehouse_address" => ContactTypes::WarehouseAddress,
+            "sales_email" => ContactTypes::SalesEmail,
+            "marketing_email" => ContactTypes::MarketingEmail,
+            "hr_email" => ContactTypes::HrEmail,
+            "contact_email" => ContactTypes::ContactEmail,
+            "sales_phone" => ContactTypes::SalesPhone,
+            "support_phone" => ContactTypes::SupportPhone,
+            "customer_service_phone" => ContactTypes::CustomerServicePhone,
+            "general_inquiry_phone" => ContactTypes::GeneralInquiryPhone,
+            "company_website" => ContactTypes::CompanyWebsite,
+            "support_website" => ContactTypes::SupportWebsite,
+            _ => ContactTypes::Unknown,
+        }
+    }
+}

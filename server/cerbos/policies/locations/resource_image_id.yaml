@@ -1,0 +1,13 @@
+apiVersion: api.cerbos.dev/v1
+resourcePolicy:
+  resource: locations:image_id
+  version: default
+  rules:
+
+  - actions: [ '*' ]
+    effect: EFFECT_ALLOW
+    roles: [ owner ]
+
+  - actions: [ view, list ]
+    effect: EFFECT_ALLOW
+    roles: [ employee, manager, support ]

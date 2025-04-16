@@ -1,0 +1,117 @@
+services:
+  cerbos:
+    image: ghcr.io/cerbos/cerbos:0.41.0
+    restart: unless-stopped
+    command: [ "server", "--config=/config/cerbos.yaml" ]
+    environment:
+      CERBOS_PASSWORD_HASH: ${CERBOS_PASSWORD_HASH}
+    volumes:
+      - "./cerbos/cerbos.yaml:/config/cerbos.yaml"
+      - "./cerbos/policies:/config/policies"
+    networks:
+      - internal
+    ports:
+      - "3592:3592"
+  valkey:
+    image: valkey/valkey:latest
+    container_name: hospitality-valkey
+    restart: unless-stopped
+    environment:
+      VALKEY_USER: ${VALKEY_USER}
+      VALKEY_PASSWORD: ${VALKEY_PASSWORD}
+    command: >
+      sh -c "echo 'requirepass ${VALKEY_PASSWORD}' > /tmp/valkey.conf &&
+            echo 'user ${VALKEY_USER} on >${VALKEY_PASSWORD} ~* +@all' >> /tmp/valkey.conf &&
+            valkey-server /tmp/valkey.conf"
+    healthcheck:
+      test: ["CMD", "valkey-cli", "-u", "${VALKEY_USER}", "-a", "${VALKEY_PASSWORD}", "ping"]
+      interval: 10s
+      retries: 3
+    volumes:
+      - valkey_data:/data
+    ports:
+      - "6379:6379"
+    networks:
+      - internal
+  postgres:
+    image: postgres:17.2
+    container_name: hospitality-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 30s
+      timeout: 30s
+      retries: 10
+      start_period: 30s
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - internal
+  dbmate:
+    image: ghcr.io/amacneil/dbmate
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+    volumes:
+      - ./db:/db
+    entrypoint: ["sh", "-c", "dbmate up"]
+    networks:
+      - internal
+  nominatim:
+    image: mediagis/nominatim:5.1
+    container_name: nominatim
+    restart: unless-stopped
+    environment:
+      - PBF_URL=https://download.geofabrik.de/europe/serbia-latest.osm.pbf
+      - FREEZE=true
+      - IMPORT_WIKIPEDIA=true
+      - IMPORT_STYLE=address
+      - NOMINATIM_PASSWORD=${NOMINATIM_PASSWORD}
+    volumes:
+      - nominatim_data:/var/lib/postgresql/16/main
+    ports:
+      - "3200:8080"
+    stdin_open: true
+    tty: true
+  loki:
+    image: grafana/loki:3.0.0
+    container_name: loki
+    restart: unless-stopped
+    environment:
+    - S3_ACCESS_KEY=${S3_ACCESS_KEY}
+    - S3_SECRET=${S3_SECRET}
+    - S3_NAME=${S3_NAME}
+    - S3_REGION=${S3_REGION}
+    - S3_ENDPOINT=${S3_ENDPOINT}
+    volumes:
+    - ./loki-config.yaml:/etc/loki-config.yaml
+    command: -config.file=/etc/loki-config.yaml -config.expand-env=true
+    networks:
+      - internal
+    ports:
+      - "3100:3100"
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    restart: unless-stopped
+    ports:
+      - '3000:3000'
+    networks:
+      - internal
+    depends_on:
+      - loki
+volumes:
+  postgres_data:
+  valkey_data:
+  nominatim_data:
+networks:
+  internal:
+    driver: bridge

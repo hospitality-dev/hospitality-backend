@@ -1,0 +1,14 @@
+**/debug/
+**/target/
+Cargo.lock
+*.pdb
+**/*.rs.bk
+.env
+.env.*
+**/.env
+**/.env.*
+**/.cargo
+.cargo
+*.json
+**/bru
+**/dev_initializer.sql

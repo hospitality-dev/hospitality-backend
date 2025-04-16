@@ -1,0 +1,21 @@
+apiVersion: api.cerbos.dev/v1
+resourcePolicy:
+  resource: companies:title
+  version: default
+  rules:
+  - actions:
+    - create
+    - update
+    - delete
+    effect: EFFECT_ALLOW
+    roles:
+    - owner
+  - actions:
+    - view
+    effect: EFFECT_ALLOW
+    roles:
+    - manager
+    - customer
+    - supplier
+    - employee
+    - support

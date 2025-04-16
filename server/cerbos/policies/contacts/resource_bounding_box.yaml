@@ -1,0 +1,13 @@
+apiVersion: api.cerbos.dev/v1
+resourcePolicy:
+  resource: contacts:bounding_box
+  version: default
+  rules:
+
+  - actions: [ create, update, view, list, archive, delete ]
+    effect: EFFECT_ALLOW
+    roles: [ owner ]
+
+  - actions: [ view, list ]
+    effect: EFFECT_ALLOW
+    roles: [ '*' ]

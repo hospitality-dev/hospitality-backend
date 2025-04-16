@@ -1,0 +1,16 @@
+pub mod auth;
+pub mod cerbos;
+pub mod contacts;
+pub mod locations;
+pub mod locations_available_products;
+pub mod locations_products;
+pub mod locations_users;
+pub mod permissions;
+pub mod products;
+pub mod products_categories;
+pub mod requests;
+pub mod response;
+pub mod roles;
+pub mod search;
+pub mod state;
+pub mod users;

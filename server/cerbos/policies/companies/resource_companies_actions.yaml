@@ -1,0 +1,33 @@
+apiVersion: api.cerbos.dev/v1
+resourcePolicy:
+  resource: companies
+  version: default
+  rules:
+
+  - actions: [ view, list, update, archive, delete ]
+    effect: EFFECT_ALLOW
+    roles: [ owner ]
+    condition:
+      match:
+        expr: R.attr.company_id == P.attr.company_id
+
+  - actions: [ view, list, update, archive, delete ]
+    effect: EFFECT_ALLOW
+    roles: [ manager ]
+    condition:
+      match:
+        expr: R.attr.location_id == P.attr.location_id
+
+  - actions: [ list ]
+    effect: EFFECT_ALLOW
+    roles: [ employee ]
+    condition:
+      match:
+        expr: R.attr.location_id == P.attr.location_id
+
+  - actions: [ view ]
+    effect: EFFECT_ALLOW
+    roles: [ employee ]
+    condition:
+      match:
+        expr: R.id == P.id

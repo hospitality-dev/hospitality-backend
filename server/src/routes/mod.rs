@@ -1,0 +1,14 @@
+pub mod auth_routes;
+pub mod contacts_routes;
+pub mod file_routes;
+pub mod locations_available_products_routes;
+pub mod locations_products_routes;
+pub mod locations_routes;
+pub mod locations_users_routes;
+pub mod product_routes;
+pub mod products_categories_routes;
+pub mod resource_routes;
+pub mod roles_routes;
+pub mod search_routes;
+pub mod url_routes;
+pub mod users_routes;

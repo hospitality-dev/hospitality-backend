@@ -1,0 +1,11 @@
+apiVersion: api.cerbos.dev/v1
+description: Role constants
+exportVariables:
+  name: role_constants
+  definitions:
+    owner_role_id: '"ce9d72a4-f196-4306-acb1-f905e032222a"'
+    manager_role_id: '"b8b9792f-353e-4fe2-a1e1-6c3b52c016f5"'
+    employee_role_id: '"ed403937-9cf0-4627-9002-29954c376469"'
+    support_role_id: '"8da27baa-b3a2-47a7-8099-37c29cd5b0f4"'
+    supplier_role_id: '"0cc19e34-ccda-425b-af97-27436a632960"'
+    customer_role_id: '"d572bfac-427c-45fd-bd35-821eec23fe22"'

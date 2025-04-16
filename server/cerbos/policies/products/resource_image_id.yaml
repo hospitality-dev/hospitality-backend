@@ -1,0 +1,9 @@
+apiVersion: api.cerbos.dev/v1
+resourcePolicy:
+  resource: products:image_id
+  version: default
+  rules:
+
+  - actions: [ view, list ]
+    effect: EFFECT_ALLOW
+    roles: [ '*' ]

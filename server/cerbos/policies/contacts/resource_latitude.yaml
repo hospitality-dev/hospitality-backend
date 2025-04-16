@@ -1,0 +1,13 @@
+apiVersion: api.cerbos.dev/v1
+resourcePolicy:
+  resource: contacts:latitude
+  version: default
+  rules:
+
+  - actions: [ create, update ]
+    effect: EFFECT_ALLOW
+    roles: [ owner ]
+
+  - actions: [ view, list ]
+    effect: EFFECT_ALLOW
+    roles: [ '*' ]

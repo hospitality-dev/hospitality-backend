@@ -1,0 +1,14 @@
+[workspace]
+members = ["server", "documents"]
+workspace.resolver = "3"
+# Optional: Define shared dependencies for all workspace members
+[workspace.dependencies]
+axum = { version = "0.8.1", features = [
+    "form",
+    "macros",
+    "multipart",
+    "query",
+] }
+tokio = { version = "1", features = ["full"] }
+aws-sdk-s3 = "1.82.0"
+uuid = { version = "1.12.1", features = ["v4", "serde"] }

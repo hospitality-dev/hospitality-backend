@@ -1,0 +1,12 @@
+apiVersion: api.cerbos.dev/v1
+resourcePolicy:
+  resource: products_categories:model
+  version: default
+  rules:
+  - actions: [ '*' ]
+    effect: EFFECT_ALLOW
+    roles: [ owner, manager ]
+
+  - actions: [ view, list ]
+    effect: EFFECT_ALLOW
+    roles: [ view, list ]
