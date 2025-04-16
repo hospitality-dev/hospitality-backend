@@ -12,3 +12,17 @@ axum = { version = "0.8.1", features = [
 tokio = { version = "1", features = ["full"] }
 aws-sdk-s3 = "1.82.0"
 uuid = { version = "1.12.1", features = ["v4", "serde"] }
+dotenv = "0.15.0"
+tower-http = { version = "0.6.2", features = ["trace", "cors"] }
+tracing = "0.1.41"
+tracing-loki = "0.2.6"
+tracing-subscriber = { version = "0.3.19", features = [
+    "serde",
+    "serde_json",
+    "json",
+    "tracing",
+    "chrono",
+    "env-filter",
+    "std",
+] }
+anyhow = "1.0.95"

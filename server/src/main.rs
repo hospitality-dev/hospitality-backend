@@ -70,6 +70,7 @@ pub async fn app() -> Result<Router> {
     // Tracing setup
     let (layer, task) = tracing_loki::builder()
         .label("environment", "development")?
+        .label("service", "server")?
         .extra_field("pid", format!("{}", std::process::id()))?
         .build_url(Url::parse(loki_url.as_str()).unwrap())?;
     tracing_subscriber::registry()
