@@ -1,4 +1,5 @@
 use anyhow::Result;
+use aws_sdk_s3::config::{BehaviorVersion, Credentials, Region};
 use axum::{
     Router,
     extract::{MatchedPath, Request},
@@ -14,6 +15,7 @@ use axum::{
 };
 use dotenv::{dotenv, var};
 use models::state::AppState;
+use routes::generate_routes::generate_routes;
 use tera::Tera;
 use tokio::net::TcpListener;
 use tower_http::{
@@ -43,10 +45,17 @@ async fn main() -> Result<()> {
 }
 
 async fn app() -> Result<Router> {
+    // *============ ENV VAR SETUP
     dotenv().ok();
     let log_level = var("LOG_LEVEL").expect("Env var `LOG_LEVEL` not configured");
     let loki_url = var("LOKI_URL").expect("Env var `LOKI_URL` not set");
+    let server_url = var("SERVER_URL").expect("Env var `SERVER_URL` not set.");
+    let s3_endpoint = var("S3_ENDPOINT").expect("Env var `S3_ENDPOINT` not set");
+    let s3_access_key = var("S3_ACCESS_KEY").expect("Env var `S3_ACCESS_KEY` not set");
+    let s3_secret = var("S3_SECRET").expect("Env var `S3_SECRET` not set");
+    let s3_name = var("S3_NAME").expect("Env var `S3_SECRET` not set");
 
+    // *============ TRACING SETUP
     let filter = EnvFilter::new(log_level);
     // Tracing setup
     let (layer, task) = tracing_loki::builder()
@@ -64,7 +73,7 @@ async fn app() -> Result<Router> {
         result = "success",
         "tracing successfully set up",
     );
-    let server_url = var("SERVER_URL").expect("Env var `SERVER_URL` not set.");
+    // *============ CORS SETUP
 
     let origins = [HeaderValue::from_str(&server_url).unwrap()];
     let cors = CorsLayer::new()
@@ -78,13 +87,27 @@ async fn app() -> Result<Router> {
         .allow_methods([Method::POST])
         .allow_origin(AllowOrigin::list(origins));
 
+    // *============ S3 SETUP
+    let creds = Credentials::new(s3_access_key, s3_secret, None, None, "");
+    let config = aws_sdk_s3::config::Builder::new()
+        .behavior_version(BehaviorVersion::latest())
+        .force_path_style(true)
+        .region(Region::new("fra1"))
+        .endpoint_url(s3_endpoint)
+        .credentials_provider(creds)
+        .build();
+
+    let s3_client = aws_sdk_s3::Client::from_conf(config);
+
     let state = AppState {
         tera: Tera::default(),
+        s3_client,
+        s3_name,
     };
 
     let app = Router::new()
         .route("/healthcheck", get(|| async { "OK" }))
-        .nest("/api/v1", Router::new())
+        .nest("/api/v1", Router::new().merge(generate_routes()))
         .with_state(state)
         .layer(
             TraceLayer::new_for_http().make_span_with(|request: &Request<_>| {
@@ -103,7 +126,7 @@ async fn app() -> Result<Router> {
                     call_path = tracing::field::Empty
                 )
             }),
-        )
-        .layer(cors);
+        );
+    // .layer(cors);
     Ok(app)
 }
