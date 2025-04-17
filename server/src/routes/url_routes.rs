@@ -15,13 +15,16 @@ use reqwest::{
     header::{CACHE_CONTROL, CONTENT_TYPE},
     StatusCode,
 };
+use serde_json::{json, Value};
 use uuid::Uuid;
 
 use crate::{
     enums::errors::AppError,
     models::{
-        auth::AuthSession, locations_products::CreateProductQrCodesWithExpiration,
-        response::AppErrorResponse, state::AppState,
+        auth::AuthSession,
+        locations_products::CreateProductQrCodesWithExpiration,
+        response::{AppErrorResponse, AppResponse, RouteResponse},
+        state::AppState,
     },
     utils::{
         consts::{A4_SIZE, PRESIGN_DURATION},
@@ -282,7 +285,6 @@ async fn product_qr_code_grid(
         url.to_string(),
     ));
 }
-
 async fn expiration_products_qr_code_grid(
     State(state): State<AppState>,
     Extension(session): Extension<AuthSession>,
@@ -374,6 +376,71 @@ async fn expiration_products_qr_code_grid(
     ));
 }
 
+async fn product_inventory_report(
+    Extension(session): Extension<AuthSession>,
+    State(state): State<AppState>,
+) -> RouteResponse<Value> {
+    let conn = &state.get_db_conn().await?;
+
+    let rows = conn
+        .query(
+            "SELECT products.title,
+            locations_products.expiration_date, COUNT(locations_products.id)
+                FROM
+                    locations_products
+                INNER JOIN locations_available_products
+                    ON locations_available_products.product_id = locations_products.product_id
+                LEFT JOIN products
+                    ON locations_products.product_id = products.id
+                WHERE
+                    locations_products.location_id = $1
+                        AND
+                    (
+                        products.company_id = $2
+                            OR
+                        products.company_id IS NULL
+                    )
+                GROUP BY
+                    locations_products.expiration_date, products.title
+                ORDER BY locations_products.expiration_date, products.title;",
+            &[
+                &session.user.location_id.unwrap(),
+                &session.user.company_id.unwrap(),
+            ],
+        )
+        .await
+        .map_err(AppError::critical_error)?;
+
+    let now = Utc::now();
+
+    let result: Vec<Value> = rows.iter().map(|row| {
+        let title: String = row.get("title");
+        let count: i64 = row.get("count");
+        let expiration_date: DateTime<Utc> = row.get("expiration_date");
+        let has_about_to_expire = expiration_date.signed_duration_since(now).num_days() <= 7;
+        let expiration_days = expiration_date.signed_duration_since(now).num_days();
+
+        return json!({"title": title, "expirationDate": expiration_date, "count": count, "hasAboutToExpire": has_about_to_expire, "expirationDays": expiration_days});
+    }).collect();
+
+    let payload = json!({"items": result, "companyId": session.user.company_id, "locationId": session.user.location_id});
+
+    let report_req = state
+        .rqw_client
+        .post(format!(
+            "{}/api/v1/generate/from-template",
+            &state.document_server_url
+        ))
+        .json(&payload)
+        .send()
+        .await
+        .map_err(AppError::critical_error)?;
+
+    println!("{}", report_req.text().await.unwrap());
+
+    return Ok(AppResponse::default_response(json!([])));
+}
+
 pub fn url_routes() -> Router<AppState> {
     return Router::new().nest(
         "/url",
@@ -384,6 +451,7 @@ pub fn url_routes() -> Router<AppState> {
             .route(
                 "/{id}/expiration-products-qr-code",
                 post(expiration_products_qr_code_grid),
-            ),
+            )
+            .route("/inventory-report", get(product_inventory_report)),
     );
 }

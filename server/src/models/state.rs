@@ -31,6 +31,7 @@ pub struct AppState {
     pub cookie_key: Key,
     pub s3_client: S3Client,
     pub s3_name: String,
+    pub document_server_url: String,
 }
 
 impl AppState {

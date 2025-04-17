@@ -16,7 +16,6 @@ use axum::{
 use dotenv::{dotenv, var};
 use models::state::AppState;
 use routes::generate_routes::generate_routes;
-use tera::Tera;
 use tokio::net::TcpListener;
 use tower_http::{
     cors::{AllowOrigin, CorsLayer},
@@ -28,6 +27,7 @@ use tracing_subscriber::{EnvFilter, layer::SubscriberExt, util::SubscriberInitEx
 
 mod models;
 mod routes;
+mod utils;
 
 #[tokio::main]
 
@@ -99,11 +99,7 @@ async fn app() -> Result<Router> {
 
     let s3_client = aws_sdk_s3::Client::from_conf(config);
 
-    let state = AppState {
-        tera: Tera::default(),
-        s3_client,
-        s3_name,
-    };
+    let state = AppState { s3_client, s3_name };
 
     let app = Router::new()
         .route("/healthcheck", get(|| async { "OK" }))
@@ -126,7 +122,7 @@ async fn app() -> Result<Router> {
                     call_path = tracing::field::Empty
                 )
             }),
-        );
-    // .layer(cors);
+        )
+        .layer(cors);
     Ok(app)
 }
