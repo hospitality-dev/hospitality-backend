@@ -6,7 +6,6 @@ resolver = "3"
 
 [dependencies]
 axum-extra = { version = "0.10.0" }
-tera = "1.20.0"
 axum = { workspace = true }
 anyhow = { workspace = true }
 aws-sdk-s3 = { workspace = true }
@@ -20,4 +19,5 @@ tracing-subscriber = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 tempfile = "3.19.1"
-pdf-writer = "0.13.0"
+chrono = { workspace = true }
+chrono-tz = { workspace = true }

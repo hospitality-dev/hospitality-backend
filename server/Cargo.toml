@@ -15,8 +15,8 @@ axum-extra = { version = "0.10.0", features = [
     "cookie-private",
 ] }
 base64 = "0.22.1"
-chrono = { version = "0.4.39", features = ["serde"] }
-chrono-tz = { version = "0.10.3", features = ["serde"] }
+chrono = { workspace = true }
+chrono-tz = { workspace = true }
 convert_case = "0.8.0"
 deadpool-postgres = { version = "0.14.1", features = ["serde", "rt_tokio_1"] }
 deadpool-redis = { version = "0.20.0", features = ["serde", "rt_tokio_1"] }
