@@ -210,35 +210,5 @@ pub async fn app() -> Result<Router> {
         )
         .layer(cors);
 
-    // let template = std::fs::read_to_string("Welcome file.md").unwrap();
-    // let output_file = "output.pdf";
-
-    // let mut tera = Tera::default();
-    // let rendered = tera
-    //     .render_str(
-    //         &template,
-    //         &tera::Context::from_serialize(&json!({"name": "Srdjan Ljiljak"})).unwrap(),
-    //     )
-    //     .unwrap();
-
-    // let mut pandoc = Command::new("pandoc")
-    //     .args(["-f", "markdown", "-o", output_file, "--pdf-engine=pdflatex"])
-    //     .stdin(Stdio::piped())
-    //     .stdout(Stdio::piped()) // Capture stdout
-    //     .stderr(Stdio::piped()) // Capture stderr
-    //     .spawn()
-    //     .expect("Failed to spawn pandoc command");
-
-    // pandoc
-    //     .stdin
-    //     .as_mut()
-    //     .expect("Failed to open stdin")
-    //     .write_all(rendered.as_bytes())
-    //     .expect("Failed to write to stdin");
-
-    // let output = pandoc
-    //     .wait_with_output()
-    //     .expect("Failed to wait for pandoc");
-
     Ok(app)
 }
