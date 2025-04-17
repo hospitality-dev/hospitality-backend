@@ -2,8 +2,10 @@
 name = "hospitality-documents"
 version = "0.1.0"
 edition = "2024"
+resolver = "3"
 
 [dependencies]
+axum-extra = { version = "0.10.0" }
 tera = "1.20.0"
 axum = { workspace = true }
 anyhow = { workspace = true }
@@ -15,3 +17,7 @@ tower-http = { workspace = true }
 tracing = { workspace = true }
 tracing-loki = { workspace = true }
 tracing-subscriber = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+tempfile = "3.19.1"
+pdf-writer = "0.13.0"

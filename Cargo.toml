@@ -1,6 +1,6 @@
 [workspace]
 members = ["server", "documents"]
-workspace.resolver = "3"
+resolver = "3"
 # Optional: Define shared dependencies for all workspace members
 [workspace.dependencies]
 axum = { version = "0.8.1", features = [
@@ -26,3 +26,5 @@ tracing-subscriber = { version = "0.3.19", features = [
     "std",
 ] }
 anyhow = "1.0.95"
+serde = { version = "1.0.217", features = ["derive"] }
+serde_json = "1.0.137"
