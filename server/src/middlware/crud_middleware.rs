@@ -198,6 +198,12 @@ pub async fn permission_check(
                 })
                 .collect()
         }
+        Actions::Download(_) => vec![CerbosResource {
+            id: action.to_string(),
+            kind: format!("{}:{}", model.to_string(), "download"),
+            attr: None,
+            scope: None,
+        }],
 
         _ => model_allowed_fields
             .intersection(&query_fields)
