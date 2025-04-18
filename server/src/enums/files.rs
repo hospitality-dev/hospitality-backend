@@ -104,3 +104,24 @@ pub enum FileCategories {
     #[serde(other)]
     Unknown,
 }
+
+impl std::fmt::Display for FileCategories {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            &FileCategories::Report => f.write_str("report"),
+            &FileCategories::QrCodes => f.write_str("qr_codes"),
+
+            &FileCategories::Unknown => f.write_str("unknown"),
+        }
+    }
+}
+
+impl From<String> for FileCategories {
+    fn from(s: String) -> Self {
+        match s.to_lowercase().as_str() {
+            "report" => FileCategories::Report,
+            "qr_codes" => FileCategories::QrCodes,
+            _ => FileCategories::Unknown,
+        }
+    }
+}
