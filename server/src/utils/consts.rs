@@ -30,7 +30,7 @@ pub const PRODUCTS_CATEGORIES_FIELDS: [&str; 8] = [
     "is_default",
     "company_id",
 ];
-pub const LOCATIONS_FIELDS: [&str; 7] = [
+pub const LOCATIONS_FIELDS: [&str; 8] = [
     "id",
     "created_at",
     "updated_at",
@@ -38,9 +38,10 @@ pub const LOCATIONS_FIELDS: [&str; 7] = [
     "title",
     "owner_id",
     "image_id",
+    "company_id",
 ];
 
-pub const PRODUCTS_FIELDS: [&str; 9] = [
+pub const PRODUCTS_FIELDS: [&str; 10] = [
     "id",
     "title",
     "description",
@@ -50,6 +51,7 @@ pub const PRODUCTS_FIELDS: [&str; 9] = [
     "category_id",
     "subcategory_id",
     "image_id",
+    "company_id",
 ];
 
 pub const LOCATIONS_AVAILABLE_PRODUCTS_FIELDS: [&str; 3] = ["id", "product_id", "location_id"];
@@ -75,7 +77,15 @@ pub const CONTACTS_FIELDS: [&str; 12] = [
     "iso_3",
 ];
 
-pub const FILES_FIELDS: [&str; 3] = ["id", "title", "owner_id"];
+pub const FILES_FIELDS: [&str; 7] = [
+    "id",
+    "title",
+    "owner_id",
+    "company_id",
+    "location_id",
+    "type",
+    "category",
+];
 pub const COUNTRIES_FIELDS: [&str; 17] = [
     "id",
     "title",

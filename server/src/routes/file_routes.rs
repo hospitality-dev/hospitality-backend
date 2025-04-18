@@ -1,17 +1,20 @@
 use axum::{
     extract::{DefaultBodyLimit, Multipart, Path, State},
-    routing::post,
+    routing::{get, post},
     Extension, Router,
 };
+use serde_json::Value;
 use uuid::Uuid;
 
 use crate::{
-    enums::errors::AppError,
+    enums::{errors::AppError, files::FileCategories},
+    middlware::crud_middleware::AllowedFieldsType,
     models::{
         auth::AuthSession,
         response::{AppResponse, RouteResponse},
         state::AppState,
     },
+    traits::db_traits::SerializeList,
     utils::{consts::MAX_FILE_SIZE, file_utils::upload_file},
 };
 
@@ -274,12 +277,35 @@ async fn upload_user_avatar(
     }
 }
 
+async fn list_files_category(
+    State(state): State<AppState>,
+    Extension(session): Extension<AuthSession>,
+    Extension(fields): Extension<AllowedFieldsType>,
+    Path(category): Path<FileCategories>,
+) -> RouteResponse<Value> {
+    let conn = state.get_db_conn().await?;
+
+    let rows = conn
+        .query(
+            &format!(
+                "SELECT {} FROM files WHERE category = $1 AND location_id = $2;",
+                fields
+            ),
+            &[&category.to_string(), &session.user.location_id.unwrap()],
+        )
+        .await
+        .map_err(AppError::critical_error)?;
+
+    return Ok(AppResponse::default_response(rows.serialize_list(true)));
+}
+
 pub fn file_routes() -> Router<AppState> {
     Router::new().nest(
         "/files",
         Router::new()
             .route("/location-logo/{id}", post(upload_location_logo))
             .route("/user-avatar/{id}", post(upload_user_avatar))
+            .route("/list/{category}", get(list_files_category))
             .layer(DefaultBodyLimit::max(MAX_FILE_SIZE)),
     )
 }
