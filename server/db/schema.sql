@@ -113,7 +113,7 @@ CREATE TABLE public.files (
     location_id uuid,
     type text DEFAULT 'unknown'::text NOT NULL,
     category text DEFAULT 'unknown'::text NOT NULL,
-    CONSTRAINT files_category_check CHECK ((category = ANY (ARRAY['report'::text, 'qr_codes'::text]))),
+    CONSTRAINT files_category_check CHECK ((category = ANY (ARRAY['reports'::text, 'qr_codes'::text, 'images'::text]))),
     CONSTRAINT files_type_check CHECK ((type = ANY (ARRAY['png'::text, 'jpg'::text, 'jpeg'::text, 'webp'::text, 'gif'::text, 'svg'::text, 'pdf'::text, 'doc'::text, 'docx'::text, 'txt'::text, 'xls'::text, 'xlsx'::text, 'mp3'::text, 'wav'::text, 'ogg'::text, 'mp4'::text, 'mov'::text, 'avi'::text, 'webm'::text, 'zip'::text, 'rar'::text, 'json'::text, 'csv'::text, 'unknown'::text])))
 );
 
