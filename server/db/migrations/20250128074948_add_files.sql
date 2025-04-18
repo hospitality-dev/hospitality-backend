@@ -9,7 +9,37 @@ CREATE TABLE IF NOT EXISTS
     owner_id UUID NOT NULL REFERENCES users (id),
     company_id UUID REFERENCES companies (id) ON DELETE CASCADE,
     location_id UUID REFERENCES locations (id) ON DELETE CASCADE,
-    type TEXT NOT NULL DEFAULT 'other'
+    type TEXT NOT NULL DEFAULT 'unknown',
+    category TEXT NOT NULL DEFAULT 'unknown',
+    CHECK (
+      type IN (
+        'png',
+        'jpg',
+        'jpeg',
+        'webp',
+        'gif',
+        'svg',
+        'pdf',
+        'doc',
+        'docx',
+        'txt',
+        'xls',
+        'xlsx',
+        'mp3',
+        'wav',
+        'ogg',
+        'mp4',
+        'mov',
+        'avi',
+        'webm',
+        'zip',
+        'rar',
+        'json',
+        'csv',
+        'unknown'
+      )
+    ),
+    CHECK (category IN ('report', 'qr_codes'))
   );
 
 -- migrate:down
