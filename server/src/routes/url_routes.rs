@@ -435,13 +435,8 @@ async fn product_inventory_report(
         .await
         .map_err(AppError::critical_error)?;
 
-    let title = format!(
-        "Inventory Report ({})",
-        convert_to_tz(Utc::now(), Tz::Europe__Belgrade)
-            .format("%d.%m.%y")
-            .to_string()
-    );
-    conn.query("INSERT INTO files (id, title, owner_id, company_id, location_id, type, category) VALUES ($1, $2, $3, $4, $5, 'pdf', 'report');", &[&response.id, &title, &session.user.id, &session.user.company_id.unwrap(), &session.user.location_id.unwrap()]).await.map_err(AppError::critical_error)?;
+    let title = "Inventory Report";
+    conn.query("INSERT INTO files (id, title, owner_id, company_id, location_id, type, category) VALUES ($1, $2, $3, $4, $5, 'pdf', 'reports');", &[&response.id, &title, &session.user.id, &session.user.company_id.unwrap(), &session.user.location_id.unwrap()]).await.map_err(AppError::critical_error)?;
 
     return Ok((
         StatusCode::OK,
