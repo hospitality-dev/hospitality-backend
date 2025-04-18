@@ -210,6 +210,8 @@ async fn list_product_by_category_active(
                                     locations_products
                                 WHERE
                                     expiration_date <= NOW() + INTERVAL '7 days'
+                                        AND
+                                    locations_products.product_id = products.id
                             )
                     ) as has_about_to_expire
                 FROM
