@@ -1,4 +1,4 @@
-use reqwest::Client;
+use reqwest::{Client, StatusCode};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::collections::HashMap;
@@ -131,7 +131,6 @@ impl CerbosCheck {
             .iter()
             .map(|r| serde_json::json!({"resource": {"id":r.id,"kind": r.kind, "attr": None::<String>},"actions":actions}))
             .collect();
-
         let req_body = serde_json::json!({
             "requestId": Uuid::new_v4(),
             "principal": {
@@ -151,27 +150,35 @@ impl CerbosCheck {
             .await
             .map_err(AppError::forbidden_response)?;
 
-        let check: CerbosResponse = p
-            .json::<CerbosResponse>()
-            .await
-            .map_err(AppError::critical_error)?;
+        if p.status() == StatusCode::BAD_REQUEST {
+            let check = p.text().await.map_err(AppError::critical_error)?;
+            return Err(AppError::critical_error(format!(
+                "CERBOS REQUEST ERROR - {}",
+                check
+            )));
+        } else {
+            let check: CerbosResponse = p
+                .json::<CerbosResponse>()
+                .await
+                .map_err(AppError::critical_error)?;
 
-        let mut fields: Vec<String> = Vec::new();
+            let mut fields: Vec<String> = Vec::new();
 
-        for c in check.results {
-            match c.actions.get(&self.action.to_string()) {
-                Some(act) => {
-                    if act == &ActionEffect::EffectAllow {
-                        if let Some(kind) = c.resource.kind.split(":").nth(1) {
-                            fields.push(kind.to_string());
+            for c in check.results {
+                match c.actions.get(&self.action.to_string()) {
+                    Some(act) => {
+                        if act == &ActionEffect::EffectAllow {
+                            if let Some(kind) = c.resource.kind.split(":").nth(1) {
+                                fields.push(kind.to_string());
+                            }
                         }
                     }
+                    _ => {}
                 }
-                _ => {}
             }
-        }
 
-        return Ok(fields);
+            return Ok(fields);
+        }
     }
     pub async fn get_permissions(
         &self,
