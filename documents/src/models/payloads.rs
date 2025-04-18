@@ -19,3 +19,12 @@ pub struct ProductInventoryReport {
     pub company_id: Uuid,
     pub location_id: Uuid,
 }
+
+#[derive(Serialize, Deserialize, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct ProductQRCodes {
+    pub ids: Vec<Uuid>,
+    pub title: String,
+    pub company_id: Uuid,
+    pub location_id: Uuid,
+}

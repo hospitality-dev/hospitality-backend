@@ -99,7 +99,11 @@ async fn app() -> Result<Router> {
 
     let s3_client = aws_sdk_s3::Client::from_conf(config);
 
-    let state = AppState { s3_client, s3_name };
+    let state = AppState {
+        s3_client,
+        s3_name,
+        server_url,
+    };
 
     let app = Router::new()
         .route("/healthcheck", get(|| async { "OK" }))
