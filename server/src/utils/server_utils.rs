@@ -45,6 +45,8 @@ pub fn extract_action_from_url(uri: &str, method: &Method) -> Actions {
     let action = if let Ok(id) = Uuid::from_str(uri.split("/").last().unwrap_or("")) {
         if uri.contains("download") {
             Actions::Download(id)
+        } else if uri.contains("/generate") && method == &Method::GET {
+            Actions::Generate
         } else {
             match method {
                 &Method::GET => Actions::View(id),

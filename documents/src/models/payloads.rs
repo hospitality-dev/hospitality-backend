@@ -24,7 +24,6 @@ pub struct ProductInventoryReport {
 #[serde(rename_all = "camelCase")]
 pub struct LocationProductQRCode {
     pub id: Uuid,
-    pub title: String,
     pub expiration_date: Option<DateTime<Utc>>,
 }
 

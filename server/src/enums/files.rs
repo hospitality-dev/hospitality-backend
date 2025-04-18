@@ -154,6 +154,7 @@ impl From<String> for FileCategories {
     fn from(s: String) -> Self {
         match s.to_lowercase().as_str() {
             "reports" => FileCategories::Reports,
+            "qr-codes" => FileCategories::QrCodes,
             "qr_codes" => FileCategories::QrCodes,
             "images" => FileCategories::Images,
             _ => FileCategories::Unknown,

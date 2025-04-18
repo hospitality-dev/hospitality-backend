@@ -6,6 +6,7 @@ use axum::{
     routing::get,
     Extension, Router,
 };
+use convert_case::{Case, Casing};
 use reqwest::{
     header::{CACHE_CONTROL, CONTENT_TYPE},
     StatusCode,
@@ -79,15 +80,16 @@ async fn user_avatar_url_route(
     );
 }
 
-async fn get_inventory_report_url(
+async fn get_file_url(
     Extension(session): Extension<AuthSession>,
     State(state): State<AppState>,
-    Path(id): Path<Uuid>,
+    Path((file_category, id)): Path<(String, Uuid)>,
 ) -> Result<impl IntoResponse, AppErrorResponse> {
     let key = format!(
-        "{}/reports/{}/{}",
+        "{}/{}/{}/{}",
         session.user.company_id.unwrap(),
         session.user.location_id.unwrap(),
+        file_category.to_case(Case::Kebab),
         id
     );
     let output = state
@@ -114,6 +116,6 @@ pub fn url_routes() -> Router<AppState> {
         Router::new()
             .route("/{id}/location-logo", get(location_logo_url_route))
             .route("/{id}/user-avatar", get(user_avatar_url_route))
-            .route("/reports/{id}", get(get_inventory_report_url)),
+            .route("/{file_category}/{id}", get(get_file_url)),
     );
 }

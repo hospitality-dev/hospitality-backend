@@ -21,7 +21,7 @@ use crate::{
         auth::AuthSession,
         response::{AppErrorResponse, AppResponse, RouteResponse},
         state::AppState,
-        url_responses::InventoryReportResponse,
+        url_responses::GenerateFileResponse,
     },
     traits::db_traits::SerializeList,
     utils::file_utils::upload_file,
@@ -322,10 +322,7 @@ async fn download_file(
     let title: String = row.get("title");
     let file_type: FileTypes = row.get("type");
     let category: FileCategories = row.get("category");
-    println!(
-        "{}",
-        format!("{}/{}/{}/{}", company_id, category, location_id, id)
-    );
+
     let bytes = state
         .s3_client
         .get_object()
@@ -337,7 +334,6 @@ async fn download_file(
         .send()
         .await
         .map_err(AppError::critical_error)?;
-    println!("TEST2");
 
     let bytes = bytes
         .body
@@ -346,8 +342,6 @@ async fn download_file(
         .map_err(AppError::critical_error)?
         .into_bytes()
         .to_vec();
-
-    println!("TEST3");
 
     let response = Response::builder()
         .header(CONTENT_TYPE, file_type.content_type())
@@ -360,7 +354,6 @@ async fn download_file(
         )
         .body(bytes.into())
         .map_err(AppError::critical_error)?;
-    println!("TEST4");
 
     return Ok(response);
 }
@@ -426,7 +419,7 @@ async fn product_inventory_report(
         .map_err(AppError::critical_error)?;
 
     let response = report_req
-        .json::<InventoryReportResponse>()
+        .json::<GenerateFileResponse>()
         .await
         .map_err(AppError::critical_error)?;
 
@@ -458,6 +451,13 @@ async fn product_qr_codes(
 ) -> Result<Redirect, AppErrorResponse> {
     let conn = &state.get_db_conn().await?;
 
+    let title_row = conn
+        .query_one("SELECT products.title FROM products WHERE id = $1;", &[&id])
+        .await
+        .map_err(AppError::critical_error)?;
+
+    let title: String = title_row.get("title");
+
     let rows = conn
         .query(
             "SELECT locations_products.id, locations_products.expiration_date FROM locations_products
@@ -470,7 +470,7 @@ async fn product_qr_codes(
         .await
         .map_err(AppError::critical_error)?;
 
-    let payload = json!({"items": rows.serialize_list(true), "companyId": session.user.company_id, "locationId": session.user.location_id});
+    let payload = json!({"title": title, "items": rows.serialize_list(true), "companyId": session.user.company_id, "locationId": session.user.location_id});
 
     let report_req = state
         .rqw_client
@@ -484,12 +484,12 @@ async fn product_qr_codes(
         .map_err(AppError::critical_error)?;
 
     let response = report_req
-        .json::<InventoryReportResponse>()
+        .json::<GenerateFileResponse>()
         .await
         .map_err(AppError::critical_error)?;
 
     return Ok(Redirect::to(&format!(
-        "{}/api/v1/url/reports/{}",
+        "{}/api/v1/url/qr-codes/{}",
         &state.server_url, &response.id
     )));
 }

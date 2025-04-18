@@ -105,7 +105,7 @@ async fn generate_product_qr_codes(
         .iter()
         .map(|item| {
             json!({
-                "expirationDate": if item.expiration_date.is_some() {convert_to_tz(item.expiration_date.unwrap(), Tz::Europe__Belgrade).format("%d.%m.%y").to_string()} else {String::from("")} ,
+                "expirationDate": if item.expiration_date.is_some() {convert_to_tz(item.expiration_date.unwrap(), Tz::Europe__Belgrade).format("%d.%m.%y.").to_string()} else {String::from("")},
                 "url": format!("ACTION:{}/api/v1/locations-products/{}", &state.server_url, item.id)
             })
         })
@@ -140,7 +140,7 @@ async fn generate_product_qr_codes(
 
     let id = Uuid::new_v4();
     let key = format!(
-        "{}/{}/products/{}",
+        "{}/{}/qr-codes/{}",
         payload.company_id, payload.location_id, id
     );
     let mut metadata = HashMap::new();
@@ -155,7 +155,7 @@ async fn generate_product_qr_codes(
         .set_metadata(Some(metadata))
         .acl(aws_sdk_s3::types::ObjectCannedAcl::Private)
         .content_type("application/pdf")
-        .tagging("ttl=7")
+        .tagging("ttl=1")
         .send()
         .await
         .unwrap();
