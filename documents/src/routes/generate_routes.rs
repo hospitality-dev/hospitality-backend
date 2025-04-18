@@ -61,7 +61,7 @@ async fn generate_inventory_report(
 
     let id = Uuid::new_v4();
     let key = format!(
-        "{}/reports/{}/{}",
+        "{}/{}/reports/{}",
         payload.company_id, payload.location_id, id
     );
     let mut metadata = HashMap::new();
@@ -140,7 +140,7 @@ async fn generate_product_qr_codes(
 
     let id = Uuid::new_v4();
     let key = format!(
-        "{}/products/{}/{}",
+        "{}/{}/products/{}",
         payload.company_id, payload.location_id, id
     );
     let mut metadata = HashMap::new();

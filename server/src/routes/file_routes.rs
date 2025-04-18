@@ -56,7 +56,7 @@ async fn upload_location_logo(
 
     while let Some(field) = payload.next_field().await.unwrap_or_default() {
         let file_path = String::from(format!(
-            "{}/locations/{}/{}",
+            "{}/{}/logos/{}",
             &session.user.company_id.unwrap(), //* company_id presence checked above ^
             &session.user.location_id.unwrap(), //* location_id presence checked above ^
             &file_id.unwrap_or(Uuid::new_v4())
@@ -488,21 +488,6 @@ async fn product_qr_codes(
         .await
         .map_err(AppError::critical_error)?;
 
-    let title = "Inventory Report";
-    conn.query(
-        "INSERT INTO files (id, title, owner_id, company_id, location_id, type, category)
-        VALUES ($1, $2, $3, $4, $5, 'pdf', 'reports');",
-        &[
-            &response.id,
-            &title,
-            &session.user.id,
-            &session.user.company_id.unwrap(),
-            &session.user.location_id.unwrap(),
-        ],
-    )
-    .await
-    .map_err(AppError::critical_error)?;
-
     return Ok(Redirect::to(&format!(
         "{}/api/v1/url/reports/{}",
         &state.server_url, &response.id
@@ -521,7 +506,7 @@ pub fn file_routes() -> Router<AppState> {
                 "/generate",
                 Router::new()
                     .route("/reports", get(product_inventory_report))
-                    .route("/products/qr-codes/{id}", get(product_inventory_report)),
+                    .route("/products/qr-codes/{id}", get(product_qr_codes)),
             )
             .layer(DefaultBodyLimit::max(MAX_FILE_SIZE)),
     )
