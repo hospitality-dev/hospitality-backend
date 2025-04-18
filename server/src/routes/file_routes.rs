@@ -445,7 +445,10 @@ async fn product_inventory_report(
     .await
     .map_err(AppError::critical_error)?;
 
-    return Ok(Redirect::to(&format!("{}/api/v1/url", &state.server_url)));
+    return Ok(Redirect::to(&format!(
+        "{}/api/v1/url/reports/{}",
+        &state.server_url, &response.id
+    )));
 }
 
 pub fn file_routes() -> Router<AppState> {
