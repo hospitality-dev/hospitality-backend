@@ -43,11 +43,15 @@ pub async fn map_extractor_errors(
 
 pub fn extract_action_from_url(uri: &str, method: &Method) -> Actions {
     let action = if let Ok(id) = Uuid::from_str(uri.split("/").last().unwrap_or("")) {
-        match method {
-            &Method::GET => Actions::View(id),
-            &Method::DELETE => Actions::Delete(id),
-            &Method::PATCH => Actions::Update(id),
-            _ => Actions::None,
+        if uri.contains("download") {
+            Actions::Download(id)
+        } else {
+            match method {
+                &Method::GET => Actions::View(id),
+                &Method::DELETE => Actions::Delete(id),
+                &Method::PATCH => Actions::Update(id),
+                _ => Actions::None,
+            }
         }
     } else if uri.contains("/list") && method == &Method::GET {
         Actions::List

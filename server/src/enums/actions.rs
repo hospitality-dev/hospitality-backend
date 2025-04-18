@@ -6,6 +6,7 @@ use uuid::Uuid;
 pub enum Actions {
     View(Uuid),
     List,
+    Download(Uuid),
     Search,
     Create,
     Update(Uuid),
@@ -20,6 +21,7 @@ impl ToString for Actions {
         match self {
             Actions::View(_id) => "view".to_string(),
             Actions::List => "list".to_string(),
+            Actions::Download(_) => "download".to_string(),
             Actions::Search => "search".to_string(),
             Actions::Create => "create".to_string(),
             Actions::Update(_id) => "update".to_string(),
