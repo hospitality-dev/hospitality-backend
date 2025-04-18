@@ -417,7 +417,65 @@ async fn product_inventory_report(
     let report_req = state
         .rqw_client
         .post(format!(
-            "{}/api/v1/generate/from-template",
+            "{}/api/v1/generate/inventory-report",
+            &state.document_server_url
+        ))
+        .json(&payload)
+        .send()
+        .await
+        .map_err(AppError::critical_error)?;
+
+    let response = report_req
+        .json::<InventoryReportResponse>()
+        .await
+        .map_err(AppError::critical_error)?;
+
+    let title = "Inventory Report";
+    conn.query(
+        "INSERT INTO files (id, title, owner_id, company_id, location_id, type, category)
+        VALUES ($1, $2, $3, $4, $5, 'pdf', 'reports');",
+        &[
+            &response.id,
+            &title,
+            &session.user.id,
+            &session.user.company_id.unwrap(),
+            &session.user.location_id.unwrap(),
+        ],
+    )
+    .await
+    .map_err(AppError::critical_error)?;
+
+    return Ok(Redirect::to(&format!(
+        "{}/api/v1/url/reports/{}",
+        &state.server_url, &response.id
+    )));
+}
+
+async fn product_qr_codes(
+    Extension(session): Extension<AuthSession>,
+    State(state): State<AppState>,
+    Path(id): Path<Uuid>,
+) -> Result<Redirect, AppErrorResponse> {
+    let conn = &state.get_db_conn().await?;
+
+    let rows = conn
+        .query(
+            "SELECT locations_products.id, locations_products.expiration_date FROM locations_products
+            WHERE locations_products.product_id = $1 AND location_id = $2;"
+            ,&[
+                &id,
+                &session.user.location_id.unwrap(),
+            ],
+        )
+        .await
+        .map_err(AppError::critical_error)?;
+
+    let payload = json!({"items": rows.serialize_list(true), "companyId": session.user.company_id, "locationId": session.user.location_id});
+
+    let report_req = state
+        .rqw_client
+        .post(format!(
+            "{}/api/v1/generate/products/qr-codes",
             &state.document_server_url
         ))
         .json(&payload)
@@ -461,7 +519,9 @@ pub fn file_routes() -> Router<AppState> {
             .route("/download/{id}", get(download_file))
             .nest(
                 "/generate",
-                Router::new().route("/reports", get(product_inventory_report)),
+                Router::new()
+                    .route("/reports", get(product_inventory_report))
+                    .route("/products/qr-codes/{id}", get(product_inventory_report)),
             )
             .layer(DefaultBodyLimit::max(MAX_FILE_SIZE)),
     )

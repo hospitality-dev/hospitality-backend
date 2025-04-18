@@ -27,7 +27,6 @@ use tracing_subscriber::{EnvFilter, layer::SubscriberExt, util::SubscriberInitEx
 
 mod models;
 mod routes;
-mod utils;
 
 #[tokio::main]
 

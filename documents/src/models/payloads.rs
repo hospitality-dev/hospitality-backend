@@ -22,8 +22,16 @@ pub struct ProductInventoryReport {
 
 #[derive(Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
+pub struct LocationProductQRCode {
+    pub id: Uuid,
+    pub title: String,
+    pub expiration_date: Option<DateTime<Utc>>,
+}
+
+#[derive(Serialize, Deserialize, Clone)]
+#[serde(rename_all = "camelCase")]
 pub struct ProductQRCodes {
-    pub ids: Vec<Uuid>,
+    pub items: Vec<LocationProductQRCode>,
     pub title: String,
     pub company_id: Uuid,
     pub location_id: Uuid,

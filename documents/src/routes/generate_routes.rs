@@ -11,8 +11,8 @@ use uuid::Uuid;
 
 use crate::models::payloads::{ProductInventoryReport, ProductQRCodes};
 use crate::models::state::AppState;
-use crate::utils::date_time_utils::convert_to_tz;
 use common::consts::PRESIGN_DURATION;
+use common::utils::date_time_utils::convert_to_tz;
 async fn generate_inventory_report(
     State(state): State<AppState>,
     Json(payload): Json<ProductInventoryReport>,
@@ -101,11 +101,12 @@ async fn generate_product_qr_codes(
     Json(payload): Json<ProductQRCodes>,
 ) -> Result<impl IntoResponse, String> {
     let mapped = payload
-        .ids
+        .items
         .iter()
         .map(|item| {
             json!({
-                "url": format!("ACTION:{}/api/v1/locations-products/{}", &state.server_url, item)
+                "expirationDate": if item.expiration_date.is_some() {convert_to_tz(item.expiration_date.unwrap(), Tz::Europe__Belgrade).format("%d.%m.%y").to_string()} else {String::from("")} ,
+                "url": format!("ACTION:{}/api/v1/locations-products/{}", &state.server_url, item.id)
             })
         })
         .collect();
@@ -154,6 +155,7 @@ async fn generate_product_qr_codes(
         .set_metadata(Some(metadata))
         .acl(aws_sdk_s3::types::ObjectCannedAcl::Private)
         .content_type("application/pdf")
+        .tagging("ttl=7")
         .send()
         .await
         .unwrap();
@@ -179,6 +181,6 @@ pub fn generate_routes() -> Router<AppState> {
         "/generate",
         Router::new()
             .route("/inventory-report", post(generate_inventory_report))
-            .route("/qr-codes", post(generate_product_qr_codes)),
+            .route("/products/qr-codes", post(generate_product_qr_codes)),
     );
 }
