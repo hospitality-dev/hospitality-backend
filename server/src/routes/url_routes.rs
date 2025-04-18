@@ -1,5 +1,6 @@
 use aws_sdk_s3::{operation::put_object::PutObjectOutput, presigning::PresigningConfig};
 use axum::{
+    debug_handler,
     extract::{Path, State},
     http::HeaderValue,
     response::IntoResponse,
@@ -15,14 +16,13 @@ use reqwest::{
     header::{CACHE_CONTROL, CONTENT_TYPE},
     StatusCode,
 };
-use serde_json::{json, Value};
 use uuid::Uuid;
 
 use crate::{
     enums::errors::AppError,
     models::{
         auth::AuthSession, locations_products::CreateProductQrCodesWithExpiration,
-        response::AppErrorResponse, state::AppState, url_responses::InventoryReportResponse,
+        response::AppErrorResponse, state::AppState,
     },
     utils::date_time_utils::convert_to_tz,
 };
@@ -368,78 +368,34 @@ async fn expiration_products_qr_code_grid(
         url,
     ));
 }
-async fn product_inventory_report(
+
+#[debug_handler]
+async fn get_inventory_report_url(
     Extension(session): Extension<AuthSession>,
     State(state): State<AppState>,
+    Path(id): Path<Uuid>,
 ) -> Result<impl IntoResponse, AppErrorResponse> {
-    let conn = &state.get_db_conn().await?;
-
-    let rows = conn
-        .query(
-            "SELECT products.title,
-            locations_products.expiration_date, COUNT(locations_products.id)
-                FROM
-                    locations_products
-                INNER JOIN locations_available_products
-                    ON locations_available_products.product_id = locations_products.product_id
-                LEFT JOIN products
-                    ON locations_products.product_id = products.id
-                WHERE
-                    locations_products.location_id = $1
-                        AND
-                    (
-                        products.company_id = $2
-                            OR
-                        products.company_id IS NULL
-                    )
-                GROUP BY
-                    locations_products.expiration_date, products.title
-                ORDER BY locations_products.expiration_date, products.title;",
-            &[
-                &session.user.location_id.unwrap(),
-                &session.user.company_id.unwrap(),
-            ],
-        )
+    let key = format!(
+        "{}/reports/{}/{}",
+        session.user.company_id.unwrap(),
+        session.user.location_id.unwrap(),
+        id
+    );
+    let output = state
+        .s3_client
+        .get_object()
+        .bucket(&state.s3_name)
+        .key(&key)
+        .presigned(PresigningConfig::expires_in(PRESIGN_DURATION).unwrap())
         .await
         .map_err(AppError::critical_error)?;
 
-    let now = Utc::now();
-
-    let result: Vec<Value> = rows.iter().map(|row| {
-        let title: String = row.get("title");
-        let count: i64 = row.get("count");
-        let expiration_date: DateTime<Utc> = row.get("expiration_date");
-        let has_about_to_expire = expiration_date.signed_duration_since(now).num_days() <= 7;
-        let expiration_days = expiration_date.signed_duration_since(now).num_days();
-
-        return json!({"title": title, "expirationDate": expiration_date, "count": count, "hasAboutToExpire": has_about_to_expire, "expirationDays": expiration_days});
-    }).collect();
-
-    let payload = json!({"items": result, "companyId": session.user.company_id, "locationId": session.user.location_id});
-
-    let report_req = state
-        .rqw_client
-        .post(format!(
-            "{}/api/v1/generate/from-template",
-            &state.document_server_url
-        ))
-        .json(&payload)
-        .send()
-        .await
-        .map_err(AppError::critical_error)?;
-
-    let response = report_req
-        .json::<InventoryReportResponse>()
-        .await
-        .map_err(AppError::critical_error)?;
-
-    let title = "Inventory Report";
-    conn.query("INSERT INTO files (id, title, owner_id, company_id, location_id, type, category) VALUES ($1, $2, $3, $4, $5, 'pdf', 'reports');", &[&response.id, &title, &session.user.id, &session.user.company_id.unwrap(), &session.user.location_id.unwrap()]).await.map_err(AppError::critical_error)?;
+    let url = output.uri().to_owned();
 
     return Ok((
         StatusCode::OK,
         [(CONTENT_TYPE, HeaderValue::from_str("text/plain").unwrap())],
-        response.url,
+        url,
     ));
 }
 
@@ -454,6 +410,6 @@ pub fn url_routes() -> Router<AppState> {
                 "/{id}/expiration-products-qr-code",
                 post(expiration_products_qr_code_grid),
             )
-            .route("/inventory-report", get(product_inventory_report)),
+            .route("/reports/{id}", get(get_inventory_report_url)),
     );
 }

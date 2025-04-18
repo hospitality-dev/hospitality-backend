@@ -1,13 +1,14 @@
 use axum::{
     body::Body,
-    debug_handler,
     extract::{DefaultBodyLimit, Multipart, Path, State},
     http::Response,
+    response::Redirect,
     routing::{get, post},
     Extension, Router,
 };
+use chrono::{DateTime, Utc};
 use reqwest::header::{CONTENT_DISPOSITION, CONTENT_TYPE};
-use serde_json::Value;
+use serde_json::{json, Value};
 use uuid::Uuid;
 
 use crate::{
@@ -20,6 +21,7 @@ use crate::{
         auth::AuthSession,
         response::{AppErrorResponse, AppResponse, RouteResponse},
         state::AppState,
+        url_responses::InventoryReportResponse,
     },
     traits::db_traits::SerializeList,
     utils::file_utils::upload_file,
@@ -305,8 +307,6 @@ async fn list_files_category(
 
     return Ok(AppResponse::default_response(rows.serialize_list(true)));
 }
-
-#[debug_handler]
 async fn download_file(
     State(state): State<AppState>,
     Extension(session): Extension<AuthSession>,
@@ -365,6 +365,89 @@ async fn download_file(
     return Ok(response);
 }
 
+async fn product_inventory_report(
+    Extension(session): Extension<AuthSession>,
+    State(state): State<AppState>,
+) -> Result<Redirect, AppErrorResponse> {
+    let conn = &state.get_db_conn().await?;
+
+    let rows = conn
+        .query(
+            "SELECT products.title,
+            locations_products.expiration_date, COUNT(locations_products.id)
+                FROM
+                    locations_products
+                INNER JOIN locations_available_products
+                    ON locations_available_products.product_id = locations_products.product_id
+                LEFT JOIN products
+                    ON locations_products.product_id = products.id
+                WHERE
+                    locations_products.location_id = $1
+                        AND
+                    (
+                        products.company_id = $2
+                            OR
+                        products.company_id IS NULL
+                    )
+                GROUP BY
+                    locations_products.expiration_date, products.title
+                ORDER BY locations_products.expiration_date, products.title;",
+            &[
+                &session.user.location_id.unwrap(),
+                &session.user.company_id.unwrap(),
+            ],
+        )
+        .await
+        .map_err(AppError::critical_error)?;
+
+    let now = Utc::now();
+
+    let result: Vec<Value> = rows.iter().map(|row| {
+        let title: String = row.get("title");
+        let count: i64 = row.get("count");
+        let expiration_date: DateTime<Utc> = row.get("expiration_date");
+        let has_about_to_expire = expiration_date.signed_duration_since(now).num_days() <= 7;
+        let expiration_days = expiration_date.signed_duration_since(now).num_days();
+
+        return  json!({"title": title, "expirationDate": expiration_date, "count": count, "hasAboutToExpire": has_about_to_expire, "expirationDays": expiration_days});
+    }).collect();
+
+    let payload = json!({"items": result, "companyId": session.user.company_id, "locationId": session.user.location_id});
+
+    let report_req = state
+        .rqw_client
+        .post(format!(
+            "{}/api/v1/generate/from-template",
+            &state.document_server_url
+        ))
+        .json(&payload)
+        .send()
+        .await
+        .map_err(AppError::critical_error)?;
+
+    let response = report_req
+        .json::<InventoryReportResponse>()
+        .await
+        .map_err(AppError::critical_error)?;
+
+    let title = "Inventory Report";
+    conn.query(
+        "INSERT INTO files (id, title, owner_id, company_id, location_id, type, category)
+        VALUES ($1, $2, $3, $4, $5, 'pdf', 'reports');",
+        &[
+            &response.id,
+            &title,
+            &session.user.id,
+            &session.user.company_id.unwrap(),
+            &session.user.location_id.unwrap(),
+        ],
+    )
+    .await
+    .map_err(AppError::critical_error)?;
+
+    return Ok(Redirect::to(&format!("{}/api/v1/url", &state.server_url)));
+}
+
 pub fn file_routes() -> Router<AppState> {
     Router::new().nest(
         "/files",
@@ -373,6 +456,10 @@ pub fn file_routes() -> Router<AppState> {
             .route("/user-avatar/{id}", post(upload_user_avatar))
             .route("/list/{category}", get(list_files_category))
             .route("/download/{id}", get(download_file))
+            .nest(
+                "/generate",
+                Router::new().route("/reports", get(product_inventory_report)),
+            )
             .layer(DefaultBodyLimit::max(MAX_FILE_SIZE)),
     )
 }
