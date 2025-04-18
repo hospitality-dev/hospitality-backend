@@ -132,9 +132,9 @@ impl FileTypes {
 #[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Hash, Clone)]
 #[serde(rename_all = "snake_case")]
 pub enum FileCategories {
-    Report,
+    Reports,
     QrCodes,
-    Image,
+    Images,
     #[serde(other)]
     Unknown,
 }
@@ -142,9 +142,9 @@ pub enum FileCategories {
 impl std::fmt::Display for FileCategories {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            &FileCategories::Report => f.write_str("report"),
+            &FileCategories::Reports => f.write_str("reports"),
             &FileCategories::QrCodes => f.write_str("qr_codes"),
-            &FileCategories::Image => f.write_str("image"),
+            &FileCategories::Images => f.write_str("images"),
             &FileCategories::Unknown => f.write_str("unknown"),
         }
     }
@@ -153,8 +153,9 @@ impl std::fmt::Display for FileCategories {
 impl From<String> for FileCategories {
     fn from(s: String) -> Self {
         match s.to_lowercase().as_str() {
-            "report" => FileCategories::Report,
+            "reports" => FileCategories::Reports,
             "qr_codes" => FileCategories::QrCodes,
+            "images" => FileCategories::Images,
             _ => FileCategories::Unknown,
         }
     }
@@ -173,9 +174,9 @@ impl FromSql<'_> for FileCategories {
         raw: &'_ [u8],
     ) -> Result<Self, Box<dyn std::error::Error + Sync + Send>> {
         match std::str::from_utf8(raw)? {
-            "report" => Ok(FileCategories::Report),
+            "reports" => Ok(FileCategories::Reports),
             "qr_codes" => Ok(FileCategories::QrCodes),
-            "image" => Ok(FileCategories::Image),
+            "images" => Ok(FileCategories::Images),
             other => Err(format!("unknown enum variant: {}", other).into()),
         }
     }
