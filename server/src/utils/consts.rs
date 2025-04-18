@@ -77,8 +77,10 @@ pub const CONTACTS_FIELDS: [&str; 12] = [
     "iso_3",
 ];
 
-pub const FILES_FIELDS: [&str; 7] = [
+pub const FILES_FIELDS: [&str; 9] = [
     "id",
+    "created_at",
+    "deleted_at",
     "title",
     "owner_id",
     "company_id",

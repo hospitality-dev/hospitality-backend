@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use aws_sdk_s3::presigning::PresigningConfig;
 use axum::extract::State;
 use axum::{Json, Router, response::IntoResponse, routing::post};
@@ -62,12 +64,16 @@ async fn generate_from_template(
         "{}/reports/{}/{}",
         payload.company_id, payload.location_id, id
     );
+    let mut metadata = HashMap::new();
+    metadata.insert("title".to_string(), "inventory-report".to_string());
+    metadata.insert("author".to_string(), "HMS".to_string());
     state
         .s3_client
         .put_object()
         .bucket(&state.s3_name)
         .key(&key)
         .body(pdf_bytes.into())
+        .set_metadata(Some(metadata))
         .acl(aws_sdk_s3::types::ObjectCannedAcl::Private)
         .content_type("application/pdf")
         .send()

@@ -1,17 +1,24 @@
 use axum::{
+    body::Body,
+    debug_handler,
     extract::{DefaultBodyLimit, Multipart, Path, State},
+    http::Response,
     routing::{get, post},
     Extension, Router,
 };
+use reqwest::header::{CONTENT_DISPOSITION, CONTENT_TYPE};
 use serde_json::Value;
 use uuid::Uuid;
 
 use crate::{
-    enums::{errors::AppError, files::FileCategories},
+    enums::{
+        errors::AppError,
+        files::{FileCategories, FileTypes},
+    },
     middlware::crud_middleware::AllowedFieldsType,
     models::{
         auth::AuthSession,
-        response::{AppResponse, RouteResponse},
+        response::{AppErrorResponse, AppResponse, RouteResponse},
         state::AppState,
     },
     traits::db_traits::SerializeList,
@@ -299,6 +306,65 @@ async fn list_files_category(
     return Ok(AppResponse::default_response(rows.serialize_list(true)));
 }
 
+#[debug_handler]
+async fn download_file(
+    State(state): State<AppState>,
+    Extension(session): Extension<AuthSession>,
+    Path(id): Path<Uuid>,
+) -> Result<Response<Body>, AppErrorResponse> {
+    let conn = state.get_db_conn().await?;
+    let company_id = session.user.company_id.unwrap();
+    let location_id = session.user.location_id.unwrap();
+
+    let row = conn.query_one("SELECT id, title, type, category FROM files WHERE id = $1 AND company_id = $2 AND location_id = $3;", &[&id, &company_id, &location_id]).await.map_err(AppError::critical_error)?;
+
+    let id: Uuid = row.get("id");
+    let title: String = row.get("title");
+    let file_type: FileTypes = row.get("type");
+    let category: FileCategories = row.get("category");
+    println!(
+        "{}",
+        format!("{}/{}/{}/{}", company_id, category, location_id, id)
+    );
+    let bytes = state
+        .s3_client
+        .get_object()
+        .bucket(&state.s3_name)
+        .key(format!(
+            "{}/{}/{}/{}",
+            company_id, category, location_id, id
+        ))
+        .send()
+        .await
+        .map_err(AppError::critical_error)?;
+    println!("TEST2");
+
+    let bytes = bytes
+        .body
+        .collect()
+        .await
+        .map_err(AppError::critical_error)?
+        .into_bytes()
+        .to_vec();
+
+    println!("TEST3");
+
+    let response = Response::builder()
+        .header(CONTENT_TYPE, file_type.content_type())
+        .header(
+            CONTENT_DISPOSITION,
+            format!(
+                "attachment; filename=\"{}\"",
+                format!("{}.{}", title, file_type)
+            ),
+        )
+        .body(bytes.into())
+        .map_err(AppError::critical_error)?;
+    println!("TEST4");
+
+    return Ok(response);
+}
+
 pub fn file_routes() -> Router<AppState> {
     Router::new().nest(
         "/files",
@@ -306,6 +372,7 @@ pub fn file_routes() -> Router<AppState> {
             .route("/location-logo/{id}", post(upload_location_logo))
             .route("/user-avatar/{id}", post(upload_user_avatar))
             .route("/list/{category}", get(list_files_category))
+            .route("/download/{id}", get(download_file))
             .layer(DefaultBodyLimit::max(MAX_FILE_SIZE)),
     )
 }
