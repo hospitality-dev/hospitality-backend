@@ -95,3 +95,12 @@ impl From<String> for FileTypes {
         }
     }
 }
+
+#[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Hash, Clone)]
+#[serde(rename_all = "snake_case")]
+pub enum FileCategories {
+    Report,
+    QrCodes,
+    #[serde(other)]
+    Unknown,
+}
