@@ -24,6 +24,7 @@ use super::{
 
 #[derive(Clone)]
 pub struct AppState {
+    pub server_url: String,
     pub db_pool: Pool,
     pub rqw_client: ReqwestClient,
     pub valkey: ValkeyPool,

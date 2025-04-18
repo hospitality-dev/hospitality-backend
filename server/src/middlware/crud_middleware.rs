@@ -120,16 +120,13 @@ pub async fn permission_check(
     let query_fields = Models::get_fields_from_query_string(fields);
     let query_fields: HashSet<&str> = query_fields.iter().map(|f| f.as_str()).collect();
     //* If no fields were requested or no fields are allowed return an empty response */
-    if model != Models::Files {
-        if model_allowed_fields.is_empty() || query_fields.is_empty() {
-            if matches!(action, Actions::View(_)) {
-                return Ok(AppResponse::default_response(serde_json::json!({})).into_response());
-            } else if action == Actions::List {
-                return Ok(AppResponse::default_response(serde_json::json!([])).into_response());
-            }
+    if action != Actions::Generate && (model_allowed_fields.is_empty() || query_fields.is_empty()) {
+        if matches!(action, Actions::View(_)) {
+            return Ok(AppResponse::default_response(serde_json::json!({})).into_response());
+        } else if action == Actions::List {
+            return Ok(AppResponse::default_response(serde_json::json!([])).into_response());
         }
     }
-
     let resource_id: Uuid = extract_action_id(&action)
         .map(|id| id.to_owned())
         .unwrap_or(Uuid::nil());

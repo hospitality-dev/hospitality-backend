@@ -55,6 +55,8 @@ pub fn extract_action_from_url(uri: &str, method: &Method) -> Actions {
         }
     } else if uri.contains("/list") && method == &Method::GET {
         Actions::List
+    } else if uri.contains("/generate") && method == &Method::GET {
+        Actions::Generate
     } else if method == &Method::GET {
         Actions::View(Uuid::nil())
     } else if method == Method::POST {
