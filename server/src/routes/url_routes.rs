@@ -24,11 +24,9 @@ use crate::{
         auth::AuthSession, locations_products::CreateProductQrCodesWithExpiration,
         response::AppErrorResponse, state::AppState, url_responses::InventoryReportResponse,
     },
-    utils::{
-        consts::{A4_SIZE, PRESIGN_DURATION},
-        date_time_utils::convert_to_tz,
-    },
+    utils::date_time_utils::convert_to_tz,
 };
+use common::consts::{A4_SIZE, PRESIGN_DURATION};
 async fn generate_product_qr_code_sheet(
     key: &String,
     state: &AppState,

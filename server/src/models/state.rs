@@ -3,12 +3,12 @@ use std::collections::HashMap;
 use crate::{
     enums::{errors::AppError, models::Models, roles::Roles},
     models::cerbos::CerbosResponse,
-    utils::consts::{AUTH_SESSION_TIME, DUMMY_PASSWORD},
 };
 use argon2::{Argon2, PasswordHash, PasswordVerifier};
 use aws_sdk_s3::Client as S3Client;
 use axum::extract::FromRef;
 use axum_extra::extract::cookie::Key;
+use common::consts::{AUTH_SESSION_TIME, DUMMY_PASSWORD};
 use deadpool_postgres::{Object, Pool};
 use deadpool_redis::{redis::AsyncCommands, Connection, Pool as ValkeyPool};
 use rand::{distr::Alphanumeric, Rng};

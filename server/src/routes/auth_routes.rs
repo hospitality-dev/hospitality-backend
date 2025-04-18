@@ -19,11 +19,9 @@ use crate::{
         response::{AppErrorResponse, AppResponse},
         state::AppState,
     },
-    utils::{
-        auth_utils::{generate_code_challenge, generate_code_verifier},
-        consts::AUTH_SESSION_TIME,
-    },
+    utils::auth_utils::{generate_code_challenge, generate_code_verifier},
 };
+use common::consts::AUTH_SESSION_TIME;
 async fn login(State(state): State<AppState>) -> Result<impl IntoResponse, AppErrorResponse> {
     let code_verifier = generate_code_verifier();
     let code_challenge = generate_code_challenge(&code_verifier);

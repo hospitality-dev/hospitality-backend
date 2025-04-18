@@ -22,9 +22,9 @@ use crate::{
         state::AppState,
     },
     traits::db_traits::SerializeList,
-    utils::{consts::MAX_FILE_SIZE, file_utils::upload_file},
+    utils::file_utils::upload_file,
 };
-
+use common::consts::MAX_FILE_SIZE;
 async fn upload_location_logo(
     State(state): State<AppState>,
     Extension(session): Extension<AuthSession>,

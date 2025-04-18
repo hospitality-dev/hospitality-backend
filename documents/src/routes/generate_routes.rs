@@ -11,8 +11,8 @@ use uuid::Uuid;
 
 use crate::models::payloads::ProductInventoryReport;
 use crate::models::state::AppState;
-use crate::utils::consts::PRESIGN_DURATION;
 use crate::utils::date_time_utils::convert_to_tz;
+use common::consts::PRESIGN_DURATION;
 async fn generate_from_template(
     State(state): State<AppState>,
     Json(payload): Json<ProductInventoryReport>,
