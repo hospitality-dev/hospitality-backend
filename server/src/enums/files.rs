@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use tokio_postgres::types::FromSql;
 
 #[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Hash, Clone)]
 #[serde(rename_all = "lowercase")]
@@ -96,11 +97,44 @@ impl From<String> for FileTypes {
     }
 }
 
+impl FileTypes {
+    pub fn content_type(&self) -> &'static str {
+        match self {
+            FileTypes::Png => "image/png",
+            FileTypes::Jpg | FileTypes::Jpeg => "image/jpeg",
+            FileTypes::Webp => "image/webp",
+            FileTypes::Gif => "image/gif",
+            FileTypes::Svg => "image/svg+xml",
+            FileTypes::Pdf => "application/pdf",
+            FileTypes::Doc => "application/msword",
+            FileTypes::Docx => {
+                "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            }
+            FileTypes::Txt => "text/plain",
+            FileTypes::Xls => "application/vnd.ms-excel",
+            FileTypes::Xlsx => "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            FileTypes::Mp3 => "audio/mpeg",
+            FileTypes::Wav => "audio/wav",
+            FileTypes::Ogg => "audio/ogg",
+            FileTypes::Mp4 => "video/mp4",
+            FileTypes::Mov => "video/quicktime",
+            FileTypes::Avi => "video/x-msvideo",
+            FileTypes::Webm => "video/webm",
+            FileTypes::Zip => "application/zip",
+            FileTypes::Rar => "application/vnd.rar",
+            FileTypes::Json => "application/json",
+            FileTypes::Csv => "text/csv",
+            FileTypes::Unknown => "application/octet-stream",
+        }
+    }
+}
+
 #[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Hash, Clone)]
 #[serde(rename_all = "snake_case")]
 pub enum FileCategories {
     Report,
     QrCodes,
+    Image,
     #[serde(other)]
     Unknown,
 }
@@ -110,7 +144,7 @@ impl std::fmt::Display for FileCategories {
         match self {
             &FileCategories::Report => f.write_str("report"),
             &FileCategories::QrCodes => f.write_str("qr_codes"),
-
+            &FileCategories::Image => f.write_str("image"),
             &FileCategories::Unknown => f.write_str("unknown"),
         }
     }
@@ -123,5 +157,64 @@ impl From<String> for FileCategories {
             "qr_codes" => FileCategories::QrCodes,
             _ => FileCategories::Unknown,
         }
+    }
+}
+
+impl FromSql<'_> for FileCategories {
+    fn accepts(ty: &tokio_postgres::types::Type) -> bool {
+        match ty {
+            &tokio_postgres::types::Type::TEXT => true,
+            _ => false,
+        }
+    }
+
+    fn from_sql(
+        _: &tokio_postgres::types::Type,
+        raw: &'_ [u8],
+    ) -> Result<Self, Box<dyn std::error::Error + Sync + Send>> {
+        match std::str::from_utf8(raw)? {
+            "report" => Ok(FileCategories::Report),
+            "qr_codes" => Ok(FileCategories::QrCodes),
+            "image" => Ok(FileCategories::Image),
+            other => Err(format!("unknown enum variant: {}", other).into()),
+        }
+    }
+}
+
+impl<'a> FromSql<'a> for FileTypes {
+    fn from_sql(
+        _ty: &tokio_postgres::types::Type,
+        raw: &'a [u8],
+    ) -> Result<Self, Box<dyn std::error::Error + Sync + Send>> {
+        match std::str::from_utf8(raw)?.to_lowercase().as_str() {
+            "png" => Ok(FileTypes::Png),
+            "jpg" => Ok(FileTypes::Jpg),
+            "jpeg" => Ok(FileTypes::Jpeg),
+            "webp" => Ok(FileTypes::Webp),
+            "gif" => Ok(FileTypes::Gif),
+            "svg" => Ok(FileTypes::Svg),
+            "pdf" => Ok(FileTypes::Pdf),
+            "doc" => Ok(FileTypes::Doc),
+            "docx" => Ok(FileTypes::Docx),
+            "txt" => Ok(FileTypes::Txt),
+            "xls" => Ok(FileTypes::Xls),
+            "xlsx" => Ok(FileTypes::Xlsx),
+            "mp3" => Ok(FileTypes::Mp3),
+            "wav" => Ok(FileTypes::Wav),
+            "ogg" => Ok(FileTypes::Ogg),
+            "mp4" => Ok(FileTypes::Mp4),
+            "mov" => Ok(FileTypes::Mov),
+            "avi" => Ok(FileTypes::Avi),
+            "webm" => Ok(FileTypes::Webm),
+            "zip" => Ok(FileTypes::Zip),
+            "rar" => Ok(FileTypes::Rar),
+            "json" => Ok(FileTypes::Json),
+            "csv" => Ok(FileTypes::Csv),
+            _ => Err(format!("unknown enum variant: FROM SQL FILETYPES").into()),
+        }
+    }
+
+    fn accepts(ty: &tokio_postgres::types::Type) -> bool {
+        ty == &tokio_postgres::types::Type::TEXT
     }
 }
