@@ -21,10 +21,8 @@ use uuid::Uuid;
 use crate::{
     enums::errors::AppError,
     models::{
-        auth::AuthSession,
-        locations_products::CreateProductQrCodesWithExpiration,
-        response::{AppErrorResponse, AppResponse, RouteResponse},
-        state::AppState,
+        auth::AuthSession, locations_products::CreateProductQrCodesWithExpiration,
+        response::AppErrorResponse, state::AppState, url_responses::InventoryReportResponse,
     },
     utils::{
         consts::{A4_SIZE, PRESIGN_DURATION},
@@ -212,10 +210,7 @@ async fn location_logo_url_route(
         StatusCode::OK,
         [
             (CONTENT_TYPE, HeaderValue::from_str("text/plain").unwrap()),
-            (
-                CACHE_CONTROL,
-                HeaderValue::from_str("max-age=3600").unwrap(),
-            ),
+            (CACHE_CONTROL, HeaderValue::from_str("max-age=600").unwrap()),
         ],
         url.to_string(),
     );
@@ -375,11 +370,10 @@ async fn expiration_products_qr_code_grid(
         url,
     ));
 }
-
 async fn product_inventory_report(
     Extension(session): Extension<AuthSession>,
     State(state): State<AppState>,
-) -> RouteResponse<Value> {
+) -> Result<impl IntoResponse, AppErrorResponse> {
     let conn = &state.get_db_conn().await?;
 
     let rows = conn
@@ -436,9 +430,24 @@ async fn product_inventory_report(
         .await
         .map_err(AppError::critical_error)?;
 
-    println!("{}", report_req.text().await.unwrap());
+    let response = report_req
+        .json::<InventoryReportResponse>()
+        .await
+        .map_err(AppError::critical_error)?;
 
-    return Ok(AppResponse::default_response(json!([])));
+    let title = format!(
+        "Inventory Report ({})",
+        convert_to_tz(Utc::now(), Tz::Europe__Belgrade)
+            .format("%d.%m.%y")
+            .to_string()
+    );
+    conn.query("INSERT INTO files (id, title, owner_id, company_id, location_id, type, category) VALUES ($1, $2, $3, $4, $5, 'pdf', 'report');", &[&response.id, &title, &session.user.id, &session.user.company_id.unwrap(), &session.user.location_id.unwrap()]).await.map_err(AppError::critical_error)?;
+
+    return Ok((
+        StatusCode::OK,
+        [(CONTENT_TYPE, HeaderValue::from_str("text/plain").unwrap())],
+        response.url,
+    ));
 }
 
 pub fn url_routes() -> Router<AppState> {
