@@ -9,4 +9,4 @@ resourcePolicy:
 
   - actions: [ view, list ]
     effect: EFFECT_ALLOW
-    roles: [ view, list ]
+    roles: [ '*' ]
