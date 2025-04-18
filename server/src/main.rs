@@ -86,6 +86,7 @@ pub async fn app() -> Result<Router> {
 
     // ENV var setup
 
+    let server_url = var("SERVER_URL").expect("Env var `SERVER_URL` not set");
     let db_url = var("DATABASE_URL").expect("Env var `DATABASE_URL` not set");
     let base_fe_url = var("BASE_FE_URL").expect("Env var `BASE_FE_URL` not set");
     let document_server_url =
@@ -136,6 +137,7 @@ pub async fn app() -> Result<Router> {
     // Server setup
     let rqw_client = ReqwestClient::new();
     let state = AppState {
+        server_url,
         db_pool,
         rqw_client,
         valkey,
