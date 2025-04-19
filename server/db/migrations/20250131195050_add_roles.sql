@@ -30,7 +30,7 @@ VALUES
         ),
         (
                 '7e8e9ae7-cb07-493c-acab-4952a637f107',
-                'hr',
+                'human_relations',
                 TRUE
         ),
         (
