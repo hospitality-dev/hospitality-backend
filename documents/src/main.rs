@@ -98,10 +98,15 @@ async fn app() -> Result<Router> {
 
     let s3_client = aws_sdk_s3::Client::from_conf(config);
 
+    // *============ Reqwest SETUP
+
+    let rqw_client = reqwest::Client::new();
+
     let state = AppState {
         s3_client,
         s3_name,
         server_url,
+        rqw_client,
     };
 
     let app = Router::new()

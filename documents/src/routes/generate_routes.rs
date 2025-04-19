@@ -1,8 +1,13 @@
 use std::collections::HashMap;
+use std::io::Write;
 
 use aws_sdk_s3::presigning::PresigningConfig;
 use axum::extract::State;
-use axum::{Json, Router, response::IntoResponse, routing::post};
+use axum::{
+    Json, Router,
+    response::IntoResponse,
+    routing::{get, post},
+};
 use chrono_tz::Tz;
 use serde_json::{Value, json};
 use tempfile::NamedTempFile;
@@ -176,11 +181,38 @@ async fn generate_product_qr_codes(
         .into_response());
 }
 
+async fn generate_from_template(State(state): State<AppState>) -> Result<(), ()> {
+    let form = reqwest::multipart::Form::new()
+        .text("-o", "my.pdf")
+        .file("files", "./src/templates/index.html")
+        .await
+        .unwrap()
+        .file("files", "./src/templates/index.md")
+        .await
+        .unwrap();
+
+    let result = state
+        .rqw_client
+        .post("http://localhost:3300/forms/chromium/convert/markdown")
+        .multipart(form)
+        .send()
+        .await
+        .unwrap();
+
+    let body = result.bytes().await.unwrap();
+
+    let mut file = std::fs::File::create("output.pdf").unwrap();
+    file.write_all(&body).unwrap();
+
+    Ok(())
+}
+
 pub fn generate_routes() -> Router<AppState> {
     return Router::new().nest(
         "/generate",
         Router::new()
             .route("/inventory-report", post(generate_inventory_report))
-            .route("/products/qr-codes", post(generate_product_qr_codes)),
+            .route("/products/qr-codes", post(generate_product_qr_codes))
+            .route("/from-template", get(generate_from_template)),
     );
 }
