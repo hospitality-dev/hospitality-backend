@@ -1,6 +1,6 @@
 use axum::{
     body::Body,
-    extract::{DefaultBodyLimit, Multipart, Path, State},
+    extract::{DefaultBodyLimit, Multipart, Path, Query, State},
     http::Response,
     response::Redirect,
     routing::{get, post},
@@ -19,6 +19,7 @@ use crate::{
     middlware::crud_middleware::AllowedFieldsType,
     models::{
         auth::AuthSession,
+        requests::QueryParams,
         response::{AppErrorResponse, AppResponse, RouteResponse},
         state::AppState,
         url_responses::GenerateFileResponse,
@@ -291,14 +292,25 @@ async fn list_files_category(
     Extension(session): Extension<AuthSession>,
     Extension(fields): Extension<AllowedFieldsType>,
     Path(category): Path<FileCategories>,
+    query: Query<QueryParams>,
 ) -> RouteResponse<Value> {
     let conn = state.get_db_conn().await?;
+    let sort = query.to_query_sort();
 
+    println!("{:?}", sort);
     let rows = conn
         .query(
             &format!(
-                "SELECT {} FROM files WHERE category = $1 AND location_id = $2;",
-                fields
+                "SELECT {}
+                FROM
+                    files
+                WHERE
+                    category = $1
+                        AND
+                    location_id = $2
+                {}
+                ;",
+                fields, &sort
             ),
             &[&category.to_string(), &session.user.location_id.unwrap()],
         )
