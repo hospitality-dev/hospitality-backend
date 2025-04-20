@@ -31,7 +31,7 @@ use common::consts::MAX_FILE_SIZE;
 async fn upload_location_logo(
     State(state): State<AppState>,
     Extension(session): Extension<AuthSession>,
-    Path(id): Path<Uuid>,
+    Path(location_id): Path<Uuid>,
     mut payload: Multipart,
 ) -> RouteResponse<Uuid> {
     if session.user.company_id.is_none() || session.user.location_id.is_none() {
@@ -66,7 +66,7 @@ async fn upload_location_logo(
     let file_id: Option<Uuid> = tx
         .query_one(
             "SELECT image_id FROM locations WHERE locations.id = $1;",
-            &[&id],
+            &[&location_id],
         )
         .await
         .map_err(AppError::critical_error)?
@@ -123,6 +123,13 @@ async fn upload_location_logo(
     } else {
         let row = res.unwrap();
         let id = row.get("id");
+
+        tx.execute(
+            "UPDATE locations SET image_id = $1 WHERE id = $2;",
+            &[&id, &location_id],
+        )
+        .await
+        .map_err(AppError::db_error)?;
         let _ = tx.commit().await.map_err(AppError::db_error)?;
         return Ok(AppResponse::default_response(id));
     }
@@ -131,7 +138,7 @@ async fn upload_location_logo(
 async fn upload_user_avatar(
     State(state): State<AppState>,
     Extension(session): Extension<AuthSession>,
-    Path(id): Path<Uuid>,
+    Path(user_id): Path<Uuid>,
     mut payload: Multipart,
 ) -> RouteResponse<Uuid> {
     if session.user.company_id.is_none() || session.user.location_id.is_none() {
@@ -164,7 +171,10 @@ async fn upload_user_avatar(
     let tx = conn.transaction().await.map_err(AppError::db_error)?;
     let mut errors: Vec<String> = Vec::new();
     let file_id: Option<Uuid> = tx
-        .query_one("SELECT image_id FROM users WHERE users.id = $1;", &[&id])
+        .query_one(
+            "SELECT image_id FROM users WHERE users.id = $1;",
+            &[&user_id],
+        )
         .await
         .map_err(AppError::db_error)?
         .get("image_id");
@@ -182,7 +192,7 @@ async fn upload_user_avatar(
     if upload.is_ok() {
         let statement = tx
                     .prepare(
-                        "INSERT INTO files (id, title, owner_id, type, category) VALUES ($1, $2, $3, $4, 'images') ON CONFLICT(id) 
+                        "INSERT INTO files (id, title, owner_id, type, category) VALUES ($1, $2, $3, $4, 'images') ON CONFLICT(id)
                         DO UPDATE
                         SET title = COALESCE($2, files.title)
                         RETURNING id;",
@@ -220,6 +230,13 @@ async fn upload_user_avatar(
         } else {
             let row = res.unwrap();
             let id = row.get("id");
+
+            tx.execute(
+                "UPDATE users SET image_id = $1 WHERE id = $2;",
+                &[&id, &user_id],
+            )
+            .await
+            .map_err(AppError::db_error)?;
             let _ = tx.commit().await.map_err(AppError::db_error)?;
             return Ok(AppResponse::default_response(id));
         }
