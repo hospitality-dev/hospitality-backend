@@ -56,15 +56,15 @@ async fn create_location(
     if let Some(contacts) = payload.contacts {
         let contact_statement = tx
             .prepare(
-                "
-            INSERT INTO
-                locations_contacts
-            (
-                id, parent_id, title, prefix, value, is_public,
-                place_id, latitude, longitude, bounding_box, contact_type,
-                iso_3, is_primary
-            )
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13);",
+                "INSERT INTO
+                        users_contacts
+                            (
+                                id, parent_id, title, prefix, value, is_public,
+                                place_id, latitude, longitude, bounding_box, contact_type,
+                                iso_3, is_primary
+                            )
+                        VALUES
+                            ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13);",
             )
             .await
             .map_err(AppError::critical_error)?;
@@ -74,7 +74,7 @@ async fn create_location(
                 &contact_statement,
                 &[
                     &Uuid::new_v4(),
-                    &location_id, // this is the parent_id i.e. location's id
+                    &location_id, // this is the parent_id i.e. users's id
                     &contact.title,
                     &contact.prefix,
                     &contact.value,
@@ -85,6 +85,7 @@ async fn create_location(
                     &contact.bounding_box,
                     &contact.contact_type.to_string(),
                     &contact.iso_3,
+                    &contact.is_primary,
                 ],
             )
             .await
