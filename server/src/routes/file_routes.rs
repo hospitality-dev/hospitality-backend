@@ -61,7 +61,7 @@ async fn upload_location_logo(
     //* so that if upload succeeds but connection does not
     //* we don't end up with an orphan file
     let mut conn = state.get_db_conn().await?;
-    let tx = conn.transaction().await.map_err(AppError::critical_error)?;
+    let tx = conn.transaction().await.map_err(AppError::db_error)?;
     let mut errors: Vec<String> = Vec::new();
     let file_id: Option<Uuid> = tx
         .query_one(
@@ -69,7 +69,7 @@ async fn upload_location_logo(
             &[&location_id],
         )
         .await
-        .map_err(AppError::critical_error)?
+        .map_err(AppError::db_error)?
         .get("image_id");
 
     let file_id = file_id.unwrap_or(Uuid::new_v4());
@@ -85,13 +85,13 @@ async fn upload_location_logo(
     //* Only single file will be uploaded so this is fine
     let statement = tx
                     .prepare(
-                        "INSERT INTO files (id, title, owner_id, type, category) VALUES ($1, $2, $3, $4, 'images') ON CONFLICT(id) 
+                        "INSERT INTO files (id, title, owner_id, type, category) VALUES ($1, $2, $3, $4, 'images') ON CONFLICT(id)
                         DO UPDATE
                         SET title = COALESCE($2, files.title)
-                        RETURNING id ;",
+                        RETURNING id;",
                     )
                     .await
-                    .map_err(AppError::critical_error)?;
+                    .map_err(AppError::db_error)?;
     let upload_result = upload.unwrap();
     let res = tx
         .query_one(
