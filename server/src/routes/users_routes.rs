@@ -82,7 +82,7 @@ async fn create_user(
         .await;
     if row.is_err() {
         tracing::error!("INSERTING INTO USERS FAILED");
-        tx.rollback().await.map_err(AppError::critical_error)?;
+        tx.rollback().await.map_err(AppError::db_error)?;
         return Err(AppError::default_response(row.err().unwrap()));
     }
     let row = row.unwrap();
@@ -208,97 +208,109 @@ async fn update_user(
             ],
         )
         .await
-        .map_err(AppError::critical_error)?;
+        .map_err(AppError::db_error)?;
 
         if let Some(contacts) = payload.contacts {
             if contacts.is_empty() {
                 tx.execute("DELETE FROM users_contacts WHERE parent_id = $1;", &[&id])
                     .await
-                    .map_err(AppError::critical_error)?;
-                let _ = tx.commit().await.map_err(AppError::critical_error)?;
-                return Ok(AppResponse::default_response(id));
-            }
+                    .map_err(AppError::db_error)?;
+            } else {
+                let existing_contact_rows = tx
+                    .query(
+                        "SELECT id FROM users_contacts WHERE parent_id = $1;",
+                        &[&id],
+                    )
+                    .await
+                    .map_err(AppError::db_error)?;
 
-            let existing_contact_rows = tx
-                .query(
-                    "SELECT id FROM users_contacts WHERE parent_id = $1;",
-                    &[&id],
-                )
-                .await
-                .map_err(AppError::critical_error)?;
+                let existing_ids: HashSet<Uuid> = existing_contact_rows
+                    .iter()
+                    .map(|row| {
+                        let id: Uuid = row.get("id");
+                        return id;
+                    })
+                    .collect();
+                let payload_ids: HashSet<Uuid> = contacts
+                    .iter()
+                    .filter(|c| c.id.is_some())
+                    .map(|c| c.id.unwrap())
+                    .collect();
 
-            let existing_ids: HashSet<Uuid> = existing_contact_rows
-                .iter()
-                .map(|row| {
-                    let id: Uuid = row.get("id");
-                    return id;
-                })
-                .collect();
-            let payload_ids: HashSet<Uuid> = contacts
-                .iter()
-                .filter(|c| c.id.is_some())
-                .map(|c| c.id.unwrap())
-                .collect();
+                let to_remove: Vec<&Uuid> = existing_ids.difference(&payload_ids).collect();
 
-            let to_remove: Vec<&Uuid> = existing_ids.difference(&payload_ids).collect();
-
-            tx.execute(
-                "DELETE FROM users_contacts WHERE id = ANY($1) AND parent_id = $2;",
-                &[&to_remove, &id],
-            )
-            .await
-            .map_err(AppError::critical_error)?;
-
-            let contact_statement = tx
-                .prepare(
-                    "
-            INSERT INTO
-                users_contacts
-            (
-                id, parent_id, title, prefix, value, is_public,
-                place_id, latitude, longitude, bounding_box, contact_type, iso_3
-            )
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
-            ON CONFLICT (id) DO UPDATE
-            SET
-                title = COALESCE(EXCLUDED.title, users_contacts.title),
-                prefix = COALESCE(EXCLUDED.prefix, users_contacts.prefix),
-                value = COALESCE(EXCLUDED.value, users_contacts.value),
-                is_public = COALESCE(EXCLUDED.is_public, users_contacts.is_public),
-                bounding_box = COALESCE(EXCLUDED.bounding_box, users_contacts.bounding_box),
-                latitude = COALESCE(EXCLUDED.latitude, users_contacts.latitude),
-                longitude = COALESCE(EXCLUDED.longitude, users_contacts.longitude),
-                place_id = COALESCE(EXCLUDED.place_id, users_contacts.place_id),
-                contact_type = COALESCE(EXCLUDED.contact_type, users_contacts.contact_type),
-                iso_3 = COALESCE(EXCLUDED.iso_3, users_contacts.iso_3);",
-                )
-                .await
-                .map_err(AppError::critical_error)?;
-
-            for contact in contacts {
                 tx.execute(
-                    &contact_statement,
-                    &[
-                        &contact.id.unwrap_or(Uuid::new_v4()),
-                        &id, // this is the parent_id i.e. users's id
-                        &contact.title,
-                        &contact.prefix,
-                        &contact.value,
-                        &contact.is_public,
-                        &contact.place_id,
-                        &contact.latitude,
-                        &contact.longitude,
-                        &contact.bounding_box,
-                        &contact.contact_type.to_string(),
-                        &contact.iso_3,
-                    ],
+                    "DELETE FROM users_contacts WHERE id = ANY($1) AND parent_id = $2;",
+                    &[&to_remove, &id],
                 )
                 .await
                 .map_err(AppError::critical_error)?;
+
+                let contact_statement = tx
+                    .prepare(
+                        "INSERT INTO
+                            users_contacts
+                                (
+                                    id, parent_id, title, prefix, value, is_public,
+                                    place_id, latitude, longitude, bounding_box, contact_type, iso_3
+                                )
+                            VALUES
+                                ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+                            ON CONFLICT (id) DO UPDATE
+                            SET
+                                title = COALESCE(EXCLUDED.title, users_contacts.title),
+                                prefix = COALESCE(EXCLUDED.prefix, users_contacts.prefix),
+                                value = COALESCE(EXCLUDED.value, users_contacts.value),
+                                is_public = COALESCE(EXCLUDED.is_public, users_contacts.is_public),
+                                bounding_box = COALESCE(EXCLUDED.bounding_box, users_contacts.bounding_box),
+                                latitude = COALESCE(EXCLUDED.latitude, users_contacts.latitude),
+                                longitude = COALESCE(EXCLUDED.longitude, users_contacts.longitude),
+                                place_id = COALESCE(EXCLUDED.place_id, users_contacts.place_id),
+                                contact_type = COALESCE(EXCLUDED.contact_type, users_contacts.contact_type),
+                                iso_3 = COALESCE(EXCLUDED.iso_3, users_contacts.iso_3);",
+                    )
+                    .await
+                    .map_err(AppError::critical_error)?;
+
+                for contact in contacts {
+                    tx.execute(
+                        &contact_statement,
+                        &[
+                            &contact.id.unwrap_or(Uuid::new_v4()),
+                            &id, // this is the parent_id i.e. users's id
+                            &contact.title,
+                            &contact.prefix,
+                            &contact.value,
+                            &contact.is_public,
+                            &contact.place_id,
+                            &contact.latitude,
+                            &contact.longitude,
+                            &contact.bounding_box,
+                            &contact.contact_type.to_string(),
+                            &contact.iso_3,
+                        ],
+                    )
+                    .await
+                    .map_err(AppError::critical_error)?;
+                }
             }
         }
+        if payload.role_id.is_some() {
+            tx.execute(
+                "UPDATE locations_users
+                    SET
+                        role_id = COALESCE($1, role_id)
+                    WHERE
+                        user_id = $2
+                            AND
+                        location_id = $3;",
+                &[&payload.role_id, &id, &location_id],
+            )
+            .await
+            .map_err(AppError::db_error)?;
+        }
 
-        let _ = tx.commit().await.map_err(AppError::critical_error)?;
+        let _ = tx.commit().await.map_err(AppError::db_error)?;
 
         return Ok(AppResponse::default_response(id));
     } else {
