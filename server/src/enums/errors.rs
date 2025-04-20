@@ -61,6 +61,22 @@ impl AppError {
         };
     }
     #[track_caller]
+    pub fn db_error(err: impl ToString) -> AppErrorResponse {
+        let location = std::panic::Location::caller();
+
+        error!(
+            message = err.to_string(),
+            kind = "DATABASE ERROR",
+            call_path = format!("{} -> {}", location.file(), location.line())
+        );
+        // TODO: implement sending email & discord alerts
+        return AppErrorResponse {
+            status_code: StatusCode::INTERNAL_SERVER_ERROR,
+            ok: false,
+            message: AppError::ErrorWithRequest.to_string(),
+        };
+    }
+    #[track_caller]
     pub fn critical_error(err: impl ToString) -> AppErrorResponse {
         let location = std::panic::Location::caller();
 
