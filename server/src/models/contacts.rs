@@ -36,5 +36,6 @@ pub struct MutatorContact {
     pub latitude: Option<Decimal>,
     pub longitude: Option<Decimal>,
     pub is_public: Option<bool>,
+    pub is_primary: Option<bool>,
     pub bounding_box: Option<Vec<f64>>,
 }

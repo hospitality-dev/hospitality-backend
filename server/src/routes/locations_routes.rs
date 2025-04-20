@@ -61,9 +61,10 @@ async fn create_location(
                 locations_contacts
             (
                 id, parent_id, title, prefix, value, is_public,
-                place_id, latitude, longitude, bounding_box, contact_type, iso_3
+                place_id, latitude, longitude, bounding_box, contact_type,
+                iso_3, is_primary
             )
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12);",
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13);",
             )
             .await
             .map_err(AppError::critical_error)?;
@@ -298,9 +299,10 @@ async fn update_location(
                 locations_contacts
             (
                 id, parent_id, title, prefix, value, is_public,
-                place_id, latitude, longitude, bounding_box, contact_type, iso_3
+                place_id, latitude, longitude, bounding_box, contact_type,
+                iso_3, is_primary
             )
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
             ON CONFLICT (id) DO UPDATE
             SET
                 title = COALESCE(EXCLUDED.title, locations_contacts.title),
@@ -312,7 +314,8 @@ async fn update_location(
                 longitude = COALESCE(EXCLUDED.longitude, locations_contacts.longitude),
                 place_id = COALESCE(EXCLUDED.place_id, locations_contacts.place_id),
                 contact_type = COALESCE(EXCLUDED.contact_type, locations_contacts.contact_type),
-                iso_3 = COALESCE(EXCLUDED.iso_3, users_contacts.iso_3);",
+                iso_3 = COALESCE(EXCLUDED.iso_3, users_contacts.iso_3),
+                is_primary = COALESCE(EXCLUDED.is_primary, users_contacts.is_primary);",
                 )
                 .await
                 .map_err(AppError::critical_error)?;
@@ -333,6 +336,7 @@ async fn update_location(
                         &contact.bounding_box,
                         &contact.contact_type.to_string(),
                         &contact.iso_3,
+                        &contact.is_primary,
                     ],
                 )
                 .await
