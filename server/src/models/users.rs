@@ -41,4 +41,5 @@ pub struct UpdateUser {
     pub password2: Option<String>,
     pub image_id: Option<Uuid>,
     pub contacts: Option<Vec<MutatorContact>>,
+    pub role_id: Option<Uuid>,
 }
