@@ -3,7 +3,7 @@ use std::time::Duration;
 pub const DUMMY_PASSWORD: &str = "DUmMY_P@sSW0d579_0";
 pub const AUTH_SESSION_TIME: i32 = 29700; // 8 hours 15 mins
 pub const PRESIGN_DURATION: Duration = Duration::from_secs(3600); // 60 mins
-pub const MAX_FILE_SIZE: usize = 20_000_000;
+pub const MAX_FILE_SIZE: usize = 5_000_000; // 5 MB;
 pub const A4_SIZE: (u32, u32) = (2480, 3508);
 pub const USERS_FIELDS: [&str; 12] = [
     "id",
