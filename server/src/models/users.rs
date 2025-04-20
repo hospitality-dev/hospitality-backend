@@ -4,7 +4,7 @@ use is_empty::IsEmpty;
 use serde::Deserialize;
 use uuid::Uuid;
 
-use super::contacts::{Contact, MutatorContact};
+use super::contacts::MutatorContact;
 
 #[derive(Debug, Validate, Deserialize)]
 #[garde(allow_unvalidated)]
@@ -25,7 +25,7 @@ pub struct InsertUser {
     #[serde(default)]
     pub date_of_termination: Option<NaiveDate>,
     pub role_id: Uuid,
-    pub contacts: Option<Vec<Contact>>,
+    pub contacts: Option<Vec<MutatorContact>>,
 }
 
 #[derive(Debug, Validate, Deserialize, IsEmpty)]
