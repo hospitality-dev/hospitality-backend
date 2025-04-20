@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use axum::{
     extract::{Path, State},
     routing::get,
@@ -7,7 +9,7 @@ use serde_json::Value;
 use uuid::Uuid;
 
 use crate::{
-    enums::{actions::Actions, errors::AppError, models::Models},
+    enums::{actions::Actions, errors::AppError, models::Models, requests::CerbosAttrValue},
     middlware::crud_middleware::AllowedFieldsType,
     models::{
         auth::AuthSession,
@@ -65,11 +67,21 @@ async fn list_contacts_user(
     State(state): State<AppState>,
     Path(user_id): Path<Uuid>,
 ) -> RouteResponse<Value> {
+    let mut attr = HashMap::new();
+    attr.insert(
+        "location_id".to_string(),
+        CerbosAttrValue::Uuid(session.user.location_id.unwrap()),
+    );
+    attr.insert(
+        "company_id".to_string(),
+        CerbosAttrValue::Uuid(session.user.company_id.unwrap()),
+    );
     let principal = session.user.to_principal();
+
     let resource = CerbosResource {
         id: user_id.to_string(),
         kind: Models::Users.to_string(),
-        attr: None,
+        attr: Some(attr),
         scope: None,
     };
     let check = CerbosCheck {
