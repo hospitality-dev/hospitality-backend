@@ -12,6 +12,7 @@ CREATE TABLE IF NOT EXISTS
         place_id INT,
         bounding_box FLOAT8[],
         is_public BOOLEAN DEFAULT FALSE,
+        is_primary BOOLEAN DEFAULT FALSE,
         CHECK (
             contact_type IN (
                 'work_email',
@@ -64,6 +65,7 @@ CREATE TABLE IF NOT EXISTS
         place_id INT,
         bounding_box FLOAT8[],
         is_public BOOLEAN DEFAULT FALSE,
+        is_primary BOOLEAN DEFAULT FALSE,
         CHECK (
             contact_type IN (
                 'work_email',
@@ -116,6 +118,7 @@ CREATE TABLE IF NOT EXISTS
         place_id INT,
         bounding_box FLOAT8[],
         is_public BOOLEAN DEFAULT FALSE,
+        is_primary BOOLEAN DEFAULT FALSE,
         CHECK (
             contact_type IN (
                 'work_email',

@@ -62,7 +62,7 @@ pub const LOCATIONS_PRODUCTS_FIELDS: [&str; 4] = [
     "expiration_date",
 ];
 pub const LOCATIONS_USERS_FIELDS: [&str; 4] = ["id", "user_id", "location_id", "role_id"];
-pub const CONTACTS_FIELDS: [&str; 12] = [
+pub const CONTACTS_FIELDS: [&str; 13] = [
     "id",
     "title",
     "parent_id",
@@ -73,6 +73,7 @@ pub const CONTACTS_FIELDS: [&str; 12] = [
     "longitude",
     "bounding_box",
     "is_public",
+    "is_primary",
     "place_id",
     "iso_3",
 ];

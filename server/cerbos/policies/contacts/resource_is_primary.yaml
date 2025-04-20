@@ -1,0 +1,15 @@
+apiVersion: api.cerbos.dev/v1
+resourcePolicy:
+  resource: contacts:is_primary
+  version: default
+  rules:
+  - actions: [ create, view, list, update, archive, delete ]
+    effect: EFFECT_ALLOW
+    roles: [ owner, manager ]
+
+  - actions: [ create, view, list, update, delete ]
+    effect: EFFECT_ALLOW
+    roles: [ employee ]
+    condition:
+      match:
+        expr: R.attr.parent_id == P.id
