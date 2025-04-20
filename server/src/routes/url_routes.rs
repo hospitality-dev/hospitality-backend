@@ -29,7 +29,7 @@ async fn location_logo_url_route(
         .get_object()
         .bucket(&state.s3_name)
         .key(format!(
-            "{}/locations/{}/{}",
+            "{}/{}/logos/{}",
             &session.user.company_id.unwrap(),
             &session.user.location_id.unwrap(),
             &id
