@@ -43,7 +43,10 @@ async fn location_logo_url_route(
         StatusCode::OK,
         [
             (CONTENT_TYPE, HeaderValue::from_str("text/plain").unwrap()),
-            (CACHE_CONTROL, HeaderValue::from_str("max-age=600").unwrap()),
+            (
+                CACHE_CONTROL,
+                HeaderValue::from_str("max-age=3600, must-revalidate, private").unwrap(),
+            ),
         ],
         url.to_string(),
     );
@@ -73,7 +76,7 @@ async fn user_avatar_url_route(
             (CONTENT_TYPE, HeaderValue::from_str("text/plain").unwrap()),
             (
                 CACHE_CONTROL,
-                HeaderValue::from_str("max-age=3600").unwrap(),
+                HeaderValue::from_str("max-age=3600, must-revalidate, private").unwrap(),
             ),
         ],
         url.to_string(),
@@ -105,7 +108,13 @@ async fn get_file_url(
 
     return Ok((
         StatusCode::OK,
-        [(CONTENT_TYPE, HeaderValue::from_str("text/plain").unwrap())],
+        [
+            (CONTENT_TYPE, HeaderValue::from_str("text/plain").unwrap()),
+            (
+                CACHE_CONTROL,
+                HeaderValue::from_str("max-age=600, must-revalidate, private").unwrap(),
+            ),
+        ],
         url,
     ));
 }
