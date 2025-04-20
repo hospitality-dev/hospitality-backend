@@ -20,6 +20,7 @@ pub struct Contact {
     pub place_id: Option<i32>,
     pub bounding_box: Option<Vec<f64>>,
     pub is_public: Option<bool>,
+    pub is_primary: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Validate)]

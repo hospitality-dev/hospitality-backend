@@ -89,17 +89,38 @@ async fn create_user(
     let user_id: Uuid = row.try_get("id").map_err(AppError::default_response)?;
 
     if let Some(contacts) = payload.contacts {
-        let contact_statement = tx.prepare("INSERT INTO users_contacts (parent_id, prefix, value, type, title) VALUES ($1, $2, $3, $4, $5);").await.map_err(AppError::critical_error)?;
+        let contact_statement = tx
+            .prepare(
+                "INSERT INTO
+                        users_contacts
+                            (
+                                id, parent_id, title, prefix, value, is_public,
+                                place_id, latitude, longitude, bounding_box, contact_type,
+                                iso_3, is_primary
+                            )
+                        VALUES
+                            ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13);",
+            )
+            .await
+            .map_err(AppError::critical_error)?;
 
         for contact in contacts {
             tx.execute(
                 &contact_statement,
                 &[
-                    &user_id,
+                    &Uuid::new_v4(),
+                    &user_id, // this is the parent_id i.e. users's id
+                    &contact.title,
                     &contact.prefix,
                     &contact.value,
+                    &contact.is_public,
+                    &contact.place_id,
+                    &contact.latitude,
+                    &contact.longitude,
+                    &contact.bounding_box,
                     &contact.contact_type.to_string(),
-                    &contact.title,
+                    &contact.iso_3,
+                    &contact.is_primary,
                 ],
             )
             .await
