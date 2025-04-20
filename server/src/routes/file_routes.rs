@@ -70,7 +70,7 @@ async fn upload_location_logo(
             if file_id.is_none() {
                 let statement = tx
                     .prepare(
-                        "INSERT INTO files (id, title, owner_id, type) VALUES ($1, $2, $3, $4) RETURNING id;",
+                        "INSERT INTO files (id, title, owner_id, type, category) VALUES ($1, $2, $3, $4, 'images') RETURNING id;",
                     )
                     .await
                     .map_err(AppError::critical_error)?;
@@ -188,12 +188,12 @@ async fn upload_user_avatar(
     //* so that if upload succeeds but connection does not
     //* we don't end up with an orphan file
     let mut conn = state.get_db_conn().await?;
-    let tx = conn.transaction().await.map_err(AppError::critical_error)?;
+    let tx = conn.transaction().await.map_err(AppError::db_error)?;
     let mut errors: Vec<String> = Vec::new();
     let file_id: Option<Uuid> = tx
         .query_one("SELECT image_id FROM users WHERE users.id = $1;", &[&id])
         .await
-        .map_err(AppError::critical_error)?
+        .map_err(AppError::db_error)?
         .get("image_id");
 
     let file_path = String::from(format!(
@@ -210,7 +210,7 @@ async fn upload_user_avatar(
         if file_id.is_none() {
             let statement = tx
                     .prepare(
-                        "INSERT INTO files (id, title, owner_id, type) VALUES ($1, $2, $3, $4) RETURNING id;",
+                        "INSERT INTO files (id, title, owner_id, type, category) VALUES ($1, $2, $3, $4, 'images') RETURNING id;",
                     )
                     .await
                     .map_err(AppError::critical_error)?;
