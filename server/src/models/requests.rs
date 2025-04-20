@@ -60,7 +60,6 @@ pub struct SearchQueryParams {
 
 impl QueryParams {
     pub fn to_query_sort(&self) -> String {
-        println!("{:?}", self);
         if self.sort_field.is_some() {
             return format!(
                 "ORDER BY {} {}",

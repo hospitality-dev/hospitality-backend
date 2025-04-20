@@ -6,7 +6,7 @@ use axum::{
     routing::{get, post},
     Extension, Router,
 };
-use chrono::{DateTime, Utc};
+use chrono::{DateTime, Duration, Utc};
 use reqwest::header::{CONTENT_DISPOSITION, CONTENT_TYPE};
 use serde_json::{json, Value};
 use uuid::Uuid;
@@ -297,7 +297,6 @@ async fn list_files_category(
     let conn = state.get_db_conn().await?;
     let sort = query.to_query_sort();
 
-    println!("{:?}", sort);
     let rows = conn
         .query(
             &format!(
@@ -411,8 +410,9 @@ async fn product_inventory_report(
         let title: String = row.get("title");
         let count: i64 = row.get("count");
         let expiration_date: DateTime<Utc> = row.get("expiration_date");
-        let has_about_to_expire = expiration_date.signed_duration_since(now).num_days() <= 7;
-        let expiration_days = expiration_date.signed_duration_since(now).num_days();
+        let duration = expiration_date.signed_duration_since(now);
+        let expiration_days = duration.num_days();
+        let has_about_to_expire = (if duration > Duration::days(expiration_days) {expiration_days + 1 } else {expiration_days}) <= 7;
 
         return  json!({"title": title, "expirationDate": expiration_date, "count": count, "hasAboutToExpire": has_about_to_expire, "expirationDays": expiration_days});
     }).collect();
