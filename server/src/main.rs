@@ -17,8 +17,8 @@ use middlware::crud_middleware::{
 use models::state::AppState;
 use reqwest::{
     header::{
-        ACCEPT_ENCODING, ACCESS_CONTROL_ALLOW_ORIGIN, AUTHORIZATION, CONTENT_SECURITY_POLICY,
-        CONTENT_SECURITY_POLICY_REPORT_ONLY, CONTENT_TYPE, SET_COOKIE,
+        ACCEPT_ENCODING, ACCESS_CONTROL_ALLOW_ORIGIN, AUTHORIZATION, CACHE_CONTROL,
+        CONTENT_SECURITY_POLICY, CONTENT_SECURITY_POLICY_REPORT_ONLY, CONTENT_TYPE, SET_COOKIE,
     },
     Client as ReqwestClient, Method, Url,
 };
@@ -151,12 +151,19 @@ pub async fn app() -> Result<Router> {
     let origins = [HeaderValue::from_str(&base_fe_url).unwrap()];
     let cors = CorsLayer::new()
         .allow_credentials(true)
-        .allow_headers([AUTHORIZATION, ACCEPT_ENCODING, CONTENT_TYPE, SET_COOKIE])
+        .allow_headers([
+            AUTHORIZATION,
+            ACCEPT_ENCODING,
+            CONTENT_TYPE,
+            SET_COOKIE,
+            CACHE_CONTROL,
+        ])
         .expose_headers([
             ACCESS_CONTROL_ALLOW_ORIGIN,
             SET_COOKIE,
             CONTENT_SECURITY_POLICY,
             CONTENT_SECURITY_POLICY_REPORT_ONLY,
+            CACHE_CONTROL,
         ])
         .allow_methods([
             Method::GET,
