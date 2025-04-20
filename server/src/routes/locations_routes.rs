@@ -314,8 +314,8 @@ async fn update_location(
                 longitude = COALESCE(EXCLUDED.longitude, locations_contacts.longitude),
                 place_id = COALESCE(EXCLUDED.place_id, locations_contacts.place_id),
                 contact_type = COALESCE(EXCLUDED.contact_type, locations_contacts.contact_type),
-                iso_3 = COALESCE(EXCLUDED.iso_3, users_contacts.iso_3),
-                is_primary = COALESCE(EXCLUDED.is_primary, users_contacts.is_primary);",
+                iso_3 = COALESCE(EXCLUDED.iso_3, locations_contacts.iso_3),
+                is_primary = COALESCE(EXCLUDED.is_primary, locations_contacts.is_primary);",
                 )
                 .await
                 .map_err(AppError::critical_error)?;
