@@ -1,5 +1,7 @@
 use axum::body::Bytes;
 use convert_case::{Case, Casing};
+use percent_encoding::percent_decode;
+use regex::Regex;
 use serde_json::{Map, Value};
 
 use crate::{enums::errors::AppError, models::response::AppErrorResponse};
@@ -38,4 +40,82 @@ pub fn bytes_to_json_value(bytes: &Bytes) -> Result<Value, AppErrorResponse> {
     let payload = snake_case_keys(payload);
 
     Ok(payload)
+}
+
+pub fn format_receipt(encoded: &str) -> String {
+    let decoded = encoded
+        .replace("\\u", "%u")
+        .replace("\\r\\n", "\n")
+        .replace("\\n", "\n")
+        .replace("\\t", "\t");
+
+    let unicode_decoded = percent_decode(decoded.as_bytes())
+        .decode_utf8_lossy()
+        .to_string();
+
+    unicode_decoded
+}
+
+pub fn extract_items(receipt: &str) -> Vec<(String, f32, f32, f32)> {
+    let re_suffix = Regex::new(r"/(KOM|KG|L|G|ML)\b").unwrap();
+    let re_currency = Regex::new(r"\s*\((Е|Ђ)\)").unwrap();
+    let mut items = Vec::new();
+    let mut lines = receipt.lines();
+
+    // Skip until we find the "Артикли" line
+    while let Some(line) = lines.next() {
+        if line.trim() == "Артикли" {
+            break;
+        }
+    }
+
+    // Skip the "=====" header line after "Артикли"
+    while let Some(line) = lines.next() {
+        if line.trim().starts_with("Назив") {
+            break;
+        }
+    }
+
+    // Now process pairs of lines: name, then price/qty/total
+    while let Some(name_line) = lines.next() {
+        if name_line.trim().starts_with("----") || name_line.trim().is_empty() {
+            break;
+        }
+
+        if let Some(data_line) = lines.next() {
+            let parts: Vec<&str> = data_line
+                .split_whitespace()
+                .filter(|s| !s.is_empty())
+                .collect();
+
+            if parts.len() >= 3 {
+                let name_line = re_currency.replace_all(&name_line, "");
+                let name_line = re_suffix.replace_all(&name_line, "");
+                let price = parts[0].replace(',', ".").parse::<f32>().unwrap_or(0.0);
+                let qty = parts[1].replace(',', ".").parse::<f32>().unwrap_or(0.0);
+                let total = parts[2].replace(',', ".").parse::<f32>().unwrap_or(0.0);
+                items.push((name_line.trim().to_string(), price, qty, total));
+            }
+        }
+    }
+
+    items
+}
+
+pub fn extract_unit_from_name(name: &str) -> Option<(f32, String)> {
+    // Match patterns like "5 kg", "0.5l", "205g", "1.5L", "60 g", etc.
+    let re = Regex::new(r"(?i)(\d+(?:[.,]\d+)?)\s*(kg|g|l|ml)").unwrap();
+
+    if let Some(caps) = re.captures(name) {
+        let amount = caps
+            .get(1)?
+            .as_str()
+            .replace(',', ".")
+            .parse::<f32>()
+            .ok()?;
+        let unit = caps.get(2)?.as_str().to_lowercase();
+        return Some((amount, unit));
+    }
+
+    None
 }

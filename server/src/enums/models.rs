@@ -11,7 +11,7 @@ use crate::{
 use common::consts::{
     CONTACTS_FIELDS, COUNTRIES_FIELDS, FILES_FIELDS, LOCATIONS_AVAILABLE_PRODUCTS_FIELDS,
     LOCATIONS_FIELDS, LOCATIONS_PRODUCTS_FIELDS, LOCATIONS_USERS_FIELDS,
-    PRODUCTS_CATEGORIES_FIELDS, PRODUCTS_FIELDS, ROLES_FIELDS, USERS_FIELDS,
+    PRODUCTS_CATEGORIES_FIELDS, PRODUCTS_FIELDS, PURCHASES_FIELDS, ROLES_FIELDS, USERS_FIELDS,
 };
 
 #[derive(Clone, Debug, Serialize, Deserialize, VariantNames, PartialEq, Eq)]
@@ -29,6 +29,7 @@ pub enum Models {
     Contacts,
     Files,
     Countries,
+    Purchases,
     Unknown(String),
 }
 
@@ -52,6 +53,7 @@ impl ToString for Models {
             Models::Contacts => "contacts".to_string(),
             Models::Files => "files".to_string(),
             Models::Countries => "countries".to_string(),
+            Models::Purchases => "purchases".to_string(),
             Models::Unknown(name) => format!("UNKNOWN MODEL - {}", name),
         }
     }
@@ -71,6 +73,7 @@ impl AsStr for Models {
             Models::Contacts => "contacts",
             Models::Files => "files",
             Models::Countries => "countries",
+            Models::Purchases => "purchases",
             Models::Unknown(_) => "unknown",
         }
     }
@@ -92,6 +95,7 @@ impl FromStr for Models {
             "contacts" => Ok(Models::Contacts),
             "files" => Ok(Models::Files),
             "countries" => Ok(Models::Countries),
+            "purchases" => Ok(Models::Purchases),
             _ => Ok(Models::Unknown(s.to_string())),
         }
     }
@@ -114,6 +118,7 @@ impl AllowedFields for Models {
             &Models::Contacts => HashSet::from_iter(CONTACTS_FIELDS),
             &Models::Files => HashSet::from_iter(FILES_FIELDS),
             &Models::Countries => HashSet::from_iter(COUNTRIES_FIELDS),
+            &Models::Purchases => HashSet::from_iter(PURCHASES_FIELDS),
             &Models::Unknown(_) => HashSet::new(),
         })
     }

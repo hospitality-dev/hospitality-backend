@@ -27,9 +27,9 @@ use routes::{
     locations_available_products_routes::locations_available_products_routes,
     locations_products_routes::location_products_routes, locations_routes::locations_routes,
     locations_users_routes::locations_users_routes, product_routes::product_routes,
-    products_categories_routes::products_categories_routes, resource_routes::resource_routes,
-    roles_routes::roles_routes, search_routes::search_routes, url_routes::url_routes,
-    users_routes::users_routes,
+    products_categories_routes::products_categories_routes, purchases_routes::purchases_routes,
+    resource_routes::resource_routes, roles_routes::roles_routes, search_routes::search_routes,
+    url_routes::url_routes, users_routes::users_routes,
 };
 use tokio::net::TcpListener;
 use tokio_postgres::NoTls;
@@ -62,6 +62,7 @@ async fn main() -> Result<()> {
 
     Ok(())
 }
+
 pub async fn app() -> Result<Router> {
     let log_level = var("LOG_LEVEL").expect("Env var `LOG_LEVEL` not configured");
     let loki_url = var("LOKI_URL").expect("Env var `LOKI_URL` not set");
@@ -190,6 +191,7 @@ pub async fn app() -> Result<Router> {
                 .merge(locations_users_routes())
                 .merge(contacts_routes())
                 .merge(file_routes())
+                .merge(purchases_routes())
                 .layer(from_fn_with_state(state.clone(), permission_check))
                 // TODO: ADD PERMISSIONS MIDDLEWARE TO URL ROUTES
                 .merge(url_routes())

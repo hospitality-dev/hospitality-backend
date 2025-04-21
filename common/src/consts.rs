@@ -110,3 +110,23 @@ pub const COUNTRIES_FIELDS: [&str; 17] = [
     "region_id",
     "subregion_id",
 ];
+pub const PURCHASES_FIELDS: [&str; 18] = [
+    "id",
+    "created_at",
+    "deleted_at",
+    "purchased_at",
+    "company_id",
+    "location_id",
+    "owner_id",
+    "url",
+    "total",
+    "payment_type",
+    "address",
+    "business_title",
+    "business_location_title",
+    "tax_id",
+    "transaction_type",
+    "invoice_type",
+    "invoice_counter_extension",
+    "invoice_number",
+];
