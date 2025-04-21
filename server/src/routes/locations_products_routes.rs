@@ -101,15 +101,19 @@ async fn list_location_products_group_by_expiration(
     let statement = format!(
         "
     SELECT
-        locations_products.product_id, expiration_date, COUNT(*)
+        locations_products.product_id, expiration_date,
+        products.volume, products.volume_unit, products.weight, products.weight_unit,
+        COUNT(*)
     FROM
         locations_products
+    INNER JOIN products
+        ON locations_products.product_id = products.id
     WHERE
         product_id = $1
             AND
         location_id = $2
     GROUP BY
-        expiration_date, locations_products.product_id
+        expiration_date, locations_products.product_id, products.volume, products.volume_unit, products.weight, products.weight_unit
     ORDER BY
         expiration_date;"
     );
