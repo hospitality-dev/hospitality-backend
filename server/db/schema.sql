@@ -278,6 +278,7 @@ CREATE TABLE public.purchases (
     company_id uuid,
     location_id uuid,
     owner_id uuid,
+    url text NOT NULL,
     total numeric(10,5) DEFAULT 0 NOT NULL,
     payment_type smallint NOT NULL,
     address text,

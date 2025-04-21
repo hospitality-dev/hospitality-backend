@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS
         company_id UUID REFERENCES companies (id) ON DELETE CASCADE,
         location_id UUID REFERENCES locations (id) ON DELETE CASCADE,
         owner_id UUID REFERENCES users (id) ON DELETE SET NULL,
+        url TEXT NOT NULL,
         total NUMERIC(10, 5) NOT NULL DEFAULT 0,
         payment_type INT2 NOT NULL,
         address TEXT,
