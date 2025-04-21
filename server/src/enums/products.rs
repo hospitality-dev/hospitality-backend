@@ -1,33 +1,25 @@
-use postgres_types::FromSql;
 use serde::Deserialize;
-use tokio_postgres::types::ToSql;
 
-#[derive(Deserialize, Debug, FromSql, ToSql)]
+#[derive(Deserialize, Default, Debug, strum_macros::Display)]
 #[serde(rename_all = "lowercase")]
-#[postgres(name = "text")]
+#[strum(serialize_all = "snake_case")]
 pub enum WeightUnits {
-    #[postgres(name = "kg")]
+    #[default]
     Kg,
-    #[postgres(name = "g")]
     G,
-    #[postgres(name = "mg")]
     Mg,
-    #[postgres(name = "oz")]
     Oz,
-    #[postgres(name = "lb")]
     Lb,
 }
 
-#[derive(Deserialize, FromSql, ToSql, Debug)]
+#[derive(Deserialize, Default, Debug, strum_macros::Display)]
 #[serde(rename_all = "lowercase")]
-#[postgres(name = "text")]
+#[strum(serialize_all = "snake_case")]
+
 pub enum VolumeUnits {
-    #[postgres(name = "l")]
+    #[default]
     L,
-    #[postgres(name = "ml")]
     Ml,
-    #[postgres(name = "fl oz")]
     FlOz,
-    #[postgres(name = "gal")]
     Gal,
 }

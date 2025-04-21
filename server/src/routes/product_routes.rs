@@ -42,8 +42,8 @@ async fn create_product(
                 &payload.subcategory_id,
                 &payload.image_id,
                 &session.user.company_id,
-                &payload.weight_unit,
-                &payload.volume_unit,
+                &payload.weight_unit.unwrap_or_default().to_string(),
+                &payload.volume_unit.unwrap_or_default().to_string(),
             ],
         )
         .await

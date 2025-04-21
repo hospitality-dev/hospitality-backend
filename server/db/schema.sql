@@ -225,7 +225,7 @@ CREATE TABLE public.products (
     image_id uuid,
     CONSTRAINT products_check CHECK (((volume IS NULL) OR (volume_unit IS NOT NULL))),
     CONSTRAINT products_check1 CHECK (((weight IS NULL) OR (weight_unit IS NOT NULL))),
-    CONSTRAINT products_volume_unit_check CHECK (((volume_unit IS NULL) OR (volume_unit = ANY (ARRAY['l'::text, 'ml'::text, 'fl oz'::text, 'gal'::text])))),
+    CONSTRAINT products_volume_unit_check CHECK (((volume_unit IS NULL) OR (volume_unit = ANY (ARRAY['l'::text, 'ml'::text, 'fl_oz'::text, 'gal'::text])))),
     CONSTRAINT products_weight_unit_check CHECK (((weight_unit IS NULL) OR (weight_unit = ANY (ARRAY['kg'::text, 'g'::text, 'mg'::text, 'lb'::text, 'oz'::text])))),
     CONSTRAINT title_min_length CHECK ((char_length(title) >= 1))
 );
