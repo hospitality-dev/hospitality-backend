@@ -1,9 +1,12 @@
+use std::str::FromStr;
+
+use crate::utils::transform_utils::camel_case_keys;
 use chrono::{DateTime, Utc};
+use rust_decimal::prelude::ToPrimitive;
+use rust_decimal::Decimal;
 use serde_json::{json, Map, Value};
 use tokio_postgres::{types::Type, Row};
 use uuid::Uuid;
-
-use crate::utils::transform_utils::camel_case_keys;
 
 pub trait SerializeToJson {
     fn serialize_row_to_json(self, camel_case: bool) -> Value;
@@ -42,6 +45,33 @@ impl SerializeToJson for Row {
                 &Type::INT8 => {
                     let int: Option<i64> = self.get(col_idx);
                     int.map_or(Value::Null, |i| Value::Number(i.into()))
+                }
+                &Type::NUMERIC => {
+                    let dec: Option<Decimal> = self.get(col_idx);
+                    dec.map_or(Value::Null, |i| {
+                        Value::Number(
+                            serde_json::Number::from_f64(i.to_f64().unwrap_or_default())
+                                .unwrap_or(serde_json::Number::from_f64(0.0).unwrap()),
+                        )
+                    })
+                }
+                &Type::FLOAT4 => {
+                    let dec: Option<f32> = self.get(col_idx);
+                    dec.map_or(Value::Null, |i| {
+                        Value::Number(
+                            serde_json::Number::from_str(i.to_string().as_str())
+                                .unwrap_or(serde_json::Number::from_str("0").unwrap()),
+                        )
+                    })
+                }
+                &Type::FLOAT8 => {
+                    let dec: Option<f64> = self.get(col_idx);
+                    dec.map_or(Value::Null, |i| {
+                        Value::Number(
+                            serde_json::Number::from_str(i.to_string().as_str())
+                                .unwrap_or(serde_json::Number::from_str("0").unwrap()),
+                        )
+                    })
                 }
                 &Type::BOOL => {
                     let bool_value: Option<bool> = self.get(col_idx);
