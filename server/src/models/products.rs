@@ -3,6 +3,8 @@ use rust_decimal::Decimal;
 use serde::Deserialize;
 use uuid::Uuid;
 
+use crate::enums::products::{VolumeUnits, WeightUnits};
+
 #[derive(Deserialize, Validate)]
 #[serde(rename_all = "camelCase")]
 #[garde(allow_unvalidated)]
@@ -16,4 +18,6 @@ pub struct InsertProduct {
     pub category_id: Uuid,
     pub subcategory_id: Option<Uuid>,
     pub image_id: Option<Uuid>,
+    pub weight_unit: Option<WeightUnits>,
+    pub volume_unit: Option<VolumeUnits>,
 }

@@ -28,8 +28,10 @@ async fn create_product(
     let row = conn
         .query_one(
             "INSERT INTO products
-        (title, description, category_id, barcode, weight, volume, subcategory_id, image_id, company_id)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id;",
+        (title, description, category_id, barcode, weight,
+        volume, subcategory_id, image_id,
+        company_id, weight_unit, volume_unit)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING id;",
             &[
                 &payload.title,
                 &payload.description,
@@ -39,7 +41,9 @@ async fn create_product(
                 &payload.volume,
                 &payload.subcategory_id,
                 &payload.image_id,
-                &session.user.company_id
+                &session.user.company_id,
+                &payload.weight_unit,
+                &payload.volume_unit,
             ],
         )
         .await
