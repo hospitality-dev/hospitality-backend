@@ -4,6 +4,7 @@ pub mod errors;
 pub mod files;
 pub mod models;
 pub mod products;
+pub mod purchases;
 pub mod requests;
 pub mod response_messages;
 pub mod roles;
