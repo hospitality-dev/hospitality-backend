@@ -23,7 +23,7 @@ async fn create_location_products(
     Json(payload): Json<InsertLocationProduct>,
 ) -> RouteResponse<i64> {
     let mut statement = String::from(
-        "INSERT INTO locations_products (product_id, location_id, expiration_date) VALUES ",
+        "INSERT INTO locations_products (product_id, location_id, expiration_date) VALUES ", //* values are added dynamically below
     );
 
     for i in 0..payload.amount {
