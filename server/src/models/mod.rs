@@ -8,6 +8,7 @@ pub mod locations_users;
 pub mod permissions;
 pub mod products;
 pub mod products_categories;
+pub mod purchases;
 pub mod requests;
 pub mod response;
 pub mod roles;
