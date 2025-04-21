@@ -41,7 +41,6 @@ pub async fn create_purchase(
     } else {
         0
     };
-    println!("{}", payload.url);
     let purchase_row = tx
         .query_one(
             "INSERT INTO purchases
