@@ -66,10 +66,12 @@ CREATE TABLE public.companies_contacts (
     longitude numeric(9,6),
     place_id integer,
     bounding_box double precision[],
+    iso3 text,
     is_public boolean DEFAULT false,
     is_primary boolean DEFAULT false,
     iso_3 text,
-    CONSTRAINT companies_contacts_contact_type_check CHECK ((contact_type = ANY (ARRAY['work_email'::text, 'personal_email'::text, 'support_email'::text, 'billing_email'::text, 'work_phone'::text, 'personal_phone'::text, 'mobile_phone'::text, 'fax'::text, 'home_phone'::text, 'whatsapp'::text, 'slack'::text, 'work_address'::text, 'home_address'::text, 'billing_address'::text, 'shipping_address'::text, 'website'::text, 'linkedin'::text, 'twitter'::text, 'facebook'::text, 'instagram'::text, 'sales_email'::text, 'marketing_email'::text, 'hr_email'::text, 'contact_email'::text, 'sales_phone'::text, 'support_phone'::text, 'customer_service_phone'::text, 'general_inquiry_phone'::text, 'office_address'::text, 'headquarters_address'::text, 'warehouse_address'::text, 'company_website'::text, 'support_website'::text])))
+    CONSTRAINT companies_contacts_contact_type_check CHECK ((contact_type = ANY (ARRAY['work_email'::text, 'personal_email'::text, 'support_email'::text, 'billing_email'::text, 'work_phone'::text, 'personal_phone'::text, 'mobile_phone'::text, 'fax'::text, 'home_phone'::text, 'whatsapp'::text, 'slack'::text, 'work_address'::text, 'home_address'::text, 'billing_address'::text, 'shipping_address'::text, 'website'::text, 'linkedin'::text, 'twitter'::text, 'facebook'::text, 'instagram'::text, 'sales_email'::text, 'marketing_email'::text, 'hr_email'::text, 'contact_email'::text, 'sales_phone'::text, 'support_phone'::text, 'customer_service_phone'::text, 'general_inquiry_phone'::text, 'office_address'::text, 'headquarters_address'::text, 'warehouse_address'::text, 'company_website'::text, 'support_website'::text]))),
+    CONSTRAINT companies_contacts_iso3_check CHECK (((char_length(iso3) = 3) AND (iso3 ~ '^[A-Z]{3}$'::text)))
 );
 
 
@@ -162,10 +164,12 @@ CREATE TABLE public.locations_contacts (
     longitude numeric(9,6),
     place_id integer,
     bounding_box double precision[],
+    iso3 text,
     is_public boolean DEFAULT false,
     is_primary boolean DEFAULT false,
     iso_3 text,
-    CONSTRAINT locations_contacts_contact_type_check CHECK ((contact_type = ANY (ARRAY['work_email'::text, 'personal_email'::text, 'support_email'::text, 'billing_email'::text, 'work_phone'::text, 'personal_phone'::text, 'mobile_phone'::text, 'fax'::text, 'home_phone'::text, 'whatsapp'::text, 'slack'::text, 'work_address'::text, 'home_address'::text, 'billing_address'::text, 'shipping_address'::text, 'website'::text, 'linkedin'::text, 'twitter'::text, 'facebook'::text, 'instagram'::text, 'sales_email'::text, 'marketing_email'::text, 'hr_email'::text, 'contact_email'::text, 'sales_phone'::text, 'support_phone'::text, 'customer_service_phone'::text, 'general_inquiry_phone'::text, 'office_address'::text, 'headquarters_address'::text, 'warehouse_address'::text, 'company_website'::text, 'support_website'::text])))
+    CONSTRAINT locations_contacts_contact_type_check CHECK ((contact_type = ANY (ARRAY['work_email'::text, 'personal_email'::text, 'support_email'::text, 'billing_email'::text, 'work_phone'::text, 'personal_phone'::text, 'mobile_phone'::text, 'fax'::text, 'home_phone'::text, 'whatsapp'::text, 'slack'::text, 'work_address'::text, 'home_address'::text, 'billing_address'::text, 'shipping_address'::text, 'website'::text, 'linkedin'::text, 'twitter'::text, 'facebook'::text, 'instagram'::text, 'sales_email'::text, 'marketing_email'::text, 'hr_email'::text, 'contact_email'::text, 'sales_phone'::text, 'support_phone'::text, 'customer_service_phone'::text, 'general_inquiry_phone'::text, 'office_address'::text, 'headquarters_address'::text, 'warehouse_address'::text, 'company_website'::text, 'support_website'::text]))),
+    CONSTRAINT locations_contacts_iso3_check CHECK (((char_length(iso3) = 3) AND (iso3 ~ '^[A-Z]{3}$'::text)))
 );
 
 
@@ -328,10 +332,12 @@ CREATE TABLE public.users_contacts (
     longitude numeric(9,6),
     place_id integer,
     bounding_box double precision[],
+    iso3 text,
     is_public boolean DEFAULT false,
     is_primary boolean DEFAULT false,
     iso_3 text,
-    CONSTRAINT users_contacts_contact_type_check CHECK ((contact_type = ANY (ARRAY['work_email'::text, 'personal_email'::text, 'support_email'::text, 'billing_email'::text, 'work_phone'::text, 'personal_phone'::text, 'mobile_phone'::text, 'fax'::text, 'home_phone'::text, 'whatsapp'::text, 'slack'::text, 'work_address'::text, 'home_address'::text, 'billing_address'::text, 'shipping_address'::text, 'website'::text, 'linkedin'::text, 'twitter'::text, 'facebook'::text, 'instagram'::text, 'sales_email'::text, 'marketing_email'::text, 'hr_email'::text, 'contact_email'::text, 'sales_phone'::text, 'support_phone'::text, 'customer_service_phone'::text, 'general_inquiry_phone'::text, 'office_address'::text, 'headquarters_address'::text, 'warehouse_address'::text, 'company_website'::text, 'support_website'::text])))
+    CONSTRAINT users_contacts_contact_type_check CHECK ((contact_type = ANY (ARRAY['work_email'::text, 'personal_email'::text, 'support_email'::text, 'billing_email'::text, 'work_phone'::text, 'personal_phone'::text, 'mobile_phone'::text, 'fax'::text, 'home_phone'::text, 'whatsapp'::text, 'slack'::text, 'work_address'::text, 'home_address'::text, 'billing_address'::text, 'shipping_address'::text, 'website'::text, 'linkedin'::text, 'twitter'::text, 'facebook'::text, 'instagram'::text, 'sales_email'::text, 'marketing_email'::text, 'hr_email'::text, 'contact_email'::text, 'sales_phone'::text, 'support_phone'::text, 'customer_service_phone'::text, 'general_inquiry_phone'::text, 'office_address'::text, 'headquarters_address'::text, 'warehouse_address'::text, 'company_website'::text, 'support_website'::text]))),
+    CONSTRAINT users_contacts_iso3_check CHECK (((char_length(iso3) = 3) AND (iso3 ~ '^[A-Z]{3}$'::text)))
 );
 
 
