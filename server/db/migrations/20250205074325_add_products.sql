@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS
         ),
         CHECK (
             volume_unit IS NULL
-            OR volume_unit IN ('l', 'ml', 'ft3', 'gal')
+            OR volume_unit IN ('l', 'ml', 'fl oz', 'gal')
         ),
         CHECK (
             weight_unit IS NULL
