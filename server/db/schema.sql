@@ -212,11 +212,17 @@ CREATE TABLE public.products (
     company_id uuid,
     description text,
     weight numeric(10,5),
+    weight_unit text,
     volume numeric(10,5),
+    volume_unit text,
     barcode character(13),
     category_id uuid NOT NULL,
     subcategory_id uuid,
     image_id uuid,
+    CONSTRAINT products_check CHECK (((volume IS NULL) OR (volume_unit IS NOT NULL))),
+    CONSTRAINT products_check1 CHECK (((weight IS NULL) OR (weight_unit IS NOT NULL))),
+    CONSTRAINT products_volume_unit_check CHECK (((volume_unit IS NULL) OR (volume_unit = ANY (ARRAY['l'::text, 'ml'::text, 'ft3'::text, 'gal'::text])))),
+    CONSTRAINT products_weight_unit_check CHECK (((weight_unit IS NULL) OR (weight_unit = ANY (ARRAY['kg'::text, 'g'::text, 'mg'::text, 'lb'::text, 'oz'::text])))),
     CONSTRAINT title_min_length CHECK ((char_length(title) >= 1))
 );
 
