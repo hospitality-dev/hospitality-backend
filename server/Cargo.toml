@@ -61,3 +61,4 @@ tracing-loki = { workspace = true }
 tracing-subscriber = { workspace = true }
 uuid = { workspace = true }
 common = { path = "../common" }
+postgres-types = { version = "0.2.9", features = ["derive"] }
