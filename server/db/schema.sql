@@ -248,6 +248,53 @@ CREATE TABLE public.products_categories (
 
 
 --
+-- Name: purchase_items; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.purchase_items (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+    updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+    deleted_at timestamp with time zone,
+    title text NOT NULL,
+    company_id uuid,
+    location_id uuid,
+    parent_id uuid NOT NULL,
+    product_id uuid,
+    owner_id uuid
+);
+
+
+--
+-- Name: purchases; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.purchases (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+    updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+    deleted_at timestamp with time zone,
+    purchased_at timestamp with time zone,
+    company_id uuid,
+    location_id uuid,
+    owner_id uuid,
+    total numeric(10,5) DEFAULT 0 NOT NULL,
+    payment_type smallint NOT NULL,
+    address text,
+    business_title text NOT NULL,
+    business_location_title text,
+    tax_id text,
+    transaction_type smallint,
+    invoice_type smallint,
+    invoice_counter_extension text,
+    invoice_number text,
+    CONSTRAINT purchases_invoice_type_check CHECK (((invoice_type >= 0) AND (invoice_type <= 4))),
+    CONSTRAINT purchases_payment_type_check CHECK (((payment_type >= 0) AND (payment_type <= 6))),
+    CONSTRAINT purchases_transaction_type_check CHECK (((transaction_type >= 0) AND (transaction_type <= 1)))
+);
+
+
+--
 -- Name: regions; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -451,6 +498,22 @@ ALTER TABLE ONLY public.products_categories
 
 ALTER TABLE ONLY public.products
     ADD CONSTRAINT products_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: purchase_items purchase_items_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.purchase_items
+    ADD CONSTRAINT purchase_items_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: purchases purchases_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.purchases
+    ADD CONSTRAINT purchases_pkey PRIMARY KEY (id);
 
 
 --
@@ -709,6 +772,70 @@ ALTER TABLE ONLY public.products
 
 
 --
+-- Name: purchase_items purchase_items_company_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.purchase_items
+    ADD CONSTRAINT purchase_items_company_id_fkey FOREIGN KEY (company_id) REFERENCES public.companies(id) ON DELETE CASCADE;
+
+
+--
+-- Name: purchase_items purchase_items_location_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.purchase_items
+    ADD CONSTRAINT purchase_items_location_id_fkey FOREIGN KEY (location_id) REFERENCES public.locations(id) ON DELETE CASCADE;
+
+
+--
+-- Name: purchase_items purchase_items_owner_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.purchase_items
+    ADD CONSTRAINT purchase_items_owner_id_fkey FOREIGN KEY (owner_id) REFERENCES public.users(id) ON DELETE SET NULL;
+
+
+--
+-- Name: purchase_items purchase_items_parent_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.purchase_items
+    ADD CONSTRAINT purchase_items_parent_id_fkey FOREIGN KEY (parent_id) REFERENCES public.purchases(id) ON DELETE CASCADE;
+
+
+--
+-- Name: purchase_items purchase_items_product_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.purchase_items
+    ADD CONSTRAINT purchase_items_product_id_fkey FOREIGN KEY (product_id) REFERENCES public.products(id) ON DELETE SET NULL;
+
+
+--
+-- Name: purchases purchases_company_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.purchases
+    ADD CONSTRAINT purchases_company_id_fkey FOREIGN KEY (company_id) REFERENCES public.companies(id) ON DELETE CASCADE;
+
+
+--
+-- Name: purchases purchases_location_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.purchases
+    ADD CONSTRAINT purchases_location_id_fkey FOREIGN KEY (location_id) REFERENCES public.locations(id) ON DELETE CASCADE;
+
+
+--
+-- Name: purchases purchases_owner_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.purchases
+    ADD CONSTRAINT purchases_owner_id_fkey FOREIGN KEY (owner_id) REFERENCES public.users(id) ON DELETE SET NULL;
+
+
+--
 -- Name: roles roles_company_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -776,4 +903,5 @@ INSERT INTO public.schema_migrations (version) VALUES
     ('20250410112302'),
     ('20250412173117'),
     ('20250413080323'),
-    ('20250413104537');
+    ('20250413104537'),
+    ('20250421134602');
