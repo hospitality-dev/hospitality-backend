@@ -202,6 +202,19 @@ CREATE TABLE public.locations_users (
 
 
 --
+-- Name: manufacturers; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.manufacturers (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    deleted_at timestamp with time zone,
+    title text NOT NULL
+);
+
+
+--
 -- Name: products; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -221,6 +234,7 @@ CREATE TABLE public.products (
     category_id uuid NOT NULL,
     subcategory_id uuid,
     image_id uuid,
+    parent_id uuid,
     CONSTRAINT products_check CHECK (((volume IS NULL) OR (volume_unit IS NOT NULL))),
     CONSTRAINT products_check1 CHECK (((weight IS NULL) OR (weight_unit IS NOT NULL))),
     CONSTRAINT products_volume_unit_check CHECK (((volume_unit IS NULL) OR (volume_unit = ANY (ARRAY['l'::text, 'ml'::text, 'fl_oz'::text, 'gal'::text])))),
@@ -475,6 +489,14 @@ ALTER TABLE ONLY public.locations_users
 
 ALTER TABLE ONLY public.locations_users
     ADD CONSTRAINT locations_users_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: manufacturers manufacturers_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.manufacturers
+    ADD CONSTRAINT manufacturers_pkey PRIMARY KEY (id);
 
 
 --
@@ -765,6 +787,14 @@ ALTER TABLE ONLY public.products
 
 
 --
+-- Name: products products_parent_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.products
+    ADD CONSTRAINT products_parent_id_fkey FOREIGN KEY (parent_id) REFERENCES public.manufacturers(id) ON DELETE SET NULL;
+
+
+--
 -- Name: products products_subcategory_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -904,4 +934,5 @@ INSERT INTO public.schema_migrations (version) VALUES
     ('20250410112302'),
     ('20250413080323'),
     ('20250413104537'),
-    ('20250421134602');
+    ('20250421134602'),
+    ('20250422180927');
