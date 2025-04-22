@@ -20,7 +20,7 @@ use crate::{
     utils::transform_utils::{extract_items, format_receipt},
 };
 
-pub async fn create_purchase(
+async fn create_purchase(
     State(state): State<AppState>,
     Extension(session): Extension<AuthSession>,
     Json(payload): Json<InsertPurchase>,
@@ -82,7 +82,7 @@ pub async fn create_purchase(
 
     let mut purchase_items_stmt = String::from(
         "INSERT INTO purchase_items
-    (title, company_id, location_id, parent_id, product_id, owner_id)
+    (company_id, location_id, parent_id, product_id, owner_id, title, price_per_unit, quantity)
     VALUES ",
     );
 
@@ -98,16 +98,19 @@ pub async fn create_purchase(
     params.push(&None::<Uuid> as &(dyn ToSql + Sync));
     params.push(&session.user.id as &(dyn ToSql + Sync));
     for (idx, item) in items.iter().enumerate() {
-        purchase_items_stmt.push_str(&format!(
-            "(${}, $2, $3, $4, $5, $6)",
-            if idx == 0 {
-                params.insert(0, &item.0 as &(dyn ToSql + Sync));
-                String::from("1")
-            } else {
-                params.push(&item.0 as &(dyn ToSql + Sync));
+        if idx == 0 {
+            params.push(&item.0 as &(dyn ToSql + Sync));
+            params.push(&item.1 as &(dyn ToSql + Sync));
+            params.push(&item.2 as &(dyn ToSql + Sync));
+        } else {
+            params.push(&item.0 as &(dyn ToSql + Sync));
+        };
 
-                (idx + 6).to_string()
-            }
+        purchase_items_stmt.push_str(&format!(
+            "($1, $2, $3, $4, $5, ${}, ${}, ${})",
+            (6 + (idx * 3)).to_string(),
+            (7 + (idx * 3)).to_string(),
+            (8 + (idx * 3)).to_string()
         ));
         if idx < items_count - 1 {
             purchase_items_stmt.push_str(", ");
@@ -123,7 +126,7 @@ pub async fn create_purchase(
     return Ok(AppResponse::default_response(purchase_id));
 }
 
-pub async fn list_purchases(
+async fn list_purchases(
     State(state): State<AppState>,
     Extension(session): Extension<AuthSession>,
     Extension(fields): Extension<AllowedFieldsType>,

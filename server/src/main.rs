@@ -27,7 +27,8 @@ use routes::{
     locations_available_products_routes::locations_available_products_routes,
     locations_products_routes::location_products_routes, locations_routes::locations_routes,
     locations_users_routes::locations_users_routes, product_routes::product_routes,
-    products_categories_routes::products_categories_routes, purchases_routes::purchases_routes,
+    products_categories_routes::products_categories_routes,
+    purchase_items_routes::purchase_items_routes, purchases_routes::purchases_routes,
     resource_routes::resource_routes, roles_routes::roles_routes, search_routes::search_routes,
     url_routes::url_routes, users_routes::users_routes,
 };
@@ -192,6 +193,7 @@ pub async fn app() -> Result<Router> {
                 .merge(contacts_routes())
                 .merge(file_routes())
                 .merge(purchases_routes())
+                .merge(purchase_items_routes())
                 .layer(from_fn_with_state(state.clone(), permission_check))
                 // TODO: ADD PERMISSIONS MIDDLEWARE TO URL ROUTES
                 .merge(url_routes())

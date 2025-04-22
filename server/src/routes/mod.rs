@@ -7,6 +7,7 @@ pub mod locations_routes;
 pub mod locations_users_routes;
 pub mod product_routes;
 pub mod products_categories_routes;
+pub mod purchase_items_routes;
 pub mod purchases_routes;
 pub mod resource_routes;
 pub mod roles_routes;
