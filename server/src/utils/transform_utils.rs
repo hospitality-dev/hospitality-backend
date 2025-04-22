@@ -105,7 +105,14 @@ pub fn extract_items(receipt: &str) -> Vec<(String, f32, f32, f32)> {
             if parts.len() >= 3 {
                 let name_line = re_currency.replace_all(&name_line, "");
                 let name_line = re_suffix.replace_all(&name_line, "");
-                let price = parts[0].replace(',', ".").parse::<f32>().unwrap_or(0.0);
+                let price = parts[0]
+                    .replace(".", "")
+                    .replace(',', ".")
+                    .parse::<f32>()
+                    .unwrap_or(0.0);
+                if (price == 0.0) {
+                    println!("{} ----> {:?}", name_line, parts[0]);
+                }
                 let qty = parts[1].replace(',', ".").parse::<f32>().unwrap_or(0.0);
                 let total = parts[2].replace(',', ".").parse::<f32>().unwrap_or(0.0);
                 items.push((name_line.trim().to_string(), price, qty, total));
