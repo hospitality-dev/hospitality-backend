@@ -86,7 +86,7 @@ CREATE TABLE public.countries (
     phonecode text,
     capital text,
     currency text,
-    currency_name text,
+    currency_title text,
     currency_symbol text,
     tld text,
     nationality text,
@@ -289,6 +289,7 @@ CREATE TABLE public.purchases (
     invoice_type smallint,
     invoice_counter_extension text,
     invoice_number text,
+    currency_title text NOT NULL,
     CONSTRAINT purchases_invoice_type_check CHECK (((invoice_type >= 0) AND (invoice_type <= 4))),
     CONSTRAINT purchases_payment_type_check CHECK (((payment_type >= 0) AND (payment_type <= 6))),
     CONSTRAINT purchases_transaction_type_check CHECK (((transaction_type >= 0) AND (transaction_type <= 1)))

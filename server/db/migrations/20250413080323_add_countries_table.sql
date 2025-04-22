@@ -294,7 +294,7 @@ CREATE TABLE IF NOT EXISTS
         phonecode TEXT,
         capital TEXT,
         currency TEXT,
-        currency_name TEXT,
+        currency_title TEXT,
         currency_symbol TEXT,
         tld TEXT,
         -- DELETED AFTER DATA ENTRY

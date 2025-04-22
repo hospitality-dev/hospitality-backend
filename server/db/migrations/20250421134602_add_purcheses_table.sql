@@ -20,6 +20,7 @@ CREATE TABLE IF NOT EXISTS
         invoice_type INT2,
         invoice_counter_extension TEXT,
         invoice_number TEXT,
+        currency_title TEXT NOT NULL,
         CHECK (payment_type BETWEEN 0 AND 6),
         CHECK (transaction_type BETWEEN 0 AND 1),
         CHECK (invoice_type BETWEEN 0 AND 4)
