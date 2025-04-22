@@ -1,4 +1,5 @@
 use axum::body::Bytes;
+use common::consts::UNITS_REGEX;
 use convert_case::{Case, Casing};
 use percent_encoding::percent_decode;
 use regex::Regex;
@@ -116,8 +117,7 @@ pub fn extract_items(receipt: &str) -> Vec<(String, f32, f32, f32)> {
 }
 
 pub fn extract_unit_from_name(name: &str) -> Option<(f32, String)> {
-    // Match patterns like "5 kg", "0.5l", "205g", "1.5L", "60 g", etc.
-    let re = Regex::new(r"(?i)(\d+(?:[.,]\d+)?)\s*(kg|g|l|ml)").unwrap();
+    let re = Regex::new(UNITS_REGEX).unwrap();
 
     if let Some(caps) = re.captures(name) {
         let amount = caps
