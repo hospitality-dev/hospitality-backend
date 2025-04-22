@@ -5,6 +5,7 @@ pub const AUTH_SESSION_TIME: i32 = 29700; // 8 hours 15 mins
 pub const PRESIGN_DURATION: Duration = Duration::from_secs(3600); // 60 mins
 pub const MAX_FILE_SIZE: usize = 5_000_000; // 5 MB;
 pub const A4_SIZE: (u32, u32) = (2480, 3508);
+pub const UNITS_REGEX: &str = r"(?i)(\d+(?:[.,]\d+)?)\s*(kg|g|mg|l|ml|oz|lb)";
 pub const USERS_FIELDS: [&str; 12] = [
     "id",
     "created_at",
