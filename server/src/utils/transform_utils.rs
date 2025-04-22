@@ -56,6 +56,19 @@ pub fn format_receipt(encoded: &str) -> String {
     unicode_decoded
 }
 
+/// Extracts item details from a receipt string.
+///
+/// # Arguments
+///
+/// * `receipt` - A string slice containing the full text of the receipt.
+///
+/// # Returns
+///
+/// A vector of tuples where each tuple contains:
+/// - `String`: the item name
+/// - `f32`: the price per unit
+/// - `f32`: the quantity
+/// - `f32`: the total price
 pub fn extract_items(receipt: &str) -> Vec<(String, f32, f32, f32)> {
     let re_suffix = Regex::new(r"/(KOM|KG|L|G|ML)\b").unwrap();
     let re_currency = Regex::new(r"\s*\((Е|Ђ)\)").unwrap();
