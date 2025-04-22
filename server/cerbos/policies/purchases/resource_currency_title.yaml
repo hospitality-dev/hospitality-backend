@@ -1,6 +1,6 @@
 apiVersion: api.cerbos.dev/v1
 resourcePolicy:
-  resource: purchases:currency
+  resource: purchases:currency_title
   version: default
   rules:
 
