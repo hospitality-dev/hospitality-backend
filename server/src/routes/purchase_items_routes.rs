@@ -1,4 +1,8 @@
-use axum::{extract::State, routing::get, Extension, Json, Router};
+use axum::{
+    extract::{Path, State},
+    routing::get,
+    Extension, Router,
+};
 use serde_json::Value;
 use uuid::Uuid;
 
@@ -17,7 +21,7 @@ async fn list_purchase_items(
     State(state): State<AppState>,
     Extension(session): Extension<AuthSession>,
     Extension(fields): Extension<AllowedFieldsType>,
-    Json(parent_id): Json<Uuid>,
+    Path(parent_id): Path<Uuid>,
 ) -> RouteResponse<Value> {
     let conn = state.get_db_conn().await?;
     let rows = conn
