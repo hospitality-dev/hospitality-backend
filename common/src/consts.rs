@@ -130,3 +130,16 @@ pub const PURCHASES_FIELDS: [&str; 18] = [
     "invoice_counter_extension",
     "invoice_number",
 ];
+pub const PURCHASE_ITEMS_FIELDS: [&str; 11] = [
+    "id",
+    "created_at",
+    "deleted_at",
+    "company_id",
+    "location_id",
+    "owner_id",
+    "parent_id",
+    "product_id",
+    "title",
+    "price_per_unit",
+    "quantity",
+];

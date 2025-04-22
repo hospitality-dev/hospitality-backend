@@ -261,7 +261,9 @@ CREATE TABLE public.purchase_items (
     location_id uuid,
     parent_id uuid NOT NULL,
     product_id uuid,
-    owner_id uuid
+    owner_id uuid,
+    price_per_unit numeric(10,5) DEFAULT 0 NOT NULL,
+    quantity numeric(10,5) DEFAULT 0 NOT NULL
 );
 
 

@@ -1,0 +1,8 @@
+apiVersion: api.cerbos.dev/v1
+resourcePolicy:
+  resource: purchase_items:deleted_at
+  version: default
+  rules:
+  - actions: [ '*' ]
+    effect: EFFECT_ALLOW
+    roles: [ owner, manager ]
