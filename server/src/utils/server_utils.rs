@@ -42,32 +42,32 @@ pub async fn map_extractor_errors(
 }
 
 pub fn extract_action_from_url(uri: &str, method: &Method) -> Actions {
-    let action = if let Ok(id) = Uuid::from_str(uri.split("/").last().unwrap_or("")) {
+    if method == Method::POST {
+        return Actions::Create;
+    }
+    if uri.contains("/list") && method == &Method::GET {
+        return Actions::List;
+    }
+    if uri.contains("/generate") && method == &Method::GET {
+        return Actions::Generate;
+    }
+
+    if let Ok(id) = Uuid::from_str(uri.split("/").last().unwrap_or("")) {
         if uri.contains("download") {
-            Actions::Download(id)
-        } else if uri.contains("/generate") && method == &Method::GET {
-            Actions::Generate
+            return Actions::Download(id);
         } else {
             match method {
-                &Method::GET => Actions::View(id),
-                &Method::DELETE => Actions::Delete(id),
-                &Method::PATCH => Actions::Update(id),
-                _ => Actions::None,
+                &Method::GET => return Actions::View(id),
+                &Method::DELETE => return Actions::Delete(id),
+                &Method::PATCH => return Actions::Update(id),
+                _ => {
+                    tracing::error!("UUID WITH UNKNOWN ACTION");
+                    return Actions::None;
+                }
             }
         }
-    } else if uri.contains("/list") && method == &Method::GET {
-        Actions::List
-    } else if uri.contains("/generate") && method == &Method::GET {
-        Actions::Generate
-    } else if method == &Method::GET {
-        Actions::View(Uuid::nil())
-    } else if method == Method::POST {
-        Actions::Create
-    } else {
-        Actions::None
-    };
-
-    return action;
+    }
+    return Actions::None;
 }
 
 pub fn extract_action_id(action: &Actions) -> Option<&Uuid> {
