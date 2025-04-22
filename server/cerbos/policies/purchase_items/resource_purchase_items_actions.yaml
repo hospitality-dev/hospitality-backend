@@ -1,0 +1,40 @@
+apiVersion: api.cerbos.dev/v1
+resourcePolicy:
+  resource: purchase_items
+  version: default
+  rules:
+
+  - actions: [ create ]
+    effect: EFFECT_ALLOW
+    roles: [ owner ]
+
+  - actions: [ view, list, update, archive, delete ]
+    effect: EFFECT_ALLOW
+    roles: [ owner ]
+    condition:
+      match:
+        any:
+          of:
+          - expr: R.attr.company_id == P.attr.company_id
+          - expr: R.id == P.attr.location_id
+
+  - actions: [ view, list, update ]
+    effect: EFFECT_ALLOW
+    roles: [ manager ]
+    condition:
+      match:
+        expr: R.id == P.attr.location_id
+
+  - actions: [ list ]
+    effect: EFFECT_ALLOW
+    roles: [ employee ]
+    condition:
+      match:
+        expr: R.id == P.attr.location_id
+
+  - actions: [ view ]
+    effect: EFFECT_ALLOW
+    roles: [ employee ]
+    condition:
+      match:
+        expr: R.id == P.attr.location_id
