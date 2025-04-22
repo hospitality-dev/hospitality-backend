@@ -11,7 +11,8 @@ use crate::{
 use common::consts::{
     CONTACTS_FIELDS, COUNTRIES_FIELDS, FILES_FIELDS, LOCATIONS_AVAILABLE_PRODUCTS_FIELDS,
     LOCATIONS_FIELDS, LOCATIONS_PRODUCTS_FIELDS, LOCATIONS_USERS_FIELDS,
-    PRODUCTS_CATEGORIES_FIELDS, PRODUCTS_FIELDS, PURCHASES_FIELDS, ROLES_FIELDS, USERS_FIELDS,
+    PRODUCTS_CATEGORIES_FIELDS, PRODUCTS_FIELDS, PURCHASES_FIELDS, PURCHASE_ITEMS_FIELDS,
+    ROLES_FIELDS, USERS_FIELDS,
 };
 
 #[derive(Clone, Debug, Serialize, Deserialize, VariantNames, PartialEq, Eq)]
@@ -30,6 +31,7 @@ pub enum Models {
     Files,
     Countries,
     Purchases,
+    PurchaseItems,
     Unknown(String),
 }
 
@@ -54,6 +56,7 @@ impl ToString for Models {
             Models::Files => "files".to_string(),
             Models::Countries => "countries".to_string(),
             Models::Purchases => "purchases".to_string(),
+            Models::PurchaseItems => "purchase_items".to_string(),
             Models::Unknown(name) => format!("UNKNOWN MODEL - {}", name),
         }
     }
@@ -74,6 +77,7 @@ impl AsStr for Models {
             Models::Files => "files",
             Models::Countries => "countries",
             Models::Purchases => "purchases",
+            Models::PurchaseItems => "purchase_items",
             Models::Unknown(_) => "unknown",
         }
     }
@@ -96,6 +100,7 @@ impl FromStr for Models {
             "files" => Ok(Models::Files),
             "countries" => Ok(Models::Countries),
             "purchases" => Ok(Models::Purchases),
+            "purchase_items" => Ok(Models::PurchaseItems),
             _ => Ok(Models::Unknown(s.to_string())),
         }
     }
@@ -119,6 +124,7 @@ impl AllowedFields for Models {
             &Models::Files => HashSet::from_iter(FILES_FIELDS),
             &Models::Countries => HashSet::from_iter(COUNTRIES_FIELDS),
             &Models::Purchases => HashSet::from_iter(PURCHASES_FIELDS),
+            &Models::PurchaseItems => HashSet::from_iter(PURCHASE_ITEMS_FIELDS),
             &Models::Unknown(_) => HashSet::new(),
         })
     }
