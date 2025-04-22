@@ -1,8 +1,9 @@
-use axum::{extract::State, routing::get, Router};
+use axum::{extract::State, routing::get, Extension, Router};
 use serde_json::Value;
 
 use crate::{
     enums::errors::AppError,
+    middlware::crud_middleware::AllowedFieldsType,
     models::{
         response::{AppResponse, RouteResponse},
         state::AppState,
@@ -10,12 +11,15 @@ use crate::{
     traits::db_traits::SerializeList,
 };
 
-async fn countries(State(state): State<AppState>) -> RouteResponse<Value> {
+async fn countries(
+    State(state): State<AppState>,
+    Extension(fields): Extension<AllowedFieldsType>,
+) -> RouteResponse<Value> {
     let conn = state.get_db_conn().await?;
 
     let rows = conn
         .query(
-            "SELECT id, title, iso_3, phonecode FROM countries ORDER BY title;",
+            &format!("SELECT {} FROM countries ORDER BY title;", fields),
             &[],
         )
         .await
