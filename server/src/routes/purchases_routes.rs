@@ -1,15 +1,22 @@
-use axum::{extract::State, routing::post, Extension, Json, Router};
+use axum::{
+    extract::State,
+    routing::{get, post},
+    Extension, Json, Router,
+};
 use postgres_types::ToSql;
+use serde_json::Value;
 use uuid::Uuid;
 
 use crate::{
     enums::errors::AppError,
+    middlware::crud_middleware::AllowedFieldsType,
     models::{
         auth::AuthSession,
         purchases::{InsertPurchase, InvoiceData},
         response::{AppResponse, RouteResponse},
         state::AppState,
     },
+    traits::db_traits::SerializeList,
     utils::transform_utils::{extract_items, format_receipt},
 };
 
@@ -116,9 +123,28 @@ pub async fn create_purchase(
     return Ok(AppResponse::default_response(purchase_id));
 }
 
+pub async fn list_purchases(
+    State(state): State<AppState>,
+    Extension(session): Extension<AuthSession>,
+    Extension(fields): Extension<AllowedFieldsType>,
+) -> RouteResponse<Value> {
+    let conn = state.get_db_conn().await?;
+    let rows = conn
+        .query(
+            &format!("SELECT {} FROM purchases WHERE location_id = $1;", fields),
+            &[&session.user.location_id.unwrap()],
+        )
+        .await
+        .map_err(AppError::db_error)?;
+
+    return Ok(AppResponse::default_response(rows.serialize_list(true)));
+}
+
 pub fn purchases_routes() -> Router<AppState> {
     return Router::new().nest(
         "/purchases",
-        Router::new().route("/", post(create_purchase)),
+        Router::new()
+            .route("/", post(create_purchase))
+            .route("/list", get(list_purchases)),
     );
 }
