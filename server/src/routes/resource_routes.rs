@@ -15,7 +15,7 @@ async fn countries(State(state): State<AppState>) -> RouteResponse<Value> {
 
     let rows = conn
         .query(
-            "SELECT id, title, iso3, phonecode FROM countries ORDER BY title;",
+            "SELECT id, title, iso_3, phonecode FROM countries ORDER BY title;",
             &[],
         )
         .await

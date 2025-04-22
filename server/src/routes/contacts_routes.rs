@@ -104,7 +104,7 @@ async fn list_contacts_user(
                 &[&user_id],
             )
             .await
-            .map_err(AppError::critical_error)?;
+            .map_err(AppError::db_error)?;
 
         return Ok(AppResponse::default_response(result.serialize_list(true)));
     } else {

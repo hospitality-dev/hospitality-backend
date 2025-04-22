@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS
         longitude DECIMAL(9, 6),
         place_id INT,
         bounding_box FLOAT8[],
-        iso3 TEXT,
+        iso_3 TEXT,
         is_public BOOLEAN DEFAULT FALSE,
         is_primary BOOLEAN DEFAULT FALSE,
         CHECK (
@@ -52,8 +52,8 @@ CREATE TABLE IF NOT EXISTS
             )
         ),
         CHECK (
-            char_length(iso3) = 3
-            AND iso3 ~ '^[A-Z]{3}$'
+            char_length(iso_3) = 3
+            AND iso_3 ~ '^[A-Z]{3}$'
         )
     );
 
@@ -69,7 +69,7 @@ CREATE TABLE IF NOT EXISTS
         longitude DECIMAL(9, 6),
         place_id INT,
         bounding_box FLOAT8[],
-        iso3 TEXT,
+        iso_3 TEXT,
         is_public BOOLEAN DEFAULT FALSE,
         is_primary BOOLEAN DEFAULT FALSE,
         CHECK (
@@ -110,8 +110,8 @@ CREATE TABLE IF NOT EXISTS
             )
         ),
         CHECK (
-            char_length(iso3) = 3
-            AND iso3 ~ '^[A-Z]{3}$'
+            char_length(iso_3) = 3
+            AND iso_3 ~ '^[A-Z]{3}$'
         )
     );
 
@@ -127,7 +127,7 @@ CREATE TABLE IF NOT EXISTS
         longitude DECIMAL(9, 6),
         place_id INT,
         bounding_box FLOAT8[],
-        iso3 TEXT,
+        iso_3 TEXT,
         is_public BOOLEAN DEFAULT FALSE,
         is_primary BOOLEAN DEFAULT FALSE,
         CHECK (
@@ -168,8 +168,8 @@ CREATE TABLE IF NOT EXISTS
             )
         ),
         CHECK (
-            char_length(iso3) = 3
-            AND iso3 ~ '^[A-Z]{3}$'
+            char_length(iso_3) = 3
+            AND iso_3 ~ '^[A-Z]{3}$'
         )
     );
 

@@ -66,12 +66,11 @@ CREATE TABLE public.companies_contacts (
     longitude numeric(9,6),
     place_id integer,
     bounding_box double precision[],
-    iso3 text,
+    iso_3 text,
     is_public boolean DEFAULT false,
     is_primary boolean DEFAULT false,
-    iso_3 text,
     CONSTRAINT companies_contacts_contact_type_check CHECK ((contact_type = ANY (ARRAY['work_email'::text, 'personal_email'::text, 'support_email'::text, 'billing_email'::text, 'work_phone'::text, 'personal_phone'::text, 'mobile_phone'::text, 'fax'::text, 'home_phone'::text, 'whatsapp'::text, 'slack'::text, 'work_address'::text, 'home_address'::text, 'billing_address'::text, 'shipping_address'::text, 'website'::text, 'linkedin'::text, 'twitter'::text, 'facebook'::text, 'instagram'::text, 'sales_email'::text, 'marketing_email'::text, 'hr_email'::text, 'contact_email'::text, 'sales_phone'::text, 'support_phone'::text, 'customer_service_phone'::text, 'general_inquiry_phone'::text, 'office_address'::text, 'headquarters_address'::text, 'warehouse_address'::text, 'company_website'::text, 'support_website'::text]))),
-    CONSTRAINT companies_contacts_iso3_check CHECK (((char_length(iso3) = 3) AND (iso3 ~ '^[A-Z]{3}$'::text)))
+    CONSTRAINT companies_contacts_iso_3_check CHECK (((char_length(iso_3) = 3) AND (iso_3 ~ '^[A-Z]{3}$'::text)))
 );
 
 
@@ -81,9 +80,9 @@ CREATE TABLE public.companies_contacts (
 
 CREATE TABLE public.countries (
     title text NOT NULL,
-    iso3 text,
+    iso_3 text,
     numeric_code text,
-    iso2 text,
+    iso_2 text,
     phonecode text,
     capital text,
     currency text,
@@ -94,7 +93,7 @@ CREATE TABLE public.countries (
     timezones jsonb,
     latitude numeric(10,8),
     longitude numeric(11,8),
-    "wikiDataId" text,
+    wiki_data_id text,
     id uuid DEFAULT gen_random_uuid() NOT NULL,
     region_id uuid NOT NULL,
     subregion_id uuid NOT NULL
@@ -164,12 +163,11 @@ CREATE TABLE public.locations_contacts (
     longitude numeric(9,6),
     place_id integer,
     bounding_box double precision[],
-    iso3 text,
+    iso_3 text,
     is_public boolean DEFAULT false,
     is_primary boolean DEFAULT false,
-    iso_3 text,
     CONSTRAINT locations_contacts_contact_type_check CHECK ((contact_type = ANY (ARRAY['work_email'::text, 'personal_email'::text, 'support_email'::text, 'billing_email'::text, 'work_phone'::text, 'personal_phone'::text, 'mobile_phone'::text, 'fax'::text, 'home_phone'::text, 'whatsapp'::text, 'slack'::text, 'work_address'::text, 'home_address'::text, 'billing_address'::text, 'shipping_address'::text, 'website'::text, 'linkedin'::text, 'twitter'::text, 'facebook'::text, 'instagram'::text, 'sales_email'::text, 'marketing_email'::text, 'hr_email'::text, 'contact_email'::text, 'sales_phone'::text, 'support_phone'::text, 'customer_service_phone'::text, 'general_inquiry_phone'::text, 'office_address'::text, 'headquarters_address'::text, 'warehouse_address'::text, 'company_website'::text, 'support_website'::text]))),
-    CONSTRAINT locations_contacts_iso3_check CHECK (((char_length(iso3) = 3) AND (iso3 ~ '^[A-Z]{3}$'::text)))
+    CONSTRAINT locations_contacts_iso_3_check CHECK (((char_length(iso_3) = 3) AND (iso_3 ~ '^[A-Z]{3}$'::text)))
 );
 
 
@@ -382,12 +380,11 @@ CREATE TABLE public.users_contacts (
     longitude numeric(9,6),
     place_id integer,
     bounding_box double precision[],
-    iso3 text,
+    iso_3 text,
     is_public boolean DEFAULT false,
     is_primary boolean DEFAULT false,
-    iso_3 text,
     CONSTRAINT users_contacts_contact_type_check CHECK ((contact_type = ANY (ARRAY['work_email'::text, 'personal_email'::text, 'support_email'::text, 'billing_email'::text, 'work_phone'::text, 'personal_phone'::text, 'mobile_phone'::text, 'fax'::text, 'home_phone'::text, 'whatsapp'::text, 'slack'::text, 'work_address'::text, 'home_address'::text, 'billing_address'::text, 'shipping_address'::text, 'website'::text, 'linkedin'::text, 'twitter'::text, 'facebook'::text, 'instagram'::text, 'sales_email'::text, 'marketing_email'::text, 'hr_email'::text, 'contact_email'::text, 'sales_phone'::text, 'support_phone'::text, 'customer_service_phone'::text, 'general_inquiry_phone'::text, 'office_address'::text, 'headquarters_address'::text, 'warehouse_address'::text, 'company_website'::text, 'support_website'::text]))),
-    CONSTRAINT users_contacts_iso3_check CHECK (((char_length(iso3) = 3) AND (iso3 ~ '^[A-Z]{3}$'::text)))
+    CONSTRAINT users_contacts_iso_3_check CHECK (((char_length(iso_3) = 3) AND (iso_3 ~ '^[A-Z]{3}$'::text)))
 );
 
 
@@ -904,7 +901,6 @@ INSERT INTO public.schema_migrations (version) VALUES
     ('20250327123834'),
     ('20250410090924'),
     ('20250410112302'),
-    ('20250412173117'),
     ('20250413080323'),
     ('20250413104537'),
     ('20250421134602');

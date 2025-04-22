@@ -131,6 +131,7 @@ impl CerbosCheck {
             .iter()
             .map(|r| serde_json::json!({"resource": {"id":r.id,"kind": r.kind, "attr": None::<String>},"actions":actions}))
             .collect();
+
         let req_body = serde_json::json!({
             "requestId": Uuid::new_v4(),
             "principal": {

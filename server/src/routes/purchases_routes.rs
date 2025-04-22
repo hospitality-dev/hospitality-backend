@@ -98,20 +98,15 @@ async fn create_purchase(
     params.push(&None::<Uuid> as &(dyn ToSql + Sync));
     params.push(&session.user.id as &(dyn ToSql + Sync));
     for (idx, item) in items.iter().enumerate() {
-        if idx == 0 {
-            params.push(&item.0 as &(dyn ToSql + Sync));
-            params.push(&item.1 as &(dyn ToSql + Sync));
-            params.push(&item.2 as &(dyn ToSql + Sync));
-        } else {
-            params.push(&item.0 as &(dyn ToSql + Sync));
-        };
-
         purchase_items_stmt.push_str(&format!(
             "($1, $2, $3, $4, $5, ${}, ${}, ${})",
             (6 + (idx * 3)).to_string(),
             (7 + (idx * 3)).to_string(),
             (8 + (idx * 3)).to_string()
         ));
+        params.push(&item.0 as &(dyn ToSql + Sync));
+        params.push(&item.1 as &(dyn ToSql + Sync));
+        params.push(&item.2 as &(dyn ToSql + Sync));
         if idx < items_count - 1 {
             purchase_items_stmt.push_str(", ");
         }

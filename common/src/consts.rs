@@ -94,8 +94,8 @@ pub const FILES_FIELDS: [&str; 9] = [
 pub const COUNTRIES_FIELDS: [&str; 17] = [
     "id",
     "title",
-    "iso2",
-    "iso3",
+    "iso_2",
+    "iso_3",
     "numeric_code",
     "phonecode",
     "capital",
@@ -106,7 +106,7 @@ pub const COUNTRIES_FIELDS: [&str; 17] = [
     "timezones",
     "latitude",
     "longitude",
-    "wikiDataId",
+    "wiki_data_id",
     "region_id",
     "subregion_id",
 ];

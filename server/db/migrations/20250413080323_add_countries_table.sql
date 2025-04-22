@@ -288,9 +288,9 @@ CREATE TABLE IF NOT EXISTS
         -- DELETED AFTER DATA ENTRY
         temp_id bigint NOT NULL,
         title TEXT NOT NULL,
-        iso3 TEXT,
+        iso_3 TEXT,
         numeric_code TEXT,
-        iso2 TEXT,
+        iso_2 TEXT,
         phonecode TEXT,
         capital TEXT,
         currency TEXT,
@@ -323,7 +323,7 @@ CREATE TABLE IF NOT EXISTS
         updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
         -- DELETED AFTER DATA ENTRY
         flag smallint DEFAULT 1 NOT NULL,
-        "wikiDataId" TEXT,
+        wiki_data_id TEXT,
         id UUID PRIMARY KEY NOT NULL DEFAULT gen_random_uuid (),
         region_id UUID REFERENCES regions (id),
         subregion_id UUID REFERENCES subregions (id)

@@ -17,7 +17,7 @@ async fn list_purchase_items(
     State(state): State<AppState>,
     Extension(session): Extension<AuthSession>,
     Extension(fields): Extension<AllowedFieldsType>,
-    Json(id): Json<Uuid>,
+    Json(parent_id): Json<Uuid>,
 ) -> RouteResponse<Value> {
     let conn = state.get_db_conn().await?;
     let rows = conn
@@ -26,7 +26,7 @@ async fn list_purchase_items(
                 "SELECT {} FROM purchase_items WHERE parent_id = $1 AND location_id = $2;",
                 fields
             ),
-            &[&id, &session.user.location_id.unwrap()],
+            &[&parent_id, &session.user.location_id.unwrap()],
         )
         .await
         .map_err(AppError::db_error)?;
@@ -36,7 +36,7 @@ async fn list_purchase_items(
 
 pub fn purchase_items_routes() -> Router<AppState> {
     return Router::new().nest(
-        "/",
-        Router::new().route("/list/{id}/purchase-items", get(list_purchase_items)),
+        "/purchase-items",
+        Router::new().route("/list/{parent_id}", get(list_purchase_items)),
     );
 }
