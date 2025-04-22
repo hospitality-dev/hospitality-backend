@@ -37,8 +37,8 @@ CREATE TABLE IF NOT EXISTS
         parent_id UUID NOT NULL REFERENCES purchases (id) ON DELETE CASCADE,
         product_id UUID REFERENCES products (id) ON DELETE SET NULL,
         owner_id UUID REFERENCES users (id) ON DELETE SET NULL,
-        price_per_unit NUMERIC(10, 5) NOT NULL DEFAULT 0,
-        quantity NUMERIC(10, 5) NOT NULL DEFAULT 0
+        price_per_unit FLOAT4 NOT NULL DEFAULT 0,
+        quantity FLOAT4 NOT NULL DEFAULT 0
     );
 
 -- migrate:down
