@@ -53,9 +53,9 @@ async fn create_purchase(
             "INSERT INTO purchases
     (purchased_at, company_id, location_id, owner_id, url, total, payment_type, address,
     business_title, business_location_title, tax_id, transaction_type, invoice_type,
-    invoice_counter_extension, invoice_number)
+    invoice_counter_extension, invoice_number, currency_title)
      VALUES ($1, $2, $3, $4, $5, $6, $7, $8,
-     $9, $10, $11, $12, $13, $14, $15)
+     $9, $10, $11, $12, $13, $14, $15, 'RSD')
      RETURNING id;",
             &[
                 &p.invoice_result.sdc_time,
