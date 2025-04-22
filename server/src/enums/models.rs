@@ -100,7 +100,7 @@ impl FromStr for Models {
             "files" => Ok(Models::Files),
             "countries" => Ok(Models::Countries),
             "purchases" => Ok(Models::Purchases),
-            "purchase_items" => Ok(Models::PurchaseItems),
+            "purchase-items" => Ok(Models::PurchaseItems),
             _ => Ok(Models::Unknown(s.to_string())),
         }
     }
