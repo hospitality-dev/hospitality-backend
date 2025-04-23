@@ -131,7 +131,7 @@ pub fn extract_items(receipt: &str) -> Vec<(String, f32, f32, f32)> {
 /// A string that represents the unit:
 /// - `String`: the unit
 pub fn extract_unit_from_name(name: &str) -> Option<String> {
-    let re = Regex::new(r"(KG|L|G|ML|OZ|LB)\b").unwrap();
+    let re = Regex::new(r"(kg|l|g|ml|oz|lb|KG|L|G|ML|OZ|LB)\b").unwrap();
 
     if let Some(caps) = re.captures(name) {
         let unit = caps.get(1)?.as_str().to_string();
