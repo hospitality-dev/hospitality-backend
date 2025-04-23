@@ -35,3 +35,12 @@ pub struct ProductQRCodes {
     pub company_id: Uuid,
     pub location_id: Uuid,
 }
+
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
+
+pub struct PurchaseItem {
+    pub title: String,
+    pub price_per_quantity: f32,
+    pub quantity: f32,
+}
