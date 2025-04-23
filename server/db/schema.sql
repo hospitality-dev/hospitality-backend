@@ -296,6 +296,7 @@ CREATE TABLE public.purchases (
     total numeric(10,5) DEFAULT 0 NOT NULL,
     payment_type smallint NOT NULL,
     address text,
+    city text,
     business_title text NOT NULL,
     business_location_title text,
     tax_id text,

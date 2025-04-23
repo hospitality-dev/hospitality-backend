@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS
         total NUMERIC(10, 5) NOT NULL DEFAULT 0,
         payment_type INT2 NOT NULL,
         address TEXT,
+        city TEXT,
         business_title TEXT NOT NULL,
         business_location_title TEXT,
         tax_id TEXT,

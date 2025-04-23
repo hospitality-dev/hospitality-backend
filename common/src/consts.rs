@@ -111,7 +111,7 @@ pub const COUNTRIES_FIELDS: [&str; 17] = [
     "region_id",
     "subregion_id",
 ];
-pub const PURCHASES_FIELDS: [&str; 19] = [
+pub const PURCHASES_FIELDS: [&str; 20] = [
     "id",
     "created_at",
     "deleted_at",
@@ -131,6 +131,7 @@ pub const PURCHASES_FIELDS: [&str; 19] = [
     "invoice_counter_extension",
     "invoice_number",
     "currency_title",
+    "city",
 ];
 pub const PURCHASE_ITEMS_FIELDS: [&str; 11] = [
     "id",
