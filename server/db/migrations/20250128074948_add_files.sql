@@ -39,7 +39,9 @@ CREATE TABLE IF NOT EXISTS
         'unknown'
       )
     ),
-    CHECK (category IN ('reports', 'qr_codes', 'images'))
+    CHECK (
+      category IN ('reports', 'receipts', 'qr_codes', 'images')
+    )
   );
 
 -- migrate:down

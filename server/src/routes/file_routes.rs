@@ -2,7 +2,6 @@ use axum::{
     body::Body,
     extract::{DefaultBodyLimit, Multipart, Path, Query, State},
     http::Response,
-    middleware::map_request_with_state,
     response::Redirect,
     routing::{get, post},
     Extension, Router,
@@ -490,7 +489,6 @@ async fn purchases_bill(
         ))
         .send()
         .await;
-    println!("{}", exists.is_ok());
     if exists.is_ok() {
         return Ok(Redirect::to(&format!(
             "{}/api/v1/url/receipts/{}",
@@ -498,10 +496,11 @@ async fn purchases_bill(
         )));
     }
 
-    let conn = &state.get_db_conn().await?;
+    let conn = &mut state.get_db_conn().await?;
+    let tx = conn.transaction().await.map_err(AppError::db_error)?;
     let m = Regex::new(UNITS_REGEX).unwrap();
 
-    let purchase_row = conn
+    let purchase_row = tx
         .query_one(
             "SELECT purchased_at, business_title, business_location_title, city, address, total FROM purchases WHERE id = $1;",
             &[&id],
@@ -516,7 +515,11 @@ async fn purchases_bill(
     let city: String = purchase_row.get("city");
     let business_location_title: String = purchase_row.get("business_location_title");
 
-    let items: Vec<Value> = conn
+    let purchased_at = format_date_to_string(
+        convert_to_tz(purchased_at, Tz::Europe__Belgrade),
+        "%d/%m/%Y %H:%M",
+    );
+    let items: Vec<Value> = tx
         .query(
             "SELECT title, price_per_unit, quantity FROM purchase_items WHERE parent_id = $1;",
             &[&id],
@@ -555,11 +558,13 @@ async fn purchases_bill(
         })
         .collect();
 
+    tx.query("INSERT INTO files (title, owner_id, company_id, location_id, type, category) VALUES ($1, $2, $3, $4, 'pdf', 'receipts');", &[&format!("{} {} | {}", business_location_title, business_title, purchased_at),&session.user.id, &session.user.company_id.unwrap(), &session.user.location_id.unwrap()]).await.map_err(AppError::db_error)?;
+
     let payload = json!({
     "id": id,
     "businessTitle": business_title,
     "city": city, "address": address,
-    "total": total, "purchasedAt": format_date_to_string(convert_to_tz(purchased_at, Tz::Europe__Belgrade), "%d/%m/%Y %H:%M"),
+    "total": total, "purchasedAt":purchased_at,
     "businessLocationTitle": business_location_title,
     "items": items,
     "companyId": session.user.company_id.unwrap(),
