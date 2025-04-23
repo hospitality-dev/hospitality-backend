@@ -33,6 +33,7 @@ pub struct AppState {
     pub s3_client: S3Client,
     pub s3_name: String,
     pub document_server_url: String,
+    pub documents_api_key: String,
 }
 
 impl AppState {

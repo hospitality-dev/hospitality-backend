@@ -2,6 +2,7 @@ use axum::{
     body::Body,
     extract::{DefaultBodyLimit, Multipart, Path, Query, State},
     http::Response,
+    middleware::map_request_with_state,
     response::Redirect,
     routing::{get, post},
     Extension, Router,
@@ -383,6 +384,7 @@ async fn product_inventory_report(
             "{}/api/v1/generate/inventory-report",
             &state.document_server_url
         ))
+        .header("x-documents-api-key", &state.documents_api_key)
         .json(&payload)
         .send()
         .await
@@ -448,6 +450,61 @@ async fn product_qr_codes(
             "{}/api/v1/generate/products/qr-codes",
             &state.document_server_url
         ))
+        .header("x-documents-api-key", &state.documents_api_key)
+        .json(&payload)
+        .send()
+        .await
+        .map_err(AppError::critical_error)?;
+
+    let response = report_req
+        .json::<GenerateFileResponse>()
+        .await
+        .map_err(AppError::critical_error)?;
+
+    return Ok(Redirect::to(&format!(
+        "{}/api/v1/url/qr-codes/{}",
+        &state.server_url, &response.id
+    )));
+}
+
+async fn purchases_bill(
+    Extension(session): Extension<AuthSession>,
+    State(state): State<AppState>,
+    Path(id): Path<Uuid>,
+) -> Result<Redirect, AppErrorResponse> {
+    let conn = &state.get_db_conn().await?;
+
+    let rows = conn
+        .query(
+            "SELECT title, price_per_unit, quantity FROM purchase_items WHERE parent_id = $1;",
+            &[&id],
+        )
+        .await
+        .map_err(AppError::db_error)?;
+
+    // let title: String = title_row.get("title");
+
+    // let rows = conn
+    //     .query(
+    //         "SELECT locations_products.id, locations_products.expiration_date FROM locations_products
+    //         WHERE locations_products.product_id = $1 AND location_id = $2;"
+    //         ,&[
+    //             &id,
+    //             &session.user.location_id.unwrap(),
+    //         ],
+    //     )
+    //     .await
+    //     .map_err(AppError::db_error)?;
+
+    let payload = json!(rows.serialize_list(true));
+
+    let report_req = state
+        .rqw_client
+        .post(format!(
+            "{}/api/v1/generate/purchases/bill",
+            &state.document_server_url
+        ))
+        .header("x-documents-api-key", &state.documents_api_key)
         .json(&payload)
         .send()
         .await
@@ -465,19 +522,21 @@ async fn product_qr_codes(
 }
 
 pub fn file_routes() -> Router<AppState> {
-    Router::new().nest(
-        "/files",
-        Router::new()
-            .route("/location-logo/{id}", post(upload_location_logo))
-            .route("/user-avatar/{id}", post(upload_user_avatar))
-            .route("/list/{category}", get(list_files_category))
-            .route("/download/{id}", get(download_file))
-            .nest(
-                "/generate",
-                Router::new()
-                    .route("/reports", get(product_inventory_report))
-                    .route("/products/qr-codes/{id}", get(product_qr_codes)),
-            )
-            .layer(DefaultBodyLimit::max(MAX_FILE_SIZE)),
-    )
+    Router::new()
+        .nest(
+            "/files",
+            Router::new()
+                .route("/location-logo/{id}", post(upload_location_logo))
+                .route("/user-avatar/{id}", post(upload_user_avatar))
+                .route("/list/{category}", get(list_files_category))
+                .route("/download/{id}", get(download_file))
+                .nest(
+                    "/generate",
+                    Router::new()
+                        .route("/products/reports", get(product_inventory_report))
+                        .route("/products/qr-codes/{id}", get(product_qr_codes))
+                        .route("/purchases/bill/reports/{id}", get(purchases_bill)),
+                ),
+        )
+        .layer(DefaultBodyLimit::max(MAX_FILE_SIZE))
 }

@@ -93,6 +93,7 @@ pub async fn app() -> Result<Router> {
     let base_fe_url = var("BASE_FE_URL").expect("Env var `BASE_FE_URL` not set");
     let document_server_url =
         var("DOCUMENT_SERVER_URL").expect("Env var `DOCUMENT_SERVER_URL` not set");
+    let documents_api_key = var("DOCUMENTS_API_KEY").expect("Env var `DOCUMENTS_API_KEY` not set");
     let valkey_url = var("VALKEY_URL").expect("Env var `VALKEY_URL` not set");
     let cookie_encryption_key =
         var("COOKIE_ENCRYPTION_KEY").expect("Env var `COOKIE_ENCRYPTION_KEY` not set");
@@ -148,6 +149,7 @@ pub async fn app() -> Result<Router> {
         s3_client,
         s3_name,
         document_server_url,
+        documents_api_key,
     };
 
     let origins = [HeaderValue::from_str(&base_fe_url).unwrap()];
