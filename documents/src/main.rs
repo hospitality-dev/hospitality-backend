@@ -4,7 +4,7 @@ use axum::{
     Router,
     extract::{MatchedPath, Request},
     http::{
-        HeaderValue, Method,
+        HeaderName, HeaderValue, Method,
         header::{
             ACCEPT_ENCODING, ACCESS_CONTROL_ALLOW_ORIGIN, AUTHORIZATION, CONTENT_SECURITY_POLICY,
             CONTENT_SECURITY_POLICY_REPORT_ONLY, CONTENT_TYPE,
@@ -56,6 +56,7 @@ async fn app() -> Result<Router> {
     let s3_access_key = var("S3_ACCESS_KEY").expect("Env var `S3_ACCESS_KEY` not set");
     let s3_secret = var("S3_SECRET").expect("Env var `S3_SECRET` not set");
     let s3_name = var("S3_NAME").expect("Env var `S3_SECRET` not set");
+    let documents_api_key = var("DOCUMENTS_API_KEY").expect("Env var `DOCUMENTS_API_KEY` not set");
 
     // *============ TRACING SETUP
     let filter = EnvFilter::new(log_level);
@@ -80,7 +81,12 @@ async fn app() -> Result<Router> {
     let origins = [HeaderValue::from_str(&server_url).unwrap()];
     let cors = CorsLayer::new()
         .allow_credentials(true)
-        .allow_headers([AUTHORIZATION, ACCEPT_ENCODING, CONTENT_TYPE])
+        .allow_headers([
+            AUTHORIZATION,
+            ACCEPT_ENCODING,
+            CONTENT_TYPE,
+            "x-documents-api-key".parse().unwrap(),
+        ])
         .expose_headers([
             ACCESS_CONTROL_ALLOW_ORIGIN,
             CONTENT_SECURITY_POLICY,
@@ -110,11 +116,15 @@ async fn app() -> Result<Router> {
         s3_name,
         server_url,
         rqw_client,
+        documents_api_key,
     };
 
     let app = Router::new()
         .route("/healthcheck", get(|| async { "OK" }))
         .nest("/api/v1", Router::new().merge(generate_routes()))
+        .layer(from_fn_with_state(state.clone(), block_request))
+        .with_state(state)
+        .layer(cors)
         .layer(
             TraceLayer::new_for_http().make_span_with(|request: &Request<_>| {
                 let matched_path = request
@@ -132,9 +142,6 @@ async fn app() -> Result<Router> {
                     call_path = tracing::field::Empty
                 )
             }),
-        )
-        .layer(from_fn_with_state(state.clone(), block_request))
-        .with_state(state)
-        .layer(cors);
+        );
     Ok(app)
 }
