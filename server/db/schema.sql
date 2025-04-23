@@ -215,6 +215,19 @@ CREATE TABLE public.manufacturers (
 
 
 --
+-- Name: product_aliases; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.product_aliases (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    product_id uuid NOT NULL,
+    alias text NOT NULL,
+    store_id uuid NOT NULL,
+    supplier_id uuid NOT NULL
+);
+
+
+--
 -- Name: products; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -347,6 +360,20 @@ CREATE TABLE public.schema_migrations (
 
 
 --
+-- Name: stores; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.stores (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+    updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+    deleted_at timestamp with time zone,
+    title text NOT NULL,
+    parent_id uuid NOT NULL
+);
+
+
+--
 -- Name: subregions; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -355,6 +382,20 @@ CREATE TABLE public.subregions (
     title text NOT NULL,
     region_id uuid NOT NULL,
     "wikiDataId" text
+);
+
+
+--
+-- Name: suppliers; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.suppliers (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+    updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+    deleted_at timestamp with time zone,
+    title text NOT NULL,
+    is_default boolean DEFAULT false
 );
 
 
@@ -501,6 +542,14 @@ ALTER TABLE ONLY public.manufacturers
 
 
 --
+-- Name: product_aliases product_aliases_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.product_aliases
+    ADD CONSTRAINT product_aliases_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: products products_barcode_unique; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -565,11 +614,27 @@ ALTER TABLE ONLY public.schema_migrations
 
 
 --
+-- Name: stores stores_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.stores
+    ADD CONSTRAINT stores_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: subregions subregions_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.subregions
     ADD CONSTRAINT subregions_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: suppliers suppliers_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.suppliers
+    ADD CONSTRAINT suppliers_pkey PRIMARY KEY (id);
 
 
 --
@@ -748,6 +813,30 @@ ALTER TABLE ONLY public.locations_users
 
 
 --
+-- Name: product_aliases product_aliases_product_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.product_aliases
+    ADD CONSTRAINT product_aliases_product_id_fkey FOREIGN KEY (product_id) REFERENCES public.products(id) ON DELETE CASCADE;
+
+
+--
+-- Name: product_aliases product_aliases_store_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.product_aliases
+    ADD CONSTRAINT product_aliases_store_id_fkey FOREIGN KEY (store_id) REFERENCES public.stores(id) ON DELETE CASCADE;
+
+
+--
+-- Name: product_aliases product_aliases_supplier_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.product_aliases
+    ADD CONSTRAINT product_aliases_supplier_id_fkey FOREIGN KEY (supplier_id) REFERENCES public.suppliers(id) ON DELETE CASCADE;
+
+
+--
 -- Name: products_categories products_categories_company_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -876,6 +965,14 @@ ALTER TABLE ONLY public.roles
 
 
 --
+-- Name: stores stores_parent_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.stores
+    ADD CONSTRAINT stores_parent_id_fkey FOREIGN KEY (parent_id) REFERENCES public.suppliers(id) ON DELETE CASCADE;
+
+
+--
 -- Name: subregions subregions_region_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -936,4 +1033,6 @@ INSERT INTO public.schema_migrations (version) VALUES
     ('20250413080323'),
     ('20250413104537'),
     ('20250421134602'),
-    ('20250422180927');
+    ('20250422180927'),
+    ('20250423193521'),
+    ('20250423194714');
