@@ -10,10 +10,12 @@ use axum::{
             CONTENT_SECURITY_POLICY_REPORT_ONLY, CONTENT_TYPE,
         },
     },
+    middleware::from_fn_with_state,
     routing::get,
     serve,
 };
 use dotenv::{dotenv, var};
+use middleware::request_middleware::block_request;
 use models::state::AppState;
 use routes::generate_routes::generate_routes;
 use tokio::net::TcpListener;
@@ -25,6 +27,7 @@ use tracing::debug_span;
 use tracing_loki::url::Url;
 use tracing_subscriber::{EnvFilter, layer::SubscriberExt, util::SubscriberInitExt};
 
+mod middleware;
 mod models;
 mod routes;
 
@@ -112,7 +115,6 @@ async fn app() -> Result<Router> {
     let app = Router::new()
         .route("/healthcheck", get(|| async { "OK" }))
         .nest("/api/v1", Router::new().merge(generate_routes()))
-        .with_state(state)
         .layer(
             TraceLayer::new_for_http().make_span_with(|request: &Request<_>| {
                 let matched_path = request
@@ -131,6 +133,8 @@ async fn app() -> Result<Router> {
                 )
             }),
         )
+        .layer(from_fn_with_state(state.clone(), block_request))
+        .with_state(state)
         .layer(cors);
     Ok(app)
 }
