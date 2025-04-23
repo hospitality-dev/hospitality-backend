@@ -4,7 +4,7 @@ use axum::{
     Router,
     extract::{MatchedPath, Request},
     http::{
-        HeaderName, HeaderValue, Method,
+        HeaderValue, Method,
         header::{
             ACCEPT_ENCODING, ACCESS_CONTROL_ALLOW_ORIGIN, AUTHORIZATION, CONTENT_SECURITY_POLICY,
             CONTENT_SECURITY_POLICY_REPORT_ONLY, CONTENT_TYPE,

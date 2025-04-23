@@ -1,4 +1,5 @@
 use chrono::{DateTime, Utc};
+use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
@@ -41,6 +42,21 @@ pub struct ProductQRCodes {
 
 pub struct PurchaseItem {
     pub title: String,
-    pub price_per_quantity: f32,
-    pub quantity: f32,
+    pub price_per_unit: f32,
+    pub quantity: String,
+    pub total: f32,
+}
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct Purchase {
+    pub id: Uuid,
+    pub total: Decimal,
+    pub purchased_at: String,
+    pub business_title: String,
+    pub business_location_title: String,
+    pub address: Option<String>,
+    pub city: Option<String>,
+    pub items: Vec<PurchaseItem>,
+    pub company_id: Uuid,
+    pub location_id: Uuid,
 }

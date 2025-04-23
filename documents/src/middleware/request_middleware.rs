@@ -13,11 +13,10 @@ pub async fn block_request(
     req: Request,
     next: Next,
 ) -> Result<Response, StatusCode> {
-    let uri = req.uri();
-    if let Some(host) = uri.host() {
-        if host.starts_with(&state.server_url) {
-            return Ok(next.run(req).await);
+    match req.headers().get("x-documents-api-key") {
+        Some(val) if val.to_str().unwrap_or_default() == state.documents_api_key => {
+            Ok(next.run(req).await)
         }
+        _ => Err(StatusCode::UNAUTHORIZED),
     }
-    return Err(StatusCode::UNAUTHORIZED);
 }

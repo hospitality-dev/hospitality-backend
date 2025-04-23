@@ -8,7 +8,10 @@ use axum::{
     Extension, Router,
 };
 use chrono::{DateTime, Duration, Utc};
+use chrono_tz::Tz;
+use regex::Regex;
 use reqwest::header::{CONTENT_DISPOSITION, CONTENT_TYPE};
+use rust_decimal::Decimal;
 use serde_json::{json, Value};
 use uuid::Uuid;
 
@@ -26,9 +29,12 @@ use crate::{
         url_responses::GenerateFileResponse,
     },
     traits::db_traits::SerializeList,
-    utils::file_utils::upload_file,
+    utils::{file_utils::upload_file, transform_utils::extract_unit_from_name},
 };
-use common::consts::MAX_FILE_SIZE;
+use common::{
+    consts::{MAX_FILE_SIZE, UNITS_REGEX},
+    utils::date_time_utils::{convert_to_tz, format_date_to_string},
+};
 async fn upload_location_logo(
     State(state): State<AppState>,
     Extension(session): Extension<AuthSession>,
@@ -472,31 +478,93 @@ async fn purchases_bill(
     State(state): State<AppState>,
     Path(id): Path<Uuid>,
 ) -> Result<Redirect, AppErrorResponse> {
-    let conn = &state.get_db_conn().await?;
+    let exists = state
+        .s3_client
+        .head_object()
+        .bucket(&state.s3_name)
+        .key(format!(
+            "{}/{}/receipts/{}",
+            session.user.company_id.unwrap(),
+            session.user.location_id.unwrap(),
+            id
+        ))
+        .send()
+        .await;
+    println!("{}", exists.is_ok());
+    if exists.is_ok() {
+        return Ok(Redirect::to(&format!(
+            "{}/api/v1/url/receipts/{}",
+            &state.server_url, &id
+        )));
+    }
 
-    let rows = conn
-        .query(
-            "SELECT title, price_per_unit, quantity FROM purchase_items WHERE parent_id = $1;",
+    let conn = &state.get_db_conn().await?;
+    let m = Regex::new(UNITS_REGEX).unwrap();
+
+    let purchase_row = conn
+        .query_one(
+            "SELECT purchased_at, business_title, business_location_title, city, address, total FROM purchases WHERE id = $1;",
             &[&id],
         )
         .await
         .map_err(AppError::db_error)?;
 
-    // let title: String = title_row.get("title");
+    let total: Decimal = purchase_row.get("total");
+    let purchased_at: DateTime<Utc> = purchase_row.get("purchased_at");
+    let business_title: String = purchase_row.get("business_title");
+    let address: String = purchase_row.get("address");
+    let city: String = purchase_row.get("city");
+    let business_location_title: String = purchase_row.get("business_location_title");
 
-    // let rows = conn
-    //     .query(
-    //         "SELECT locations_products.id, locations_products.expiration_date FROM locations_products
-    //         WHERE locations_products.product_id = $1 AND location_id = $2;"
-    //         ,&[
-    //             &id,
-    //             &session.user.location_id.unwrap(),
-    //         ],
-    //     )
-    //     .await
-    //     .map_err(AppError::db_error)?;
+    let items: Vec<Value> = conn
+        .query(
+            "SELECT title, price_per_unit, quantity FROM purchase_items WHERE parent_id = $1;",
+            &[&id],
+        )
+        .await
+        .map_err(AppError::db_error)?
+        .iter()
+        .map(|row| {
+            let title: String = row.get("title");
+            let price_per_unit: f32 = row.get("price_per_unit");
+            let quantity: f32 = row.get("quantity");
 
-    let payload = json!(rows.serialize_list(true));
+            let unit = extract_unit_from_name(&title).unwrap_or_default();
+            let mut quantity_string = format!("{}{}", quantity.to_string(), unit);
+
+            if !quantity_string.contains("KG") {
+                let p = m.captures(&title);
+                if let Some(matched) = p {
+                    let amount = matched.get(1);
+                    let unit = matched.get(2);
+
+                    if amount.is_some() && unit.is_some() {
+                        let amount = amount.unwrap().as_str().parse::<f32>().unwrap_or_default();
+                        let unit = unit.unwrap().as_str();
+
+                        if amount > 0.0 {
+                            let final_amount = amount * quantity;
+                            quantity_string.push_str(&format!(" ({}{})", final_amount, unit));
+                        }
+                    }
+                }
+            }
+
+            return json!({"title": title.trim(), "pricePerUnit": price_per_unit,
+            "quantity": quantity_string.to_lowercase(), "total": quantity * price_per_unit, });
+        })
+        .collect();
+
+    let payload = json!({
+    "id": id,
+    "businessTitle": business_title,
+    "city": city, "address": address,
+    "total": total, "purchasedAt": format_date_to_string(convert_to_tz(purchased_at, Tz::Europe__Belgrade), "%d/%m/%Y %H:%M"),
+    "businessLocationTitle": business_location_title,
+    "items": items,
+    "companyId": session.user.company_id.unwrap(),
+    "locationId": session.user.location_id.unwrap(),
+    });
 
     let report_req = state
         .rqw_client
@@ -516,7 +584,7 @@ async fn purchases_bill(
         .map_err(AppError::critical_error)?;
 
     return Ok(Redirect::to(&format!(
-        "{}/api/v1/url/qr-codes/{}",
+        "{}/api/v1/url/receipts/{}",
         &state.server_url, &response.id
     )));
 }

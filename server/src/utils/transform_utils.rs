@@ -1,5 +1,4 @@
 use axum::body::Bytes;
-use common::consts::UNITS_REGEX;
 use convert_case::{Case, Casing};
 use percent_encoding::percent_decode;
 use regex::Regex;
@@ -71,7 +70,7 @@ pub fn format_receipt(encoded: &str) -> String {
 /// - `f32`: the quantity
 /// - `f32`: the total price
 pub fn extract_items(receipt: &str) -> Vec<(String, f32, f32, f32)> {
-    let re_suffix = Regex::new(r"/(KOM|KG|L|G|ML)\b").unwrap();
+    // let re_suffix = Regex::new(r"/(KOM|KG|L|G|ML)\b").unwrap();
     let re_currency = Regex::new(r"\s*\((Е|Ђ)\)").unwrap();
     let mut items = Vec::new();
     let mut lines = receipt.lines();
@@ -104,15 +103,13 @@ pub fn extract_items(receipt: &str) -> Vec<(String, f32, f32, f32)> {
 
             if parts.len() >= 3 {
                 let name_line = re_currency.replace_all(&name_line, "");
-                let name_line = re_suffix.replace_all(&name_line, "");
+                // let name_line = re_suffix.replace_all(&name_line, "");
                 let price = parts[0]
                     .replace(".", "")
                     .replace(',', ".")
                     .parse::<f32>()
                     .unwrap_or(0.0);
-                if (price == 0.0) {
-                    println!("{} ----> {:?}", name_line, parts[0]);
-                }
+
                 let qty = parts[1].replace(',', ".").parse::<f32>().unwrap_or(0.0);
                 let total = parts[2].replace(',', ".").parse::<f32>().unwrap_or(0.0);
                 items.push((name_line.trim().to_string(), price, qty, total));
@@ -123,18 +120,22 @@ pub fn extract_items(receipt: &str) -> Vec<(String, f32, f32, f32)> {
     items
 }
 
-pub fn extract_unit_from_name(name: &str) -> Option<(f32, String)> {
-    let re = Regex::new(UNITS_REGEX).unwrap();
+/// Extracts item unit from its title.
+///
+/// # Arguments
+///
+/// * `item` - A string slice containing the full text of the receipt.
+///
+/// # Returns
+///
+/// A string that represents the unit:
+/// - `String`: the unit
+pub fn extract_unit_from_name(name: &str) -> Option<String> {
+    let re = Regex::new(r"(KG|L|G|ML|OZ|LB)\b").unwrap();
 
     if let Some(caps) = re.captures(name) {
-        let amount = caps
-            .get(1)?
-            .as_str()
-            .replace(',', ".")
-            .parse::<f32>()
-            .ok()?;
-        let unit = caps.get(2)?.as_str().to_lowercase();
-        return Some((amount, unit));
+        let unit = caps.get(1)?.as_str().to_string();
+        return Some(unit);
     }
 
     None
