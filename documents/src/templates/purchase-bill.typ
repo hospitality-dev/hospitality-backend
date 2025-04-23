@@ -15,7 +15,10 @@
 #rect(fill: pat, width: 100%, height: 5pt, stroke: 1pt)
 
 #align(center)[#text("COPY OF RECEIPT", size: 12pt)]
+#align(center)[#sys.inputs.at("businessTitle")]
 #align(center)[#sys.inputs.at("title") | #sys.inputs.at("purchasedAt")]
+#align(center)[#sys.inputs.at("address")]
+#align(center)[#sys.inputs.at("city")]
 
 #rotate(rect(fill: pat, width: 100%, height: 5pt, stroke: 1pt), 180deg)
 
