@@ -5,6 +5,6 @@ pub fn convert_to_tz(utc: DateTime<Utc>, tz: Tz) -> DateTime<Tz> {
     utc.with_timezone(&tz)
 }
 
-pub fn format_to_string(date: DateTime<Utc>, format: String) -> String {
-    date.format(&format).to_string()
+pub fn format_date_to_string(date: DateTime<Tz>, format: &str) -> String {
+    date.format(format).to_string()
 }
