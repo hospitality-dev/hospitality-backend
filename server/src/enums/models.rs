@@ -12,7 +12,7 @@ use common::consts::{
     CONTACTS_FIELDS, COUNTRIES_FIELDS, FILES_FIELDS, LOCATIONS_AVAILABLE_PRODUCTS_FIELDS,
     LOCATIONS_FIELDS, LOCATIONS_PRODUCTS_FIELDS, LOCATIONS_USERS_FIELDS,
     PRODUCTS_CATEGORIES_FIELDS, PRODUCTS_FIELDS, PURCHASES_FIELDS, PURCHASE_ITEMS_FIELDS,
-    ROLES_FIELDS, USERS_FIELDS,
+    ROLES_FIELDS, STORES_FIELDS, SUPPLIERS_FIELDS, USERS_FIELDS,
 };
 
 #[derive(Clone, Debug, Serialize, Deserialize, VariantNames, PartialEq, Eq)]
@@ -32,6 +32,8 @@ pub enum Models {
     Countries,
     Purchases,
     PurchaseItems,
+    Suppliers,
+    Stores,
     Unknown(String),
 }
 
@@ -57,6 +59,8 @@ impl ToString for Models {
             Models::Countries => "countries".to_string(),
             Models::Purchases => "purchases".to_string(),
             Models::PurchaseItems => "purchase_items".to_string(),
+            Models::Suppliers => "suppliers".to_string(),
+            Models::Stores => "stores".to_string(),
             Models::Unknown(name) => format!("UNKNOWN MODEL - {}", name),
         }
     }
@@ -78,6 +82,8 @@ impl AsStr for Models {
             Models::Countries => "countries",
             Models::Purchases => "purchases",
             Models::PurchaseItems => "purchase_items",
+            Models::Suppliers => "suppliers",
+            Models::Stores => "stores",
             Models::Unknown(_) => "unknown",
         }
     }
@@ -101,6 +107,8 @@ impl FromStr for Models {
             "countries" => Ok(Models::Countries),
             "purchases" => Ok(Models::Purchases),
             "purchase-items" => Ok(Models::PurchaseItems),
+            "suppliers" => Ok(Models::Suppliers),
+            "stores" => Ok(Models::Stores),
             _ => Ok(Models::Unknown(s.to_string())),
         }
     }
@@ -125,6 +133,8 @@ impl AllowedFields for Models {
             &Models::Countries => HashSet::from_iter(COUNTRIES_FIELDS),
             &Models::Purchases => HashSet::from_iter(PURCHASES_FIELDS),
             &Models::PurchaseItems => HashSet::from_iter(PURCHASE_ITEMS_FIELDS),
+            &Models::Suppliers => HashSet::from_iter(SUPPLIERS_FIELDS),
+            &Models::Stores => HashSet::from_iter(STORES_FIELDS),
             &Models::Unknown(_) => HashSet::new(),
         })
     }
