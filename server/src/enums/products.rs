@@ -1,10 +1,9 @@
 use serde::Deserialize;
 
-#[derive(Deserialize, Default, Debug, strum_macros::Display)]
+#[derive(Deserialize, Debug, strum_macros::Display)]
 #[serde(rename_all = "lowercase")]
 #[strum(serialize_all = "snake_case")]
 pub enum WeightUnits {
-    #[default]
     Kg,
     G,
     Mg,
@@ -12,12 +11,11 @@ pub enum WeightUnits {
     Lb,
 }
 
-#[derive(Deserialize, Default, Debug, strum_macros::Display)]
+#[derive(Deserialize, Debug, strum_macros::Display)]
 #[serde(rename_all = "lowercase")]
 #[strum(serialize_all = "snake_case")]
 
 pub enum VolumeUnits {
-    #[default]
     L,
     Ml,
     FlOz,
