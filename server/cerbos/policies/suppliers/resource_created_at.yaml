@@ -1,0 +1,8 @@
+apiVersion: api.cerbos.dev/v1
+resourcePolicy:
+  resource: suppliers:created_at
+  version: default
+  rules:
+  - actions: [ view, list ]
+    effect: EFFECT_ALLOW
+    roles: [ '*' ]
