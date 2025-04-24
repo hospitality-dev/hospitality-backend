@@ -23,9 +23,9 @@ async fn create_product(
     Extension(session): Extension<AuthSession>,
     Json(payload): Json<InsertProduct>,
 ) -> RouteResponse<Uuid> {
-    let conn = &state.get_db_conn().await?;
-
-    let row = conn
+    let conn = &mut state.get_db_conn().await?;
+    let tx = conn.transaction().await.map_err(AppError::db_error)?;
+    let row = tx
         .query_one(
             "INSERT INTO products
         (title, description, category_id, barcode, weight,
@@ -47,9 +47,18 @@ async fn create_product(
             ],
         )
         .await
-        .map_err(AppError::critical_error)?;
+        .map_err(AppError::db_error)?;
 
     let id = row.try_get("id").map_err(AppError::default_response)?;
+
+    tx.execute(
+        "INSERT INTO locations_available_products (product_id, location_id) VALUES ($1, $2);",
+        &[&id, &session.user.location_id.unwrap()],
+    )
+    .await
+    .map_err(AppError::db_error)?;
+
+    tx.commit().await.map_err(AppError::db_error)?;
 
     Ok(AppResponse::default_response(id))
 }
