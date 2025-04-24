@@ -68,7 +68,7 @@ async fn list_purchase_items_to_modify(
 
     let rows = conn
         .query(
-            "SELECT purchase_items.id, products.id as product_id, products.title
+            "SELECT purchase_items.id, products.id as product_id, COALESCE(products.title, purchase_items.title) as title
                 FROM
                     purchase_items
                 LEFT JOIN products_aliases
