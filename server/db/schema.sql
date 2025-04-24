@@ -221,7 +221,8 @@ CREATE TABLE public.manufacturers (
 CREATE TABLE public.product_aliases (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
     title text NOT NULL,
-    supplier_id uuid NOT NULL
+    supplier_id uuid NOT NULL,
+    product_id uuid NOT NULL
 );
 
 
@@ -872,6 +873,14 @@ ALTER TABLE ONLY public.locations_users
 
 ALTER TABLE ONLY public.locations_users
     ADD CONSTRAINT locations_users_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+
+
+--
+-- Name: product_aliases product_aliases_product_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.product_aliases
+    ADD CONSTRAINT product_aliases_product_id_fkey FOREIGN KEY (product_id) REFERENCES public.products(id) ON DELETE CASCADE;
 
 
 --
