@@ -308,10 +308,7 @@ CREATE TABLE public.purchases (
     url text NOT NULL,
     total numeric(10,5) DEFAULT 0 NOT NULL,
     payment_type smallint NOT NULL,
-    address text,
-    city text,
-    business_title text NOT NULL,
-    business_location_title text,
+    store_id uuid,
     tax_id text,
     transaction_type smallint,
     invoice_type smallint,
@@ -371,7 +368,8 @@ CREATE TABLE public.stores (
     title text NOT NULL,
     parent_id uuid NOT NULL,
     owner_id uuid,
-    company_id uuid
+    company_id uuid,
+    is_default boolean DEFAULT false NOT NULL
 );
 
 
@@ -1023,6 +1021,14 @@ ALTER TABLE ONLY public.purchases
 
 
 --
+-- Name: purchases purchases_store_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.purchases
+    ADD CONSTRAINT purchases_store_id_fkey FOREIGN KEY (store_id) REFERENCES public.stores(id) ON DELETE SET NULL;
+
+
+--
 -- Name: roles roles_company_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1146,8 +1152,8 @@ INSERT INTO public.schema_migrations (version) VALUES
     ('20250410112302'),
     ('20250413080323'),
     ('20250413104537'),
-    ('20250421134602'),
     ('20250422180927'),
     ('20250423193521'),
     ('20250423194714'),
-    ('20250424055047');
+    ('20250424055047'),
+    ('20250424134602');

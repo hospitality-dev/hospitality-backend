@@ -43,6 +43,26 @@ async fn create_purchase(
     let mut conn = state.get_db_conn().await?;
     let tx = conn.transaction().await.map_err(AppError::db_error)?;
 
+    let supplier_id: Uuid = tx
+        .query_one(
+            "SELECT id FROM suppliers WHERE title = $1;",
+            &[&p.invoice_request.business_name],
+        )
+        .await
+        .map_err(AppError::db_error)?
+        .try_get("id")
+        .map_err(AppError::default_response)?;
+
+    let store_id: Uuid = tx
+        .query_one(
+            "INSERT INTO stores (title, parent_id, is_default) VALUES ($1, $2, FALSE) ON CONFLICT (id) DO NOTHING RETURNING id;",
+            &[&p.invoice_request.location_name, &supplier_id],
+        )
+        .await
+        .map_err(AppError::db_error)?
+        .try_get("id")
+        .map_err(AppError::default_response)?;
+
     let payment_type = if let Some(payment) = p.invoice_request.payments.get(0) {
         payment.payment_type
     } else {
@@ -51,11 +71,9 @@ async fn create_purchase(
     let purchase_row = tx
         .query_one(
             "INSERT INTO purchases
-    (purchased_at, company_id, location_id, owner_id, url, total, payment_type, address,
-    business_title, business_location_title, tax_id, transaction_type, invoice_type,
-    invoice_counter_extension, invoice_number, currency_title, city)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8,
-     $9, $10, $11, $12, $13, $14, $15, 'RSD', $16)
+    (purchased_at, company_id, location_id, owner_id, url, total, payment_type, tax_id, transaction_type, invoice_type,
+    invoice_counter_extension, invoice_number, store_id, currency_title)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, 'RSD')
      RETURNING id;",
             &[
                 &p.invoice_result.sdc_time,
@@ -65,15 +83,12 @@ async fn create_purchase(
                 &payload.url.to_string(),
                 &p.invoice_result.total_amount,
                 &payment_type,
-                &p.invoice_request.address,
-                &p.invoice_request.business_name,
-                &p.invoice_request.location_name,
                 &p.invoice_request.tax_id,
                 &p.invoice_request.transaction_type,
                 &p.invoice_request.invoice_type,
                 &p.invoice_result.invoice_counter_extension,
                 &p.invoice_result.invoice_number,
-                &p.invoice_request.city,
+                &store_id
             ],
         )
         .await
@@ -130,7 +145,19 @@ async fn list_purchases(
     let conn = state.get_db_conn().await?;
     let rows = conn
         .query(
-            &format!("SELECT {} FROM purchases WHERE location_id = $1;", fields),
+            &format!(
+                "SELECT
+                {}, stores.title as business_location_title, suppliers.title as business_title
+            FROM
+                purchases
+            LEFT JOIN stores
+                ON stores.id = purchases.store_id
+            LEFT JOIN suppliers
+                ON suppliers.id = stores.parent_id
+            WHERE
+                location_id = $1;",
+                fields
+            ),
             &[&session.user.location_id.unwrap()],
         )
         .await

@@ -20,7 +20,8 @@ CREATE TABLE IF NOT EXISTS
         title TEXT NOT NULL,
         parent_id UUID NOT NULL REFERENCES suppliers (id) ON DELETE CASCADE,
         owner_id UUID REFERENCES users (id) ON DELETE CASCADE,
-        company_id UUID REFERENCES companies (id) ON DELETE CASCADE
+        company_id UUID REFERENCES companies (id) ON DELETE CASCADE,
+        is_default BOOLEAN NOT NULL DEFAULT FALSE
     );
 
 INSERT INTO
@@ -36,12 +37,6 @@ VALUES
         'LIDL SRBIJA KD',
         TRUE
     );
-
-INSERT INTO
-    stores (title, parent_id)
-VALUES
-    ('Maxi', '70e652b0-3658-4753-b657-c2d35269f77f'),
-    ('Lidl', '728d6f74-b83d-4ee2-a15d-70c31c64ad36');
 
 -- migrate:down
 DROP TABLE IF EXISTS stores;
