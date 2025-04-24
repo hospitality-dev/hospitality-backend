@@ -115,7 +115,7 @@ async fn create_purchase(
     params.push(&session.user.id as &(dyn ToSql + Sync));
     for (idx, item) in items.iter().enumerate() {
         purchase_items_stmt.push_str(&format!(
-            "($1, $2, $3, $4, $5, ${}, ${}, ${})",
+            "($1, $2, $3, $4, $5, TRIM(${}), ${}, ${})",
             (6 + (idx * 3)).to_string(),
             (7 + (idx * 3)).to_string(),
             (8 + (idx * 3)).to_string()
