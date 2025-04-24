@@ -59,9 +59,42 @@ async fn list_purchase_items(
     return Ok(AppResponse::default_response(rows.serialize_list(true)));
 }
 
+async fn list_purchase_items_to_modify(
+    State(state): State<AppState>,
+    Extension(session): Extension<AuthSession>,
+    Path(parent_id): Path<Uuid>,
+) -> RouteResponse<Value> {
+    let conn = state.get_db_conn().await?;
+
+    let rows = conn
+        .query(
+            "SELECT purchase_items.id, products.id as product_id, products.title
+                FROM
+                    purchase_items
+                LEFT JOIN products_aliases
+                    ON products_aliases.title = purchase_items.title
+                LEFT JOIN products
+                    ON products_aliases.product_id = products.id
+                 WHERE
+                    purchase_items.parent_id = $1
+                        AND
+                    purchase_items.location_id = $2;",
+            &[&parent_id, &session.user.location_id.unwrap()],
+        )
+        .await
+        .map_err(AppError::db_error)?;
+
+    return Ok(AppResponse::default_response(rows.serialize_list(true)));
+}
+
 pub fn purchase_items_routes() -> Router<AppState> {
     return Router::new().nest(
         "/purchase-items",
-        Router::new().route("/list/{parent_id}", get(list_purchase_items)),
+        Router::new()
+            .route("/list/{parent_id}", get(list_purchase_items))
+            .route(
+                "/list/{parent_id}/modify",
+                get(list_purchase_items_to_modify),
+            ),
     );
 }
