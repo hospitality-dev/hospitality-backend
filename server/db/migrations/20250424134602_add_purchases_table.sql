@@ -37,8 +37,7 @@ CREATE TABLE IF NOT EXISTS
         product_id UUID REFERENCES products (id) ON DELETE SET NULL,
         owner_id UUID REFERENCES users (id) ON DELETE SET NULL,
         price_per_unit FLOAT4 NOT NULL DEFAULT 0,
-        quantity FLOAT4 NOT NULL DEFAULT 0,
-        alias_id UUID REFERENCES product_aliases (id) ON DELETE SET NULL
+        quantity FLOAT4 NOT NULL DEFAULT 0
     );
 
 -- migrate:down
