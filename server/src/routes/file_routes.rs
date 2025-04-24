@@ -588,6 +588,7 @@ async fn purchases_bill(
         .await
         .map_err(AppError::critical_error)?;
 
+    tx.commit().await.map_err(AppError::db_error)?;
     return Ok(Redirect::to(&format!(
         "{}/api/v1/url/receipts/{}",
         &state.server_url, &response.id
