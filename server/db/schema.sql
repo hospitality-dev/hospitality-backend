@@ -376,6 +376,29 @@ CREATE TABLE public.stores (
 
 
 --
+-- Name: stores_contacts; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.stores_contacts (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    title text,
+    contact_type text NOT NULL,
+    prefix text,
+    value text NOT NULL,
+    parent_id uuid NOT NULL,
+    latitude numeric(9,6),
+    longitude numeric(9,6),
+    place_id integer,
+    bounding_box double precision[],
+    iso_3 text,
+    is_public boolean DEFAULT false,
+    is_primary boolean DEFAULT false,
+    CONSTRAINT stores_contacts_contact_type_check CHECK ((contact_type = ANY (ARRAY['work_email'::text, 'personal_email'::text, 'support_email'::text, 'billing_email'::text, 'work_phone'::text, 'personal_phone'::text, 'mobile_phone'::text, 'fax'::text, 'home_phone'::text, 'whatsapp'::text, 'slack'::text, 'work_address'::text, 'home_address'::text, 'billing_address'::text, 'shipping_address'::text, 'website'::text, 'linkedin'::text, 'twitter'::text, 'facebook'::text, 'instagram'::text, 'sales_email'::text, 'marketing_email'::text, 'hr_email'::text, 'contact_email'::text, 'sales_phone'::text, 'support_phone'::text, 'customer_service_phone'::text, 'general_inquiry_phone'::text, 'office_address'::text, 'headquarters_address'::text, 'warehouse_address'::text, 'company_website'::text, 'support_website'::text]))),
+    CONSTRAINT stores_contacts_iso_3_check CHECK (((char_length(iso_3) = 3) AND (iso_3 ~ '^[A-Z]{3}$'::text)))
+);
+
+
+--
 -- Name: subregions; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -400,6 +423,29 @@ CREATE TABLE public.suppliers (
     is_default boolean DEFAULT false,
     owner_id uuid,
     company_id uuid
+);
+
+
+--
+-- Name: suppliers_contacts; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.suppliers_contacts (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    title text,
+    contact_type text NOT NULL,
+    prefix text,
+    value text NOT NULL,
+    parent_id uuid NOT NULL,
+    latitude numeric(9,6),
+    longitude numeric(9,6),
+    place_id integer,
+    bounding_box double precision[],
+    iso_3 text,
+    is_public boolean DEFAULT false,
+    is_primary boolean DEFAULT false,
+    CONSTRAINT suppliers_contacts_contact_type_check CHECK ((contact_type = ANY (ARRAY['work_email'::text, 'personal_email'::text, 'support_email'::text, 'billing_email'::text, 'work_phone'::text, 'personal_phone'::text, 'mobile_phone'::text, 'fax'::text, 'home_phone'::text, 'whatsapp'::text, 'slack'::text, 'work_address'::text, 'home_address'::text, 'billing_address'::text, 'shipping_address'::text, 'website'::text, 'linkedin'::text, 'twitter'::text, 'facebook'::text, 'instagram'::text, 'sales_email'::text, 'marketing_email'::text, 'hr_email'::text, 'contact_email'::text, 'sales_phone'::text, 'support_phone'::text, 'customer_service_phone'::text, 'general_inquiry_phone'::text, 'office_address'::text, 'headquarters_address'::text, 'warehouse_address'::text, 'company_website'::text, 'support_website'::text]))),
+    CONSTRAINT suppliers_contacts_iso_3_check CHECK (((char_length(iso_3) = 3) AND (iso_3 ~ '^[A-Z]{3}$'::text)))
 );
 
 
@@ -618,6 +664,14 @@ ALTER TABLE ONLY public.schema_migrations
 
 
 --
+-- Name: stores_contacts stores_contacts_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.stores_contacts
+    ADD CONSTRAINT stores_contacts_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: stores stores_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -631,6 +685,14 @@ ALTER TABLE ONLY public.stores
 
 ALTER TABLE ONLY public.subregions
     ADD CONSTRAINT subregions_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: suppliers_contacts suppliers_contacts_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.suppliers_contacts
+    ADD CONSTRAINT suppliers_contacts_pkey PRIMARY KEY (id);
 
 
 --
@@ -977,6 +1039,14 @@ ALTER TABLE ONLY public.stores
 
 
 --
+-- Name: stores_contacts stores_contacts_parent_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.stores_contacts
+    ADD CONSTRAINT stores_contacts_parent_id_fkey FOREIGN KEY (parent_id) REFERENCES public.stores(id) ON DELETE CASCADE;
+
+
+--
 -- Name: stores stores_owner_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1006,6 +1076,14 @@ ALTER TABLE ONLY public.subregions
 
 ALTER TABLE ONLY public.suppliers
     ADD CONSTRAINT suppliers_company_id_fkey FOREIGN KEY (company_id) REFERENCES public.companies(id) ON DELETE CASCADE;
+
+
+--
+-- Name: suppliers_contacts suppliers_contacts_parent_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.suppliers_contacts
+    ADD CONSTRAINT suppliers_contacts_parent_id_fkey FOREIGN KEY (parent_id) REFERENCES public.suppliers(id) ON DELETE CASCADE;
 
 
 --
@@ -1071,4 +1149,5 @@ INSERT INTO public.schema_migrations (version) VALUES
     ('20250421134602'),
     ('20250422180927'),
     ('20250423193521'),
-    ('20250423194714');
+    ('20250423194714'),
+    ('20250424055047');
