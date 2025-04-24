@@ -97,9 +97,13 @@ async fn create_purchase(
     let purchase_id: Uuid = purchase_row.get("id");
 
     let mut purchase_items_stmt = String::from(
-        "INSERT INTO purchase_items
-    (company_id, location_id, parent_id, product_id, owner_id, title, price_per_unit, quantity)
-    VALUES ",
+        "INSERT INTO
+            purchase_items
+        (
+            company_id, location_id, parent_id, product_id,
+            owner_id, title, price_per_unit, quantity
+        )
+        VALUES ",
     );
 
     let items_count = items.len();
@@ -107,18 +111,19 @@ async fn create_purchase(
 
     let company_id = &session.user.company_id.unwrap();
     let location_id = &session.user.location_id.unwrap();
+    let user_id = &session.user.id;
 
     params.push(company_id);
     params.push(location_id);
-    params.push(&purchase_id as &(dyn ToSql + Sync));
-    params.push(&None::<Uuid> as &(dyn ToSql + Sync));
-    params.push(&session.user.id as &(dyn ToSql + Sync));
+    params.push(&purchase_id);
+    params.push(&supplier_id);
+    params.push(user_id);
     for (idx, item) in items.iter().enumerate() {
         purchase_items_stmt.push_str(&format!(
-            "($1, $2, $3, $4, $5, TRIM(${}), ${}, ${})",
-            (6 + (idx * 3)).to_string(),
+            "($1, $2, $3, (SELECT product_id FROM products_aliases WHERE products_aliases.title = ${title} AND products_aliases.supplier_id = $4 LIMIT 1), $5, TRIM(${title}), ${}, ${})",
             (7 + (idx * 3)).to_string(),
-            (8 + (idx * 3)).to_string()
+            (8 + (idx * 3)).to_string(),
+            title =(6 + (idx * 3)).to_string()
         ));
         params.push(&item.0 as &(dyn ToSql + Sync));
         params.push(&item.1 as &(dyn ToSql + Sync));
