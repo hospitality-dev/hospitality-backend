@@ -24,11 +24,32 @@ async fn list_purchase_items(
     Path(parent_id): Path<Uuid>,
 ) -> RouteResponse<Value> {
     let conn = state.get_db_conn().await?;
+
+    let mut select_fields = format!(
+        "SELECT {} FROM purchase_items WHERE parent_id = $1 AND location_id = $2;",
+        fields
+    );
+
+    if fields.contains("purchase_items.title") {
+        let replacement = "COALESCE(products.title, purchase_items.title) as title";
+        select_fields = fields.replace("purchase_items.title", replacement);
+    }
+
     let rows = conn
         .query(
             &format!(
-                "SELECT {} FROM purchase_items WHERE parent_id = $1 AND location_id = $2;",
-                fields
+                "SELECT {}, products.weight, products.weight_unit, products.volume, products.volume_unit
+                FROM
+                    purchase_items
+                LEFT JOIN products_aliases
+                    ON products_aliases.title = purchase_items.title
+                LEFT JOIN products
+                    ON products_aliases.product_id = products.id
+                 WHERE
+                    purchase_items.parent_id = $1
+                        AND
+                    purchase_items.location_id = $2;",
+                select_fields
             ),
             &[&parent_id, &session.user.location_id.unwrap()],
         )
