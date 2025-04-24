@@ -247,6 +247,7 @@ CREATE TABLE public.products (
     subcategory_id uuid,
     image_id uuid,
     parent_id uuid,
+    packing_date timestamp with time zone,
     CONSTRAINT products_check CHECK (((volume IS NULL) OR (volume_unit IS NOT NULL))),
     CONSTRAINT products_check1 CHECK (((weight IS NULL) OR (weight_unit IS NOT NULL))),
     CONSTRAINT products_volume_unit_check CHECK (((volume_unit IS NULL) OR (volume_unit = ANY (ARRAY['l'::text, 'ml'::text, 'fl_oz'::text, 'gal'::text])))),
@@ -1183,4 +1184,5 @@ INSERT INTO public.schema_migrations (version) VALUES
     ('20250423193521'),
     ('20250423194714'),
     ('20250424055047'),
+    ('20250424114214'),
     ('20250424134602');
