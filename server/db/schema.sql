@@ -369,7 +369,9 @@ CREATE TABLE public.stores (
     updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
     deleted_at timestamp with time zone,
     title text NOT NULL,
-    parent_id uuid NOT NULL
+    parent_id uuid NOT NULL,
+    owner_id uuid,
+    company_id uuid
 );
 
 
@@ -395,7 +397,9 @@ CREATE TABLE public.suppliers (
     updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
     deleted_at timestamp with time zone,
     title text NOT NULL,
-    is_default boolean DEFAULT false
+    is_default boolean DEFAULT false,
+    owner_id uuid,
+    company_id uuid
 );
 
 
@@ -965,6 +969,22 @@ ALTER TABLE ONLY public.roles
 
 
 --
+-- Name: stores stores_company_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.stores
+    ADD CONSTRAINT stores_company_id_fkey FOREIGN KEY (company_id) REFERENCES public.companies(id) ON DELETE CASCADE;
+
+
+--
+-- Name: stores stores_owner_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.stores
+    ADD CONSTRAINT stores_owner_id_fkey FOREIGN KEY (owner_id) REFERENCES public.users(id) ON DELETE CASCADE;
+
+
+--
 -- Name: stores stores_parent_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -978,6 +998,22 @@ ALTER TABLE ONLY public.stores
 
 ALTER TABLE ONLY public.subregions
     ADD CONSTRAINT subregions_region_id_fkey FOREIGN KEY (region_id) REFERENCES public.regions(id) ON DELETE CASCADE;
+
+
+--
+-- Name: suppliers suppliers_company_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.suppliers
+    ADD CONSTRAINT suppliers_company_id_fkey FOREIGN KEY (company_id) REFERENCES public.companies(id) ON DELETE CASCADE;
+
+
+--
+-- Name: suppliers suppliers_owner_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.suppliers
+    ADD CONSTRAINT suppliers_owner_id_fkey FOREIGN KEY (owner_id) REFERENCES public.users(id) ON DELETE CASCADE;
 
 
 --
