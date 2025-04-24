@@ -1,6 +1,6 @@
 -- migrate:up
 CREATE TABLE IF NOT EXISTS
-    product_aliases (
+    products_aliases (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid (),
         title TEXT NOT NULL,
         supplier_id UUID NOT NULL REFERENCES suppliers (id) ON DELETE CASCADE,
@@ -8,4 +8,4 @@ CREATE TABLE IF NOT EXISTS
     );
 
 -- migrate:down
-DROP TABLE IF EXISTS product_aliases;
+DROP TABLE IF EXISTS products_aliases;

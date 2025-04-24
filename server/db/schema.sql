@@ -256,6 +256,18 @@ CREATE TABLE public.products (
 
 
 --
+-- Name: products_aliases; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.products_aliases (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    title text NOT NULL,
+    supplier_id uuid NOT NULL,
+    product_id uuid NOT NULL
+);
+
+
+--
 -- Name: products_categories; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -597,6 +609,14 @@ ALTER TABLE ONLY public.product_aliases
 
 
 --
+-- Name: products_aliases products_aliases_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.products_aliases
+    ADD CONSTRAINT products_aliases_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: products products_barcode_unique; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -889,6 +909,22 @@ ALTER TABLE ONLY public.product_aliases
 
 ALTER TABLE ONLY public.product_aliases
     ADD CONSTRAINT product_aliases_supplier_id_fkey FOREIGN KEY (supplier_id) REFERENCES public.suppliers(id) ON DELETE CASCADE;
+
+
+--
+-- Name: products_aliases products_aliases_product_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.products_aliases
+    ADD CONSTRAINT products_aliases_product_id_fkey FOREIGN KEY (product_id) REFERENCES public.products(id) ON DELETE CASCADE;
+
+
+--
+-- Name: products_aliases products_aliases_supplier_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.products_aliases
+    ADD CONSTRAINT products_aliases_supplier_id_fkey FOREIGN KEY (supplier_id) REFERENCES public.suppliers(id) ON DELETE CASCADE;
 
 
 --
