@@ -30,7 +30,7 @@ use routes::{
     products_categories_routes::products_categories_routes,
     purchase_items_routes::purchase_items_routes, purchases_routes::purchases_routes,
     resource_routes::resource_routes, roles_routes::roles_routes, search_routes::search_routes,
-    url_routes::url_routes, users_routes::users_routes,
+    suppliers_routes::suppliers_routes, url_routes::url_routes, users_routes::users_routes,
 };
 use tokio::net::TcpListener;
 use tokio_postgres::NoTls;
@@ -195,6 +195,7 @@ pub async fn app() -> Result<Router> {
                 .merge(contacts_routes())
                 .merge(file_routes())
                 .merge(purchases_routes())
+                .merge(suppliers_routes())
                 .merge(purchase_items_routes())
                 .layer(from_fn_with_state(state.clone(), permission_check))
                 // TODO: ADD PERMISSIONS MIDDLEWARE TO URL ROUTES

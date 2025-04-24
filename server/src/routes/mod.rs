@@ -12,5 +12,7 @@ pub mod purchases_routes;
 pub mod resource_routes;
 pub mod roles_routes;
 pub mod search_routes;
+pub mod stores_routes;
+pub mod suppliers_routes;
 pub mod url_routes;
 pub mod users_routes;
