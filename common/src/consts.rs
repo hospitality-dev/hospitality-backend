@@ -129,7 +129,7 @@ pub const PURCHASES_FIELDS: [&str; 16] = [
     "invoice_number",
     "currency_title",
 ];
-pub const PURCHASE_ITEMS_FIELDS: [&str; 11] = [
+pub const PURCHASE_ITEMS_FIELDS: [&str; 12] = [
     "id",
     "created_at",
     "deleted_at",
@@ -138,6 +138,7 @@ pub const PURCHASE_ITEMS_FIELDS: [&str; 11] = [
     "owner_id",
     "parent_id",
     "product_id",
+    "alias_id",
     "title",
     "price_per_unit",
     "quantity",

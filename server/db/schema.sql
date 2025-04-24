@@ -221,8 +221,7 @@ CREATE TABLE public.manufacturers (
 CREATE TABLE public.product_aliases (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
     product_id uuid NOT NULL,
-    alias text NOT NULL,
-    store_id uuid NOT NULL,
+    title text NOT NULL,
     supplier_id uuid NOT NULL
 );
 
@@ -288,7 +287,8 @@ CREATE TABLE public.purchase_items (
     product_id uuid,
     owner_id uuid,
     price_per_unit real DEFAULT 0 NOT NULL,
-    quantity real DEFAULT 0 NOT NULL
+    quantity real DEFAULT 0 NOT NULL,
+    alias_id uuid
 );
 
 
@@ -885,14 +885,6 @@ ALTER TABLE ONLY public.product_aliases
 
 
 --
--- Name: product_aliases product_aliases_store_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.product_aliases
-    ADD CONSTRAINT product_aliases_store_id_fkey FOREIGN KEY (store_id) REFERENCES public.stores(id) ON DELETE CASCADE;
-
-
---
 -- Name: product_aliases product_aliases_supplier_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -954,6 +946,14 @@ ALTER TABLE ONLY public.products
 
 ALTER TABLE ONLY public.products
     ADD CONSTRAINT products_subcategory_id_fkey FOREIGN KEY (subcategory_id) REFERENCES public.products_categories(id);
+
+
+--
+-- Name: purchase_items purchase_items_alias_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.purchase_items
+    ADD CONSTRAINT purchase_items_alias_id_fkey FOREIGN KEY (alias_id) REFERENCES public.product_aliases(id) ON DELETE SET NULL;
 
 
 --
