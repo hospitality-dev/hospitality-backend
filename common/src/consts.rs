@@ -146,3 +146,21 @@ pub const PURCHASE_ITEMS_FIELDS: [&str; 11] = [
     "price_per_unit",
     "quantity",
 ];
+pub const SUPPLIERS_FIELDS: [&str; 6] = [
+    "id",
+    "created_at",
+    "deleted_at",
+    "company_id",
+    "owner_id",
+    "title",
+];
+
+pub const STORES_FIELDS: [&str; 7] = [
+    "id",
+    "created_at",
+    "deleted_at",
+    "company_id",
+    "owner_id",
+    "title",
+    "parent_id",
+];
