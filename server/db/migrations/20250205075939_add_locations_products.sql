@@ -14,7 +14,8 @@ CREATE TABLE IF NOT EXISTS
         updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
         deleted_at timestamp,
         product_id UUID REFERENCES products (id) ON DELETE SET NULL,
-        location_id UUID NOT NULL REFERENCES locations (id) ON DELETE CASCADE
+        location_id UUID NOT NULL REFERENCES locations (id) ON DELETE CASCADE,
+        amount NUMERIC(10, 5) NOT NULL DEFAULT 0
     );
 
 -- migrate:down
