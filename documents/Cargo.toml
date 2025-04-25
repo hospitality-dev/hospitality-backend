@@ -24,3 +24,5 @@ chrono-tz = { workspace = true }
 common = { path = "../common" }
 reqwest = { workspace = true }
 rust_decimal = { workspace = true }
+chromiumoxide = { version = "0.7.0", features = ["_fetcher-native-tokio", "tokio"] }
+futures = "0.3.31"
