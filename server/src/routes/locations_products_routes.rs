@@ -233,17 +233,23 @@ async fn list_location_products_group_by_expiration(
     SELECT
         locations_products.product_id, expiration_date,
         products.volume, products.volume_unit, products.weight, products.weight_unit,
-        COUNT(*)
+        purchases.purchased_at, COUNT(*)
     FROM
         locations_products
     INNER JOIN products
         ON locations_products.product_id = products.id
+    LEFT JOIN purchase_items
+        ON locations_products.purchase_item_id = purchase_items.id
+    LEFT JOIN purchases
+        ON purchase_items.parent_id = purchases.id
     WHERE
-        product_id = $1
+        locations_products.product_id = $1
             AND
-        location_id = $2
+        locations_products.location_id = $2
     GROUP BY
-        expiration_date, locations_products.product_id, products.volume, products.volume_unit, products.weight, products.weight_unit
+        expiration_date, locations_products.product_id, products.volume,
+        products.volume_unit, products.weight, products.weight_unit,
+        purchases.purchased_at
     ORDER BY
         expiration_date;"
     );
