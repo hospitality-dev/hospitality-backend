@@ -1,4 +1,5 @@
 use axum::body::Bytes;
+use common::consts::UNIT_OF_MEASUREMENT_REGEX;
 use convert_case::{Case, Casing};
 use percent_encoding::percent_decode;
 use regex::Regex;
@@ -69,8 +70,9 @@ pub fn format_receipt(encoded: &str) -> String {
 /// - `f32`: the price per unit
 /// - `f32`: the quantity
 /// - `f32`: the total price
-pub fn extract_items(receipt: &str) -> Vec<(String, f32, f32, f32)> {
-    // let re_suffix = Regex::new(r"/(KOM|KG|L|G|ML)\b").unwrap();
+/// - `String`: the unit of measurement
+pub fn extract_items(receipt: &str) -> Vec<(String, f32, f32, f32, String)> {
+    let re_unit_of_measurement = Regex::new(UNIT_OF_MEASUREMENT_REGEX).unwrap();
     let re_currency = Regex::new(r"\s*\((Е|Ђ)\)").unwrap();
     let mut items = Vec::new();
     let mut lines = receipt.lines();
@@ -110,9 +112,21 @@ pub fn extract_items(receipt: &str) -> Vec<(String, f32, f32, f32)> {
                     .parse::<f32>()
                     .unwrap_or(0.0);
 
+                let name_line = name_line.trim().to_string();
+
                 let qty = parts[1].replace(',', ".").parse::<f32>().unwrap_or(0.0);
                 let total = parts[2].replace(',', ".").parse::<f32>().unwrap_or(0.0);
-                items.push((name_line.trim().to_string(), price, qty, total));
+                let unit_of_measurement = re_unit_of_measurement.captures(&name_line);
+                if let Some(capture) = unit_of_measurement {
+                    let unit = capture
+                        .get(0)
+                        .map(|f| f.as_str().to_string())
+                        .unwrap_or(String::from("Unknown"))
+                        .replace("/", "");
+                    items.push((name_line, price, qty, total, unit));
+                } else {
+                    items.push((name_line, price, qty, total, String::from("Unknown")));
+                }
             }
         }
     }

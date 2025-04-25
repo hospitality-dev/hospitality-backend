@@ -101,7 +101,7 @@ async fn create_purchase(
             purchase_items
         (
             company_id, location_id, parent_id, product_id,
-            owner_id, title, price_per_unit, quantity
+            owner_id, title, price_per_unit, quantity, unit_of_measurement
         )
         VALUES ",
     );
@@ -118,21 +118,26 @@ async fn create_purchase(
     params.push(&purchase_id);
     params.push(&supplier_id);
     params.push(user_id);
+    println!("{}", items.len());
     for (idx, item) in items.iter().enumerate() {
         purchase_items_stmt.push_str(&format!(
-            "($1, $2, $3, (SELECT product_id FROM products_aliases WHERE products_aliases.title = ${title} AND products_aliases.supplier_id = $4 LIMIT 1), $5, TRIM(${title}), ${}, ${})",
-            (7 + (idx * 3)).to_string(),
-            (8 + (idx * 3)).to_string(),
-            title =(6 + (idx * 3)).to_string()
+            "($1, $2, $3, (SELECT product_id FROM products_aliases WHERE products_aliases.title = ${title} AND products_aliases.supplier_id = $4 LIMIT 1), $5, TRIM(${title}), ${}, ${}, ${})",
+            (7 + (idx * 4)).to_string(),
+            (8 + (idx * 4)).to_string(),
+            (9 + (idx * 4)).to_string(),
+            title =(6 + (idx * 4)).to_string()
         ));
         params.push(&item.0 as &(dyn ToSql + Sync));
         params.push(&item.1 as &(dyn ToSql + Sync));
         params.push(&item.2 as &(dyn ToSql + Sync));
+        params.push(&item.4 as &(dyn ToSql + Sync));
         if idx < items_count - 1 {
             purchase_items_stmt.push_str(", ");
         }
     }
     purchase_items_stmt.push_str(";");
+
+    println!("{}", purchase_items_stmt);
 
     tx.execute(&purchase_items_stmt, &params)
         .await

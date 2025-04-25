@@ -37,7 +37,41 @@ CREATE TABLE IF NOT EXISTS
         product_id UUID REFERENCES products (id) ON DELETE SET NULL,
         owner_id UUID REFERENCES users (id) ON DELETE SET NULL,
         price_per_unit FLOAT4 NOT NULL DEFAULT 0,
-        quantity FLOAT4 NOT NULL DEFAULT 0
+        quantity FLOAT4 NOT NULL DEFAULT 0,
+        unit_of_measurement TEXT,
+        CHECK (
+            unit_of_measurement IN (
+                'kom',
+                'kut',
+                'kg',
+                'g',
+                'mg',
+                'l',
+                'ml',
+                'dl',
+                'cl',
+                'cm3',
+                'dm3',
+                'fl oz',
+                'oz',
+                'lb',
+                'KOM',
+                'KUT',
+                'KG',
+                'G',
+                'MG',
+                'L',
+                'ML',
+                'DL',
+                'CL',
+                'CM3',
+                'DM3',
+                'FL OZ',
+                'OZ',
+                'LB',
+                'Unknown'
+            )
+        )
     );
 
 -- migrate:down

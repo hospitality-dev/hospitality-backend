@@ -6,6 +6,7 @@ pub const PRESIGN_DURATION: Duration = Duration::from_secs(3600); // 60 mins
 pub const MAX_FILE_SIZE: usize = 5_000_000; // 5 MB;
 pub const A4_SIZE: (u32, u32) = (2480, 3508);
 pub const UNITS_REGEX: &str = r"(?i)(\d+(?:[.,]\d+)?)\s*(kg|g|mg|l|ml|oz|lb)";
+pub const UNIT_OF_MEASUREMENT_REGEX: &str = r"\/(kom|kut|kg|g|mg|l|ml|dl|cl|cm3|dm3|fl oz|oz|lb|KOM|KUT|KG|G|MG|L|ML|DL|CL|CM3|DM3|FL OZ|OZ|LB)";
 pub const USERS_FIELDS: [&str; 12] = [
     "id",
     "created_at",
@@ -129,7 +130,7 @@ pub const PURCHASES_FIELDS: [&str; 16] = [
     "invoice_number",
     "currency_title",
 ];
-pub const PURCHASE_ITEMS_FIELDS: [&str; 12] = [
+pub const PURCHASE_ITEMS_FIELDS: [&str; 13] = [
     "id",
     "created_at",
     "deleted_at",
@@ -142,6 +143,7 @@ pub const PURCHASE_ITEMS_FIELDS: [&str; 12] = [
     "title",
     "price_per_unit",
     "quantity",
+    "unit_of_measurement",
 ];
 pub const SUPPLIERS_FIELDS: [&str; 6] = [
     "id",
