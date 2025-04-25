@@ -160,7 +160,7 @@ pub async fn permission_check(
 
                 payload
                     .as_object()
-                    .unwrap()
+                    .unwrap_or(&serde_json::Map::new())
                     .keys()
                     .map(|k| CerbosResource {
                         id: action.to_string(),
