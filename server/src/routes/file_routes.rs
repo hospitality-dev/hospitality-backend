@@ -304,7 +304,7 @@ async fn download_file(
         .bucket(&state.s3_name)
         .key(format!(
             "{}/{}/{}/{}",
-            company_id, category, location_id, id
+            company_id, location_id, category, id
         ))
         .send()
         .await
