@@ -673,6 +673,14 @@ ALTER TABLE ONLY public.stores_contacts
 
 
 --
+-- Name: stores stores_parent_id_title_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.stores
+    ADD CONSTRAINT stores_parent_id_title_key UNIQUE (parent_id, title);
+
+
+--
 -- Name: stores stores_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 

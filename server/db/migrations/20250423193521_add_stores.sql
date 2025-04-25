@@ -21,7 +21,8 @@ CREATE TABLE IF NOT EXISTS
         parent_id UUID NOT NULL REFERENCES suppliers (id) ON DELETE CASCADE,
         owner_id UUID REFERENCES users (id) ON DELETE CASCADE,
         company_id UUID REFERENCES companies (id) ON DELETE CASCADE,
-        is_default BOOLEAN NOT NULL DEFAULT FALSE
+        is_default BOOLEAN NOT NULL DEFAULT FALSE,
+        UNIQUE (parent_id, title)
     );
 
 INSERT INTO
