@@ -118,7 +118,6 @@ async fn create_purchase(
     params.push(&purchase_id);
     params.push(&supplier_id);
     params.push(user_id);
-    println!("{}", items.len());
     for (idx, item) in items.iter().enumerate() {
         purchase_items_stmt.push_str(&format!(
             "($1, $2, $3, (SELECT product_id FROM products_aliases WHERE products_aliases.title = ${title} AND products_aliases.supplier_id = $4 LIMIT 1), $5, TRIM(${title}), ${}, ${}, ${})",
@@ -136,8 +135,6 @@ async fn create_purchase(
         }
     }
     purchase_items_stmt.push_str(";");
-
-    println!("{}", purchase_items_stmt);
 
     tx.execute(&purchase_items_stmt, &params)
         .await

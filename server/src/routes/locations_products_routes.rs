@@ -1,27 +1,32 @@
-use axum::{
-    extract::{Path, State},
-    routing::{delete, get, post},
-    Extension, Json, Router,
-};
-use serde_json::Value;
-use uuid::Uuid;
-
 use crate::{
-    enums::errors::AppError,
+    enums::{errors::AppError, products::UnitsOfMeasurement},
     models::{
         auth::AuthSession,
-        locations_products::InsertLocationProduct,
+        locations_products::{
+            InsertLocationProduct, InsertLocationProductUnit, InsertProductsFromPurchaseItems,
+            ProductFromPurchaseItem,
+        },
         response::{AppResponse, RouteResponse},
         state::AppState,
     },
     traits::db_traits::SerializeList,
 };
+use axum::{
+    extract::{Path, State},
+    routing::{delete, get, post},
+    Extension, Json, Router,
+};
+use postgres_types::ToSql;
+use rust_decimal::prelude::ToPrimitive;
+use serde_json::Value;
+use uuid::Uuid;
 
 async fn create_location_products(
     State(state): State<AppState>,
     Extension(session): Extension<AuthSession>,
     Json(payload): Json<InsertLocationProduct>,
 ) -> RouteResponse<i64> {
+    let conn = state.get_db_conn().await?;
     let mut statement = String::from(
         "INSERT INTO locations_products (product_id, location_id, expiration_date) VALUES ", //* values are added dynamically below
     );
@@ -33,8 +38,6 @@ async fn create_location_products(
         }
     }
     statement.push_str(";");
-
-    let conn = state.get_db_conn().await?;
 
     conn.query(
         &statement,
@@ -48,6 +51,125 @@ async fn create_location_products(
     .map_err(AppError::critical_error)?;
 
     return Ok(AppResponse::default_response(payload.amount));
+}
+
+async fn create_location_products_unit(
+    State(state): State<AppState>,
+    Extension(session): Extension<AuthSession>,
+    Json(payload): Json<InsertLocationProductUnit>,
+) -> RouteResponse<Uuid> {
+    let conn = state.get_db_conn().await?;
+    let  statement ="INSERT INTO locations_products (product_id, location_id, expiration_date, amount) VALUES ($1, $2, $3, $4) RETURNING id;";
+
+    let row = conn
+        .query_one(
+            statement,
+            &[
+                &payload.id,
+                &session.user.location_id,
+                &payload.expiration_date,
+            ],
+        )
+        .await
+        .map_err(AppError::critical_error)?;
+
+    let id: Uuid = row.get("id");
+
+    return Ok(AppResponse::default_response(id));
+}
+
+async fn create_location_products_from_purchase_items(
+    State(state): State<AppState>,
+    Extension(session): Extension<AuthSession>,
+    Json(payload): Json<InsertProductsFromPurchaseItems>,
+) -> RouteResponse<i64> {
+    let mut statement = String::from(
+        "INSERT INTO locations_products (location_id, product_id, expiration_date) VALUES ", //* values are added dynamically below
+    );
+
+    let individual: Vec<&ProductFromPurchaseItem> = payload
+        .products
+        .iter()
+        .filter(|item| {
+            item.unit_of_measurement == UnitsOfMeasurement::Kom
+                || item.unit_of_measurement == UnitsOfMeasurement::Kut
+                || item.unit_of_measurement == UnitsOfMeasurement::Unknown
+        })
+        .collect();
+
+    let location_id = session.user.location_id.unwrap();
+    let conn = &mut state.get_db_conn().await?;
+    let tx = conn.transaction().await.map_err(AppError::db_error)?;
+    if !individual.is_empty() {
+        let mut params: Vec<&(dyn ToSql + Sync)> = Vec::new();
+        params.push(&location_id as &(dyn ToSql + Sync));
+
+        // * Each individual product (KOM, KUT, UNKNOWN) must be added individually
+        // * Since the arguments for each item are the same, the params need to be
+        // * inserted only once per item but the statement needs a number of arguments
+        // * equal to the amount of the item
+        for (idx, item) in individual.iter().enumerate() {
+            let item_quantity = item.quantity.to_i64().unwrap_or(0);
+            for item_idx in 0..item_quantity {
+                statement.push_str(&format!("($1, ${}, ${}) ", idx * 2 + 2, idx * 2 + 3));
+
+                if item_idx < item_quantity - 1 {
+                    statement.push_str(", ");
+                }
+            }
+            params.push(&item.product_id as &(dyn ToSql + Sync));
+            params.push(&item.expiration_date as &(dyn ToSql + Sync));
+
+            if idx < individual.len() - 1 {
+                statement.push_str(", ");
+            }
+        }
+        statement.push_str(";");
+
+        tx.query(&statement, &params)
+            .await
+            .map_err(AppError::critical_error)?;
+    }
+
+    let amounts: Vec<&ProductFromPurchaseItem> = payload
+        .products
+        .iter()
+        .filter(|item| {
+            item.unit_of_measurement != UnitsOfMeasurement::Kom
+                && item.unit_of_measurement != UnitsOfMeasurement::Kut
+                && item.unit_of_measurement != UnitsOfMeasurement::Unknown
+        })
+        .collect();
+
+    if !amounts.is_empty() {
+        let mut statement = String::from(
+                "INSERT INTO locations_products (location_id, product_id, expiration_date, amount) VALUES ", //* values are added dynamically below
+            );
+
+        let mut params: Vec<&(dyn ToSql + Sync)> = Vec::new();
+        params.push(&location_id as &(dyn ToSql + Sync));
+
+        for (idx, item) in amounts.iter().enumerate() {
+            statement.push_str(&format!(
+                "($1, ${}, ${}, ${})",
+                idx * 3 + 2,
+                idx * 3 + 3,
+                idx * 3 + 4
+            ));
+
+            params.push(&item.product_id as &(dyn ToSql + Sync));
+            params.push(&item.expiration_date as &(dyn ToSql + Sync));
+            params.push(&item.quantity as &(dyn ToSql + Sync));
+            if idx < individual.len() - 1 {
+                statement.push_str(", ");
+            }
+        }
+        tx.query(&statement, &params)
+            .await
+            .map_err(AppError::critical_error)?;
+    }
+    tx.commit().await.map_err(AppError::db_error)?;
+    return Ok(AppResponse::default_response(0));
 }
 
 // async fn create_location_products_barcode(
@@ -204,6 +326,11 @@ pub fn location_products_routes() -> Router<AppState> {
         "/locations-products",
         Router::new()
             .route("/", post(create_location_products))
+            .route("/unit", post(create_location_products_unit))
+            .route(
+                "/purchase-items",
+                post(create_location_products_from_purchase_items),
+            )
             .route(
                 "/list/{id}/grouped/expiration-date",
                 get(list_location_products_group_by_expiration),
