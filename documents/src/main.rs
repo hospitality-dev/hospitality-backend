@@ -37,12 +37,70 @@ async fn main() -> Result<()> {
     dotenv().ok();
 
     let port = var("PORT").expect("Env var `PORT` not set.");
-    let listener = TcpListener::bind(format!("0.0.0.0:{}", port)).await?;
+    let listener = TcpListener::bind(format!("0.0.0.0:{}", port))
+        .await
+        .unwrap();
+    // Specify download path
+    // let download_path = Path::new("./src/download");
+
+    // // Set up BrowserFetcher to download browser
+    // let fetcher = BrowserFetcher::new(
+    //     BrowserFetcherOptions::builder()
+    //         .with_path(&download_path)
+    //         .build()
+    //         .unwrap(),
+    // );
+
+    // // Fetch the browser
+    // let info = fetcher.fetch().await.unwrap();
+
+    // // Create browser config with the fetched browser path
+    // let config = BrowserConfig::builder()
+    //     .chrome_executable(info.executable_path)
+    //     .with_head()
+    //     .build()
+    //     .unwrap();
+
+    // // Launch the browser
+    // let (mut browser, mut handler) = Browser::launch(config).await.unwrap();
+
+    // // Spawn a task that continuously polls the handler
+    // let handle = tokio::spawn(async move {
+    //     while let Some(h) = handler.next().await {
+    //         if let Err(err) = h {
+    //             eprintln!("Handler error: {:?}", err);
+    //         }
+    //     }
+    // });
+
+    // // Try to create a new browser page and navigate to the URL
+    // match browser.new_page("https://suf.purs.gov.rs/v/?vl=A0tDUEZLUjdIS0NQRktSN0hgPAAAYDwAABwqeQQAAAAAAAABlkzUvogAAAAdc2gTrM7m8MXAVw5%2BAueGMiqCd7Lso9oMW85%2FL%2Bjj0thQcdWmPCjOh7VMVw1ebUBKIYFLsGOYBZpAcvA5RcBbYb1wbn0nMCAzin1ZM6zgGK%2FKg4CZFnLHe%2Bw6kIeRLL%2FoOSMQPgQo2wPSZXso3%2B8KIjKXue7iFjq3YQNEcGSekng1Yeouf%2BBbKp0qzwnR8%2Fany9X22dCbCMIv0HngtVlZtu8eqx%2BcqX%2FcNPYCLhd%2BlIKA6hwOjCtJt86S3TMr%2B%2Bn2fQ7i4eJUVR9E5tpXG6RQ%2B3RC%2F3Y2Xfn9at37ZPxCp6OpzchjFH9KTJ1EbO59As%2F5IiDxWVdM70Yx8ZrKG4OBk%2FVquN086gMW1ODjhqRrelpWAMyRqM7uKwHa3AQSFK5iQcJLo6z9%2F9gjQiF26IM4hiMjP%2B5yJsnXU0B%2F7jKmaVhgVyjeJegmqFHWFCXTLLGCUmRLIm1AcS9UrdqOgzxI8ZkAtI3Fd3r2WhJKOHLcOK7V%2BBv00UipV77VdLHqiO00%2FZ9JNwXWuvFsGxoxcdHGdpbprquKWVwPNCruGVRU7cUnTaTeMhfFxvJ7hiicQXg2Xr4Y44ZgsmIpA5%2BpWqAJUSm49gIKY3nGydfusMmm0yj1gJToMsZxmYK0YcYZYOjjv0de21TJe1v9wwB6UcOJocTklwwsI4s%2BvDJ7K00Eh86PU%2BrDMuKJ8jbzLwGzNQY%3D").await {
+    //     Ok(page) => {
+    //         // Wait for page to load (or handle other actions)
+    //         let p = page.wait_for_navigation().await.unwrap();
+    //         time::sleep(Duration::from_millis(1250)).await;
+    //         p.evaluate(r#"document.querySelector("a[href='#collapse-specs']")?.click();"#).await.unwrap();
+
+    //         let els = p.find_element("tbody").await.unwrap().find_elements("tr").await.unwrap();
+    //         // let html = page.wait_for_navigation().await?.content().await?;
+    //         for el in els {
+    //             let data = el.find_elements("td").await.unwrap();
+    //             for td in data {
+    //                 println!("{:?}", td.inner_text().await.unwrap().unwrap());
+    //             }
+    //         }
+    //     }
+    //     Err(err) => {
+    //         eprintln!("Failed to create a page: {:?}", err);
+    //         //  Err(Box::new(err));
+    //     }
+    // };
 
     println!("LISTENING ON PORT {} 🚀", port);
 
-    serve(listener, app().await.unwrap()).await?;
+    serve(listener, app().await.unwrap()).await.unwrap();
 
+    // handle.await.unwrap();
     Ok(())
 }
 
