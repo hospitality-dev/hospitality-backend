@@ -34,6 +34,7 @@ pub struct CreateProductQrCodesWithExpiration {
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ProductFromPurchaseItem {
+    pub purchase_item_id: Uuid,
     pub product_id: Uuid,
     pub expiration_date: Option<DateTime<Utc>>,
     pub quantity: Decimal,

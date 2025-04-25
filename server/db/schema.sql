@@ -183,7 +183,8 @@ CREATE TABLE public.locations_products (
     product_id uuid,
     location_id uuid NOT NULL,
     amount numeric(10,5) DEFAULT 0 NOT NULL,
-    expiration_date timestamp with time zone
+    expiration_date timestamp with time zone,
+    purchase_item_id uuid
 );
 
 
@@ -864,6 +865,14 @@ ALTER TABLE ONLY public.locations_products
 
 
 --
+-- Name: locations_products locations_products_purchase_item_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.locations_products
+    ADD CONSTRAINT locations_products_purchase_item_id_fkey FOREIGN KEY (purchase_item_id) REFERENCES public.purchase_items(id) ON DELETE SET NULL;
+
+
+--
 -- Name: locations_users locations_users_location_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1160,4 +1169,5 @@ INSERT INTO public.schema_migrations (version) VALUES
     ('20250423194714'),
     ('20250424055047'),
     ('20250424114214'),
-    ('20250424134602');
+    ('20250424134602'),
+    ('20250425105010');

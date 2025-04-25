@@ -84,7 +84,7 @@ async fn create_location_products_from_purchase_items(
     Json(payload): Json<InsertProductsFromPurchaseItems>,
 ) -> RouteResponse<i64> {
     let mut statement = String::from(
-        "INSERT INTO locations_products (location_id, product_id, expiration_date) VALUES ", //* values are added dynamically below
+        "INSERT INTO locations_products (location_id, product_id, expiration_date, purchase_item_id) VALUES ", //* values are added dynamically below
     );
 
     let individual: Vec<&ProductFromPurchaseItem> = payload
@@ -111,7 +111,12 @@ async fn create_location_products_from_purchase_items(
         for (idx, item) in individual.iter().enumerate() {
             let item_quantity = item.quantity.to_i64().unwrap_or(0);
             for item_idx in 0..item_quantity {
-                statement.push_str(&format!("($1, ${}, ${}) ", idx * 2 + 2, idx * 2 + 3));
+                statement.push_str(&format!(
+                    "($1, ${}, ${}, ${}) ",
+                    idx * 3 + 2,
+                    idx * 3 + 3,
+                    idx * 3 + 4
+                ));
 
                 if item_idx < item_quantity - 1 {
                     statement.push_str(", ");
@@ -119,6 +124,7 @@ async fn create_location_products_from_purchase_items(
             }
             params.push(&item.product_id as &(dyn ToSql + Sync));
             params.push(&item.expiration_date as &(dyn ToSql + Sync));
+            params.push(&item.purchase_item_id as &(dyn ToSql + Sync));
 
             if idx < individual.len() - 1 {
                 statement.push_str(", ");
@@ -143,7 +149,7 @@ async fn create_location_products_from_purchase_items(
 
     if !amounts.is_empty() {
         let mut statement = String::from(
-                "INSERT INTO locations_products (location_id, product_id, expiration_date, amount) VALUES ", //* values are added dynamically below
+                "INSERT INTO locations_products (location_id, product_id, expiration_date, amount, purchase_item_id) VALUES ", //* values are added dynamically below
             );
 
         let mut params: Vec<&(dyn ToSql + Sync)> = Vec::new();
@@ -151,15 +157,17 @@ async fn create_location_products_from_purchase_items(
 
         for (idx, item) in amounts.iter().enumerate() {
             statement.push_str(&format!(
-                "($1, ${}, ${}, ${})",
+                "($1, ${}, ${}, ${}, ${})",
                 idx * 3 + 2,
                 idx * 3 + 3,
-                idx * 3 + 4
+                idx * 3 + 4,
+                idx * 3 + 5
             ));
 
             params.push(&item.product_id as &(dyn ToSql + Sync));
             params.push(&item.expiration_date as &(dyn ToSql + Sync));
             params.push(&item.quantity as &(dyn ToSql + Sync));
+            params.push(&item.purchase_item_id as &(dyn ToSql + Sync));
             if idx < individual.len() - 1 {
                 statement.push_str(", ");
             }

@@ -59,11 +59,12 @@ pub const PRODUCTS_FIELDS: [&str; 12] = [
 ];
 
 pub const LOCATIONS_AVAILABLE_PRODUCTS_FIELDS: [&str; 3] = ["id", "product_id", "location_id"];
-pub const LOCATIONS_PRODUCTS_FIELDS: [&str; 4] = [
+pub const LOCATIONS_PRODUCTS_FIELDS: [&str; 5] = [
     "id",
     "available_product_id",
     "location_id",
     "expiration_date",
+    "purchase_item_id",
 ];
 pub const LOCATIONS_USERS_FIELDS: [&str; 4] = ["id", "user_id", "location_id", "role_id"];
 pub const CONTACTS_FIELDS: [&str; 13] = [

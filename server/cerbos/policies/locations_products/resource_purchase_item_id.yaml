@@ -1,0 +1,12 @@
+apiVersion: api.cerbos.dev/v1
+resourcePolicy:
+  resource: locations_products:purchase_item_id
+  version: default
+  rules:
+  - actions: [ '*' ]
+    effect: EFFECT_ALLOW
+    roles: [ owner, manager ]
+
+  - actions: [ view, list ]
+    effect: EFFECT_ALLOW
+    roles: [ employee ]
