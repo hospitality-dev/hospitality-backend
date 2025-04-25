@@ -39,6 +39,6 @@ async fn list_stores(
 pub fn stores_routes() -> Router<AppState> {
     return Router::new().nest(
         "/stores",
-        Router::new().route("/list", axum::routing::get(list_stores)),
+        Router::new().route("/list/{parent_id}", axum::routing::get(list_stores)),
     );
 }
