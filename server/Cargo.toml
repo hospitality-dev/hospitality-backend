@@ -59,3 +59,4 @@ uuid = { workspace = true }
 common = { path = "../common" }
 postgres-types = { version = "0.2.9", features = ["derive"] }
 percent-encoding = "2.3.1"
+itertools = { workspace = true }

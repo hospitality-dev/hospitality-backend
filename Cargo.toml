@@ -36,3 +36,4 @@ rust_decimal = { version = "1.36.0", features = [
     "serde-float",
     "serde-with-float",
 ] }
+itertools = { version = "0.14.0" }
