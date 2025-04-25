@@ -14,8 +14,53 @@ use crate::{
         response::{AppResponse, RouteResponse},
         state::AppState,
     },
-    traits::db_traits::SerializeList,
+    traits::db_traits::{SerializeList, SerializeToJson},
 };
+
+async fn read_purchase_item(
+    State(state): State<AppState>,
+    Extension(session): Extension<AuthSession>,
+    Extension(fields): Extension<AllowedFieldsType>,
+    Path(id): Path<Uuid>,
+) -> RouteResponse<Value> {
+    let conn = state.get_db_conn().await?;
+
+    let mut select_fields = format!(
+        "SELECT {} FROM purchase_items WHERE id = $1 AND location_id = $2;",
+        fields
+    );
+
+    if fields.contains("purchase_items.title") {
+        let replacement = "COALESCE(products.title, purchase_items.title) as title";
+        select_fields = fields.replace("purchase_items.title", replacement);
+    }
+
+    let rows = conn
+        .query_one(
+            &format!(
+                "SELECT {}, products.weight, products.weight_unit,
+                products.volume, products.volume_unit
+                FROM
+                    purchase_items
+                LEFT JOIN products_aliases
+                    ON products_aliases.title = purchase_items.title
+                LEFT JOIN products
+                    ON products_aliases.product_id = products.id
+                 WHERE
+                    purchase_items.id = $1
+                        AND
+                    purchase_items.location_id = $2;",
+                select_fields
+            ),
+            &[&id, &session.user.location_id.unwrap()],
+        )
+        .await
+        .map_err(AppError::db_error)?;
+
+    return Ok(AppResponse::default_response(
+        rows.serialize_row_to_json(true),
+    ));
+}
 
 async fn list_purchase_items(
     State(state): State<AppState>,
