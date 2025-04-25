@@ -13,3 +13,4 @@ Cargo.lock
 **/bru
 **/dev_initializer.sql
 **/*.md
+**/src/download
