@@ -502,7 +502,14 @@ async fn purchases_bill(
 
     let purchase_row = tx
         .query_one(
-            "SELECT purchased_at, business_title, business_location_title, city, address, total FROM purchases WHERE id = $1;",
+            "SELECT purchased_at, suppliers.title as business_title, stores.title as business_location_title, total
+            FROM
+                purchases
+            INNER JOIN stores
+                ON purchases.store_id = stores.id
+            INNER JOIN suppliers
+                ON stores.parent_id = suppliers.id
+            WHERE purchases.id = $1;",
             &[&id],
         )
         .await
@@ -511,8 +518,6 @@ async fn purchases_bill(
     let total: Decimal = purchase_row.get("total");
     let purchased_at: DateTime<Utc> = purchase_row.get("purchased_at");
     let business_title: String = purchase_row.get("business_title");
-    let address: String = purchase_row.get("address");
-    let city: String = purchase_row.get("city");
     let business_location_title: String = purchase_row.get("business_location_title");
 
     let purchased_at = format_date_to_string(
@@ -563,7 +568,6 @@ async fn purchases_bill(
     let payload = json!({
     "id": id,
     "businessTitle": business_title,
-    "city": city, "address": address,
     "total": total, "purchasedAt":purchased_at,
     "businessLocationTitle": business_location_title,
     "items": items,

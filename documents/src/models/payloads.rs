@@ -54,8 +54,6 @@ pub struct Purchase {
     pub purchased_at: String,
     pub business_title: String,
     pub business_location_title: String,
-    pub address: Option<String>,
-    pub city: Option<String>,
     pub items: Vec<PurchaseItem>,
     pub company_id: Uuid,
     pub location_id: Uuid,
