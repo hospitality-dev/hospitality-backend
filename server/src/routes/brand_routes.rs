@@ -1,5 +1,10 @@
-use axum::{extract::State, routing::get, Extension, Router};
+use axum::{
+    extract::{Path, State},
+    routing::get,
+    Extension, Router,
+};
 use serde_json::Value;
+use uuid::Uuid;
 
 use crate::{
     enums::errors::AppError,
@@ -16,6 +21,7 @@ async fn list_brands(
     State(state): State<AppState>,
     Extension(fields): Extension<AllowedFieldsType>,
     Extension(session): Extension<AuthSession>,
+    Path(parent_id): Path<Uuid>,
 ) -> RouteResponse<Value> {
     let conn = &state.get_db_conn().await?;
     let stmt = format!(
@@ -42,7 +48,7 @@ async fn list_brands(
         fields
     );
     let rows = conn
-        .query(&stmt, &[&session.user.company_id.unwrap()])
+        .query(&stmt, &[&session.user.company_id.unwrap(), &parent_id])
         .await
         .map_err(AppError::db_error)?;
 
@@ -50,5 +56,8 @@ async fn list_brands(
 }
 
 pub fn brand_routes() -> Router<AppState> {
-    return Router::new().nest("/brands", Router::new().route("/list", get(list_brands)));
+    return Router::new().nest(
+        "/brands",
+        Router::new().route("/list/{parent_id}", get(list_brands)),
+    );
 }
