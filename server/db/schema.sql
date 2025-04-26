@@ -200,7 +200,8 @@ CREATE TABLE public.locations_products (
     location_id uuid NOT NULL,
     amount numeric(10,5) DEFAULT 0 NOT NULL,
     expiration_date timestamp with time zone,
-    purchase_item_id uuid
+    purchase_item_id uuid,
+    packing_date timestamp with time zone
 );
 
 
@@ -278,14 +279,23 @@ CREATE TABLE public.products (
     subcategory_id uuid,
     image_id uuid,
     parent_id uuid,
-    packing_date timestamp with time zone,
     manufacturer_id uuid,
     brand_id uuid,
+    shape text,
+    width real,
+    width_unit text,
+    height real,
+    height_unit text,
+    CONSTRAINT height_and_unit_presence CHECK ((((height IS NOT NULL) AND (height_unit IS NOT NULL)) OR ((height IS NULL) AND (height_unit IS NULL)) OR ((height IS NULL) AND (height_unit IS NOT NULL)))),
+    CONSTRAINT height_unit_constraint CHECK ((height_unit = ANY (ARRAY['mm'::text, 'cm'::text, 'dm'::text, 'm'::text, 'inch'::text, 'ft'::text]))),
     CONSTRAINT products_check CHECK (((volume IS NULL) OR (volume_unit IS NOT NULL))),
     CONSTRAINT products_check1 CHECK (((weight IS NULL) OR (weight_unit IS NOT NULL))),
+    CONSTRAINT products_shape_check CHECK ((shape = ANY (ARRAY['can'::text, 'cardboard_box'::text, 'metal_box'::text, 'plastic_box'::text, 'crate'::text, 'plastic_bottle'::text, 'glass_bottle'::text, 'vacuum_packaging'::text, 'barrel'::text, 'plastic_cup'::text, 'plastic_bag'::text]))),
     CONSTRAINT products_volume_unit_check CHECK (((volume_unit IS NULL) OR (volume_unit = ANY (ARRAY['l'::text, 'ml'::text, 'fl_oz'::text, 'gal'::text])))),
     CONSTRAINT products_weight_unit_check CHECK (((weight_unit IS NULL) OR (weight_unit = ANY (ARRAY['kg'::text, 'g'::text, 'mg'::text, 'lb'::text, 'oz'::text])))),
-    CONSTRAINT title_min_length CHECK ((char_length(title) >= 1))
+    CONSTRAINT title_min_length CHECK ((char_length(title) >= 1)),
+    CONSTRAINT width_and_unit_presence CHECK ((((width IS NOT NULL) AND (width_unit IS NOT NULL)) OR ((width IS NULL) AND (width_unit IS NULL)) OR ((width IS NULL) AND (width_unit IS NOT NULL)))),
+    CONSTRAINT width_unit_constraint CHECK ((width_unit = ANY (ARRAY['mm'::text, 'cm'::text, 'dm'::text, 'm'::text, 'inch'::text, 'ft'::text])))
 );
 
 
@@ -1281,4 +1291,7 @@ INSERT INTO public.schema_migrations (version) VALUES
     ('20250426084153'),
     ('20250426084231'),
     ('20250426093226'),
-    ('20250426094232');
+    ('20250426094232'),
+    ('20250426115053'),
+    ('20250426115232'),
+    ('20250426115240');

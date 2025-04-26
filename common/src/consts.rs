@@ -43,7 +43,7 @@ pub const LOCATIONS_FIELDS: [&str; 8] = [
     "company_id",
 ];
 
-pub const PRODUCTS_FIELDS: [&str; 12] = [
+pub const PRODUCTS_FIELDS: [&str; 18] = [
     "id",
     "title",
     "description",
@@ -56,6 +56,12 @@ pub const PRODUCTS_FIELDS: [&str; 12] = [
     "company_id",
     "volume_unit",
     "weight_unit",
+    "packing_date",
+    "shape",
+    "width",
+    "height",
+    "width_unit",
+    "height_unit",
 ];
 
 pub const LOCATIONS_AVAILABLE_PRODUCTS_FIELDS: [&str; 3] = ["id", "product_id", "location_id"];

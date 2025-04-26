@@ -1,4 +1,4 @@
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 #[derive(Deserialize, Debug, strum_macros::Display)]
 #[serde(rename_all = "lowercase")]
@@ -41,6 +41,30 @@ pub enum UnitsOfMeasurement {
     FlOz,
     Oz,
     Lb,
+    #[default]
+    #[serde(other)]
+    Unknown,
+}
+
+#[derive(Debug, Default, Deserialize, Serialize, strum_macros::Display)]
+#[serde(rename_all = "lowercase")]
+#[strum(serialize_all = "snake_case")]
+pub enum ProductShape {
+    Can,
+    CardboardBox,
+    MetalBox,
+    PlasticBox,
+    Crate,
+    PlasticBottle,
+    GlassBottle,
+    VacuumPackaging,
+    Barrel,
+    PlasticCup,
+    PlasticBag,
+    Jar,
+    Tube,
+    Pouch,
+    Sack,
     #[default]
     #[serde(other)]
     Unknown,
