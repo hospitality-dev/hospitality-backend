@@ -30,7 +30,7 @@ async fn create_product(
             "INSERT INTO products
         (title, description, category_id, barcode, weight,
         volume, subcategory_id, image_id,
-        company_id, weight_unit, volume_unit, manufacturer_id)
+        company_id, weight_unit, volume_unit, manufacturer_id, brand_id)
         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING id;",
             &[
                 &payload.title,
@@ -178,19 +178,23 @@ async fn list_product_by_category(
     let rows = conn
         .query(
             &format!(
-                "SELECT {fields}
+                "SELECT {fields}, brands.title as brand_title, manufacturers.title as manufacturer_title
                 FROM
                     products
+                LEFT JOIN brands
+                    ON products.brand_id = brands.id
+                LEFT JOIN manufacturers
+                    ON brands.parent_id = manufacturers.id
                 WHERE
                     products.category_id = $1
                         AND
                     (
-                        company_id = $2
+                        products.company_id = $2
                             OR
-                        company_id IS NULL
+                        products.company_id IS NULL
                     )
                 GROUP BY
-                    {fields}
+                    {fields}, brand_title, manufacturer_title
                 ORDER BY
                     products.title;",
                 fields = fields
@@ -216,7 +220,8 @@ async fn list_product_by_category_active(
         .query(
             &format!(
                 "SELECT
-                    {fields}, COUNT(locations_products.id),
+                    {fields}, brands.title as brand_title,
+                    manufacturers.title as manufacturer_title, COUNT(locations_products.id),
                     (
                         SELECT EXISTS
                             (
@@ -235,6 +240,10 @@ async fn list_product_by_category_active(
                     ON locations_available_products.product_id = products.id
                 LEFT JOIN locations_products
                     ON locations_products.product_id = products.id
+                LEFT JOIN brands
+                    ON products.brand_id = brands.id
+                LEFT JOIN manufacturers
+                    ON brands.parent_id = manufacturers.id
                 WHERE
                     products.category_id = $1
                             AND
@@ -248,7 +257,7 @@ async fn list_product_by_category_active(
                             products.company_id IS NULL
                         )
                 GROUP BY
-                    {fields}
+                    {fields}, brands.title, manufacturers.title
                 ORDER BY
                     products.title;",
                 fields = fields
