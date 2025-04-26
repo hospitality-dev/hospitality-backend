@@ -26,8 +26,8 @@ use routes::{
     auth_routes::auth_routes, contacts_routes::contacts_routes, file_routes::file_routes,
     locations_available_products_routes::locations_available_products_routes,
     locations_products_routes::location_products_routes, locations_routes::locations_routes,
-    locations_users_routes::locations_users_routes, product_routes::product_routes,
-    products_categories_routes::products_categories_routes,
+    locations_users_routes::locations_users_routes, manufacturers_routes::manufacturers_routes,
+    product_routes::product_routes, products_categories_routes::products_categories_routes,
     purchase_items_routes::purchase_items_routes, purchases_routes::purchases_routes,
     resource_routes::resource_routes, roles_routes::roles_routes, search_routes::search_routes,
     stores_routes::stores_routes, suppliers_routes::suppliers_routes, url_routes::url_routes,
@@ -198,6 +198,7 @@ pub async fn app() -> Result<Router> {
                 .merge(purchases_routes())
                 .merge(suppliers_routes())
                 .merge(stores_routes())
+                .merge(manufacturers_routes())
                 .merge(purchase_items_routes())
                 .layer(from_fn_with_state(state.clone(), permission_check))
                 // TODO: ADD PERMISSIONS MIDDLEWARE TO URL ROUTES

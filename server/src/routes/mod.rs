@@ -5,6 +5,7 @@ pub mod locations_available_products_routes;
 pub mod locations_products_routes;
 pub mod locations_routes;
 pub mod locations_users_routes;
+pub mod manufacturers_routes;
 pub mod product_routes;
 pub mod products_categories_routes;
 pub mod purchase_items_routes;
