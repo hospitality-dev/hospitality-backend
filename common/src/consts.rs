@@ -181,5 +181,5 @@ pub const BRANDS_FIELDS: [&str; 7] = [
     "company_id",
     "title",
     "is_default",
-    "manufacturer_id",
+    "parent_id",
 ];
