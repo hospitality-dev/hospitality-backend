@@ -27,10 +27,10 @@ use tracing::debug_span;
 use tracing_loki::url::Url;
 use tracing_subscriber::{EnvFilter, layer::SubscriberExt, util::SubscriberInitExt};
 
+mod enums;
 mod middleware;
 mod models;
 mod routes;
-
 #[tokio::main]
 
 async fn main() -> Result<()> {
