@@ -212,7 +212,32 @@ CREATE TABLE public.manufacturers (
     created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
     deleted_at timestamp with time zone,
-    title text NOT NULL
+    title text NOT NULL,
+    is_default boolean DEFAULT false NOT NULL,
+    company_id uuid
+);
+
+
+--
+-- Name: manufacturers_contacts; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.manufacturers_contacts (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    title text,
+    contact_type text NOT NULL,
+    prefix text,
+    value text NOT NULL,
+    parent_id uuid NOT NULL,
+    latitude numeric(9,6),
+    longitude numeric(9,6),
+    place_id integer,
+    bounding_box double precision[],
+    iso_3 text,
+    is_public boolean DEFAULT false,
+    is_primary boolean DEFAULT false,
+    CONSTRAINT manufacturers_contacts_contact_type_check CHECK ((contact_type = ANY (ARRAY['work_email'::text, 'personal_email'::text, 'support_email'::text, 'billing_email'::text, 'work_phone'::text, 'personal_phone'::text, 'mobile_phone'::text, 'fax'::text, 'home_phone'::text, 'whatsapp'::text, 'slack'::text, 'work_address'::text, 'home_address'::text, 'billing_address'::text, 'shipping_address'::text, 'website'::text, 'linkedin'::text, 'twitter'::text, 'facebook'::text, 'instagram'::text, 'sales_email'::text, 'marketing_email'::text, 'hr_email'::text, 'contact_email'::text, 'sales_phone'::text, 'support_phone'::text, 'customer_service_phone'::text, 'general_inquiry_phone'::text, 'office_address'::text, 'headquarters_address'::text, 'warehouse_address'::text, 'company_website'::text, 'support_website'::text]))),
+    CONSTRAINT manufacturers_contacts_iso_3_check CHECK (((char_length(iso_3) = 3) AND (iso_3 ~ '^[A-Z]{3}$'::text)))
 );
 
 
@@ -586,6 +611,14 @@ ALTER TABLE ONLY public.locations_users
 
 
 --
+-- Name: manufacturers_contacts manufacturers_contacts_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.manufacturers_contacts
+    ADD CONSTRAINT manufacturers_contacts_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: manufacturers manufacturers_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -897,6 +930,22 @@ ALTER TABLE ONLY public.locations_users
 
 
 --
+-- Name: manufacturers manufacturers_company_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.manufacturers
+    ADD CONSTRAINT manufacturers_company_id_fkey FOREIGN KEY (company_id) REFERENCES public.companies(id) ON DELETE CASCADE;
+
+
+--
+-- Name: manufacturers_contacts manufacturers_contacts_parent_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.manufacturers_contacts
+    ADD CONSTRAINT manufacturers_contacts_parent_id_fkey FOREIGN KEY (parent_id) REFERENCES public.suppliers(id) ON DELETE CASCADE;
+
+
+--
 -- Name: products_aliases products_aliases_product_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1170,4 +1219,6 @@ INSERT INTO public.schema_migrations (version) VALUES
     ('20250424055047'),
     ('20250424114214'),
     ('20250424134602'),
-    ('20250425105010');
+    ('20250425105010'),
+    ('20250426084153'),
+    ('20250426084231');
