@@ -290,7 +290,7 @@ CREATE TABLE public.products (
     CONSTRAINT height_unit_constraint CHECK ((height_unit = ANY (ARRAY['mm'::text, 'cm'::text, 'dm'::text, 'm'::text, 'inch'::text, 'ft'::text]))),
     CONSTRAINT products_check CHECK (((volume IS NULL) OR (volume_unit IS NOT NULL))),
     CONSTRAINT products_check1 CHECK (((weight IS NULL) OR (weight_unit IS NOT NULL))),
-    CONSTRAINT products_shape_check CHECK ((shape = ANY (ARRAY['can'::text, 'cardboard_box'::text, 'metal_box'::text, 'plastic_box'::text, 'crate'::text, 'plastic_bottle'::text, 'glass_bottle'::text, 'vacuum_packaging'::text, 'barrel'::text, 'plastic_cup'::text, 'plastic_bag'::text]))),
+    CONSTRAINT products_shape_check CHECK ((shape = ANY (ARRAY['can'::text, 'cardboard_box'::text, 'metal_box'::text, 'plastic_box'::text, 'crate'::text, 'plastic_bottle'::text, 'glass_bottle'::text, 'vacuum_packaging'::text, 'barrel'::text, 'plastic_cup'::text, 'plastic_bag'::text, 'jar'::text, 'tube'::text, 'pouch'::text, 'sack'::text]))),
     CONSTRAINT products_volume_unit_check CHECK (((volume_unit IS NULL) OR (volume_unit = ANY (ARRAY['l'::text, 'ml'::text, 'fl_oz'::text, 'gal'::text])))),
     CONSTRAINT products_weight_unit_check CHECK (((weight_unit IS NULL) OR (weight_unit = ANY (ARRAY['kg'::text, 'g'::text, 'mg'::text, 'lb'::text, 'oz'::text])))),
     CONSTRAINT title_min_length CHECK ((char_length(title) >= 1)),

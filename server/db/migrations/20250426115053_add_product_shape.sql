@@ -15,13 +15,17 @@ ADD CONSTRAINT products_shape_check CHECK (
         'vacuum_packaging',
         'barrel',
         'plastic_cup',
-        'plastic_bag'
+        'plastic_bag',
+        'jar',
+        'tube',
+        'pouch',
+        'sack'
     )
 );
 
 -- migrate:down
 ALTER TABLE IF EXISTS products
-DROP COLUMN shape;
+DROP CONSTRAINT products_shape_check;
 
 ALTER TABLE IF EXISTS products
-DROP CONSTRAINT products_shape_check;
+DROP COLUMN shape;
