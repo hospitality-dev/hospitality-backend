@@ -37,6 +37,22 @@ SET default_tablespace = '';
 SET default_table_access_method = heap;
 
 --
+-- Name: brands; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.brands (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    deleted_at timestamp with time zone,
+    title text NOT NULL,
+    manufacturer_id uuid NOT NULL,
+    is_default boolean DEFAULT false NOT NULL,
+    company_id uuid
+);
+
+
+--
 -- Name: companies; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -264,6 +280,7 @@ CREATE TABLE public.products (
     parent_id uuid,
     packing_date timestamp with time zone,
     manufacturer_id uuid,
+    brand_id uuid,
     CONSTRAINT products_check CHECK (((volume IS NULL) OR (volume_unit IS NOT NULL))),
     CONSTRAINT products_check1 CHECK (((weight IS NULL) OR (weight_unit IS NOT NULL))),
     CONSTRAINT products_volume_unit_check CHECK (((volume_unit IS NULL) OR (volume_unit = ANY (ARRAY['l'::text, 'ml'::text, 'fl_oz'::text, 'gal'::text])))),
@@ -524,6 +541,14 @@ CREATE TABLE public.users_contacts (
 
 
 --
+-- Name: brands brands_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.brands
+    ADD CONSTRAINT brands_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: companies_contacts companies_contacts_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -779,6 +804,22 @@ CREATE TRIGGER trigger_insert_location_user AFTER INSERT ON public.locations FOR
 
 
 --
+-- Name: brands brands_company_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.brands
+    ADD CONSTRAINT brands_company_id_fkey FOREIGN KEY (company_id) REFERENCES public.companies(id) ON DELETE CASCADE;
+
+
+--
+-- Name: brands brands_manufacturer_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.brands
+    ADD CONSTRAINT brands_manufacturer_id_fkey FOREIGN KEY (manufacturer_id) REFERENCES public.manufacturers(id) ON DELETE CASCADE;
+
+
+--
 -- Name: companies_contacts companies_contacts_parent_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -960,6 +1001,14 @@ ALTER TABLE ONLY public.products_aliases
 
 ALTER TABLE ONLY public.products_aliases
     ADD CONSTRAINT products_aliases_supplier_id_fkey FOREIGN KEY (supplier_id) REFERENCES public.suppliers(id) ON DELETE CASCADE;
+
+
+--
+-- Name: products products_brand_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.products
+    ADD CONSTRAINT products_brand_id_fkey FOREIGN KEY (brand_id) REFERENCES public.brands(id) ON DELETE SET NULL;
 
 
 --
@@ -1231,4 +1280,5 @@ INSERT INTO public.schema_migrations (version) VALUES
     ('20250425105010'),
     ('20250426084153'),
     ('20250426084231'),
-    ('20250426093226');
+    ('20250426093226'),
+    ('20250426094232');

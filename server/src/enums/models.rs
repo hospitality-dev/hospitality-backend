@@ -9,10 +9,11 @@ use crate::{
     traits::model_traits::{AllowedFields, SelectableFields},
 };
 use common::consts::{
-    CONTACTS_FIELDS, COUNTRIES_FIELDS, FILES_FIELDS, LOCATIONS_AVAILABLE_PRODUCTS_FIELDS,
-    LOCATIONS_FIELDS, LOCATIONS_PRODUCTS_FIELDS, LOCATIONS_USERS_FIELDS, MANUFACTURERS_FIELDS,
-    PRODUCTS_CATEGORIES_FIELDS, PRODUCTS_FIELDS, PURCHASES_FIELDS, PURCHASE_ITEMS_FIELDS,
-    ROLES_FIELDS, STORES_FIELDS, SUPPLIERS_FIELDS, USERS_FIELDS,
+    BRANDS_FIELDS, CONTACTS_FIELDS, COUNTRIES_FIELDS, FILES_FIELDS,
+    LOCATIONS_AVAILABLE_PRODUCTS_FIELDS, LOCATIONS_FIELDS, LOCATIONS_PRODUCTS_FIELDS,
+    LOCATIONS_USERS_FIELDS, MANUFACTURERS_FIELDS, PRODUCTS_CATEGORIES_FIELDS, PRODUCTS_FIELDS,
+    PURCHASES_FIELDS, PURCHASE_ITEMS_FIELDS, ROLES_FIELDS, STORES_FIELDS, SUPPLIERS_FIELDS,
+    USERS_FIELDS,
 };
 
 #[derive(Clone, Debug, Serialize, Deserialize, VariantNames, PartialEq, Eq)]
@@ -35,6 +36,7 @@ pub enum Models {
     Suppliers,
     Stores,
     Manufacturers,
+    Brands,
     Unknown(String),
 }
 
@@ -63,6 +65,7 @@ impl ToString for Models {
             Models::Suppliers => "suppliers".to_string(),
             Models::Stores => "stores".to_string(),
             Models::Manufacturers => "manufacturers".to_string(),
+            Models::Brands => "brands".to_string(),
             Models::Unknown(name) => format!("UNKNOWN MODEL - {}", name),
         }
     }
@@ -87,6 +90,7 @@ impl AsStr for Models {
             Models::Suppliers => "suppliers",
             Models::Stores => "stores",
             Models::Manufacturers => "manufacturers",
+            Models::Brands => "brands",
             Models::Unknown(_) => "unknown",
         }
     }
@@ -113,6 +117,7 @@ impl FromStr for Models {
             "suppliers" => Ok(Models::Suppliers),
             "stores" => Ok(Models::Stores),
             "manufacturers" => Ok(Models::Manufacturers),
+            "brands" => Ok(Models::Brands),
             _ => Ok(Models::Unknown(s.to_string())),
         }
     }
@@ -140,6 +145,7 @@ impl AllowedFields for Models {
             &Models::Suppliers => HashSet::from_iter(SUPPLIERS_FIELDS),
             &Models::Stores => HashSet::from_iter(STORES_FIELDS),
             &Models::Manufacturers => HashSet::from_iter(MANUFACTURERS_FIELDS),
+            &Models::Brands => HashSet::from_iter(BRANDS_FIELDS),
             &Models::Unknown(_) => HashSet::new(),
         })
     }

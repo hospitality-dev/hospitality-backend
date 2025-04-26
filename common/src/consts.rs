@@ -173,3 +173,13 @@ pub const MANUFACTURERS_FIELDS: [&str; 6] = [
     "title",
     "is_default",
 ];
+
+pub const BRANDS_FIELDS: [&str; 7] = [
+    "id",
+    "created_at",
+    "deleted_at",
+    "company_id",
+    "title",
+    "is_default",
+    "manufacturer_id",
+];
