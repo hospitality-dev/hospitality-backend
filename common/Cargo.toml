@@ -6,3 +6,4 @@ resolver = "3"
 [dependencies]
 chrono = { workspace = true }
 chrono-tz = { workspace = true }
+tracing = { workspace = true }
