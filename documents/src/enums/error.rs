@@ -7,7 +7,7 @@ pub enum AppError {
 
 impl AppError {
     #[track_caller]
-    pub fn generate_response(err: impl ToString) -> impl ToString {
+    pub fn generate_response(err: impl ToString) -> String {
         let location = std::panic::Location::caller();
         error!(
             message = err.to_string(),
@@ -15,6 +15,6 @@ impl AppError {
             call_path = format!("{} -> {}", location.file(), location.line())
         );
 
-        return err;
+        return err.to_string();
     }
 }

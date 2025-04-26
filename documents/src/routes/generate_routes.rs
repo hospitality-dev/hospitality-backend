@@ -14,6 +14,7 @@ use tempfile::NamedTempFile;
 use tokio::process::Command;
 use uuid::Uuid;
 
+use crate::enums::error::AppError;
 use crate::models::payloads::{ProductInventoryReport, ProductQRCodes, Purchase};
 use crate::models::state::AppState;
 use common::consts::PRESIGN_DURATION;
@@ -57,48 +58,46 @@ async fn generate_inventory_report(
         .unwrap();
 
     if status.success() {
-        println!("Converted {} to {}", "test.md", "output.pdf");
+        let pdf_bytes = std::fs::read(&output_path).unwrap();
+
+        let id = Uuid::new_v4();
+        let key = format!(
+            "{}/{}/reports/{}",
+            payload.company_id, payload.location_id, id
+        );
+        let mut metadata = HashMap::new();
+        metadata.insert("title".to_string(), "inventory-report".to_string());
+        metadata.insert("author".to_string(), "HMS".to_string());
+        state
+            .s3_client
+            .put_object()
+            .bucket(&state.s3_name)
+            .key(&key)
+            .body(pdf_bytes.into())
+            .set_metadata(Some(metadata))
+            .acl(aws_sdk_s3::types::ObjectCannedAcl::Private)
+            .content_type("application/pdf")
+            .send()
+            .await
+            .unwrap();
+
+        let command = &state
+            .s3_client
+            .get_object()
+            .bucket(&state.s3_name)
+            .key(key)
+            .presigned(PresigningConfig::expires_in(PRESIGN_DURATION).unwrap())
+            .await
+            .unwrap();
+
+        let url = command.uri();
+
+        return Ok(serde_json::json!({"id": id, "url": url.to_string()})
+            .to_string()
+            .into_response());
     } else {
-        eprintln!("Pandoc failed");
+        return Err(AppError::generate_response(status.to_string()));
     }
-
-    let pdf_bytes = std::fs::read(&output_path).unwrap();
-
-    let id = Uuid::new_v4();
-    let key = format!(
-        "{}/{}/reports/{}",
-        payload.company_id, payload.location_id, id
-    );
-    let mut metadata = HashMap::new();
-    metadata.insert("title".to_string(), "inventory-report".to_string());
-    metadata.insert("author".to_string(), "HMS".to_string());
-    state
-        .s3_client
-        .put_object()
-        .bucket(&state.s3_name)
-        .key(&key)
-        .body(pdf_bytes.into())
-        .set_metadata(Some(metadata))
-        .acl(aws_sdk_s3::types::ObjectCannedAcl::Private)
-        .content_type("application/pdf")
-        .send()
-        .await
-        .unwrap();
-
-    let command = &state
-        .s3_client
-        .get_object()
-        .bucket(&state.s3_name)
-        .key(key)
-        .presigned(PresigningConfig::expires_in(PRESIGN_DURATION).unwrap())
-        .await
-        .unwrap();
-
-    let url = command.uri();
-
-    return Ok(serde_json::json!({"id": id, "url": url.to_string()})
-        .to_string()
-        .into_response());
 }
 
 async fn generate_product_qr_codes(
@@ -136,49 +135,47 @@ async fn generate_product_qr_codes(
         .unwrap();
 
     if status.success() {
-        println!("Converted {} to {}", "test.md", "output.pdf");
+        let pdf_bytes = std::fs::read(&output_path).unwrap();
+
+        let id = Uuid::new_v4();
+        let key = format!(
+            "{}/{}/qr-codes/{}",
+            payload.company_id, payload.location_id, id
+        );
+        let mut metadata = HashMap::new();
+        metadata.insert("title".to_string(), "inventory-report".to_string());
+        metadata.insert("author".to_string(), "HMS".to_string());
+        state
+            .s3_client
+            .put_object()
+            .bucket(&state.s3_name)
+            .key(&key)
+            .body(pdf_bytes.into())
+            .set_metadata(Some(metadata))
+            .acl(aws_sdk_s3::types::ObjectCannedAcl::Private)
+            .content_type("application/pdf")
+            .tagging("ttl=1")
+            .send()
+            .await
+            .unwrap();
+
+        let command = &state
+            .s3_client
+            .get_object()
+            .bucket(&state.s3_name)
+            .key(key)
+            .presigned(PresigningConfig::expires_in(PRESIGN_DURATION).unwrap())
+            .await
+            .unwrap();
+
+        let url = command.uri();
+
+        return Ok(serde_json::json!({"id": id, "url": url.to_string()})
+            .to_string()
+            .into_response());
     } else {
-        eprintln!("Pandoc failed");
+        return Err(AppError::generate_response(status.to_string()));
     }
-
-    let pdf_bytes = std::fs::read(&output_path).unwrap();
-
-    let id = Uuid::new_v4();
-    let key = format!(
-        "{}/{}/qr-codes/{}",
-        payload.company_id, payload.location_id, id
-    );
-    let mut metadata = HashMap::new();
-    metadata.insert("title".to_string(), "inventory-report".to_string());
-    metadata.insert("author".to_string(), "HMS".to_string());
-    state
-        .s3_client
-        .put_object()
-        .bucket(&state.s3_name)
-        .key(&key)
-        .body(pdf_bytes.into())
-        .set_metadata(Some(metadata))
-        .acl(aws_sdk_s3::types::ObjectCannedAcl::Private)
-        .content_type("application/pdf")
-        .tagging("ttl=1")
-        .send()
-        .await
-        .unwrap();
-
-    let command = &state
-        .s3_client
-        .get_object()
-        .bucket(&state.s3_name)
-        .key(key)
-        .presigned(PresigningConfig::expires_in(PRESIGN_DURATION).unwrap())
-        .await
-        .unwrap();
-
-    let url = command.uri();
-
-    return Ok(serde_json::json!({"id": id, "url": url.to_string()})
-        .to_string()
-        .into_response());
 }
 
 async fn generate_purchase_bill(
@@ -210,49 +207,47 @@ async fn generate_purchase_bill(
         .unwrap();
 
     if status.success() {
-        println!("Converted {} to {}", "test.md", "output.pdf");
+        let pdf_bytes = std::fs::read(&output_path).unwrap();
+
+        let key = format!(
+            "{}/{}/receipts/{}",
+            payload.company_id, payload.location_id, payload.id
+        );
+        let mut metadata = HashMap::new();
+        metadata.insert("title".to_string(), "inventory-report".to_string());
+        metadata.insert("author".to_string(), "HMS".to_string());
+        state
+            .s3_client
+            .put_object()
+            .bucket(&state.s3_name)
+            .key(&key)
+            .body(pdf_bytes.into())
+            .set_metadata(Some(metadata))
+            .acl(aws_sdk_s3::types::ObjectCannedAcl::Private)
+            .content_type("application/pdf")
+            .send()
+            .await
+            .unwrap();
+
+        let command = &state
+            .s3_client
+            .get_object()
+            .bucket(&state.s3_name)
+            .key(key)
+            .presigned(PresigningConfig::expires_in(PRESIGN_DURATION).unwrap())
+            .await
+            .unwrap();
+
+        let url = command.uri();
+
+        return Ok(
+            serde_json::json!({"id": payload.id, "url": url.to_string()})
+                .to_string()
+                .into_response(),
+        );
     } else {
-        eprintln!("Pandoc failed");
+        return Err(AppError::generate_response(status.to_string()));
     }
-
-    let pdf_bytes = std::fs::read(&output_path).unwrap();
-
-    let key = format!(
-        "{}/{}/receipts/{}",
-        payload.company_id, payload.location_id, payload.id
-    );
-    let mut metadata = HashMap::new();
-    metadata.insert("title".to_string(), "inventory-report".to_string());
-    metadata.insert("author".to_string(), "HMS".to_string());
-    state
-        .s3_client
-        .put_object()
-        .bucket(&state.s3_name)
-        .key(&key)
-        .body(pdf_bytes.into())
-        .set_metadata(Some(metadata))
-        .acl(aws_sdk_s3::types::ObjectCannedAcl::Private)
-        .content_type("application/pdf")
-        .send()
-        .await
-        .unwrap();
-
-    let command = &state
-        .s3_client
-        .get_object()
-        .bucket(&state.s3_name)
-        .key(key)
-        .presigned(PresigningConfig::expires_in(PRESIGN_DURATION).unwrap())
-        .await
-        .unwrap();
-
-    let url = command.uri();
-
-    return Ok(
-        serde_json::json!({"id": payload.id, "url": url.to_string()})
-            .to_string()
-            .into_response(),
-    );
 }
 
 async fn generate_from_template(State(state): State<AppState>) -> Result<(), ()> {
