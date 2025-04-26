@@ -31,7 +31,7 @@ async fn create_product(
         (title, description, category_id, barcode, weight,
         volume, subcategory_id, image_id,
         company_id, weight_unit, volume_unit, manufacturer_id)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING id;",
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING id;",
             &[
                 &payload.title,
                 &payload.description,
@@ -45,6 +45,7 @@ async fn create_product(
                 &payload.weight_unit.map(|e| e.to_string()),
                 &payload.volume_unit.map(|e| e.to_string()),
                 &payload.manufacturer_id,
+                &payload.brand_id,
             ],
         )
         .await
