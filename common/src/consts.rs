@@ -164,3 +164,12 @@ pub const STORES_FIELDS: [&str; 7] = [
     "title",
     "parent_id",
 ];
+
+pub const MANUFACTURERS_FIELDS: [&str; 6] = [
+    "id",
+    "created_at",
+    "deleted_at",
+    "company_id",
+    "title",
+    "is_default",
+];
