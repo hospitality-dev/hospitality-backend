@@ -7,6 +7,7 @@ ADD CONSTRAINT products_shape_check CHECK (
     shape IN (
         'can',
         'cardboard_box',
+        'cardboard_bottle',
         'metal_box',
         'plastic_box',
         'crate',

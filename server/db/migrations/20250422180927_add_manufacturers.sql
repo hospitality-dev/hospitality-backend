@@ -8,11 +8,5 @@ CREATE TABLE IF NOT EXISTS
         title TEXT NOT NULL
     );
 
-ALTER TABLE IF EXISTS products
-ADD COLUMN parent_id UUID REFERENCES manufacturers (id) ON DELETE SET NULL;
-
 -- migrate:down
-ALTER TABLE IF EXISTS products
-DROP COLUMN parent_id;
-
 DROP TABLE IF EXISTS manufacturers;

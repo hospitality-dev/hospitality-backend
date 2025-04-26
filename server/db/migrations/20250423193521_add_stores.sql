@@ -25,20 +25,19 @@ CREATE TABLE IF NOT EXISTS
         UNIQUE (parent_id, title)
     );
 
-INSERT INTO
-    suppliers (id, title, is_default)
-VALUES
-    (
-        '70e652b0-3658-4753-b657-c2d35269f77f',
-        'DELHAIZE SERBIA DOO',
-        TRUE
-    ),
-    (
-        '728d6f74-b83d-4ee2-a15d-70c31c64ad36',
-        'LIDL SRBIJA KD',
-        TRUE
-    );
-
+-- INSERT INTO
+--     suppliers (id, title, is_default)
+-- VALUES
+--     (
+--         '70e652b0-3658-4753-b657-c2d35269f77f',
+--         'DELHAIZE SERBIA DOO',
+--         TRUE
+--     ),
+--     (
+--         '728d6f74-b83d-4ee2-a15d-70c31c64ad36',
+--         'LIDL SRBIJA KD',
+--         TRUE
+--     );
 -- migrate:down
 DROP TABLE IF EXISTS stores;
 

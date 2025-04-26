@@ -11,19 +11,5 @@ CREATE TABLE IF NOT EXISTS
         is_default BOOLEAN NOT NULL
     );
 
-INSERT INTO
-    products_categories (title, is_default)
-VALUES
-    ('Meat', TRUE),
-    ('Dairy', TRUE),
-    ('Fruit', TRUE),
-    ('Frozen', TRUE),
-    ('Vegetables', TRUE),
-    ('Legumes', TRUE),
-    ('Fish', TRUE),
-    ('Non-Alcoholic drinks', TRUE),
-    ('Alcoholic drinks', TRUE),
-    ('Other', TRUE);
-
 -- migrate:down
 DROP TABLE IF EXISTS products_categories;
