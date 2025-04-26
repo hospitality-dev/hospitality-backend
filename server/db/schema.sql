@@ -263,6 +263,7 @@ CREATE TABLE public.products (
     image_id uuid,
     parent_id uuid,
     packing_date timestamp with time zone,
+    manufacturer_id uuid,
     CONSTRAINT products_check CHECK (((volume IS NULL) OR (volume_unit IS NOT NULL))),
     CONSTRAINT products_check1 CHECK (((weight IS NULL) OR (weight_unit IS NOT NULL))),
     CONSTRAINT products_volume_unit_check CHECK (((volume_unit IS NULL) OR (volume_unit = ANY (ARRAY['l'::text, 'ml'::text, 'fl_oz'::text, 'gal'::text])))),
@@ -1002,6 +1003,14 @@ ALTER TABLE ONLY public.products
 
 
 --
+-- Name: products products_manufacturer_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.products
+    ADD CONSTRAINT products_manufacturer_id_fkey FOREIGN KEY (manufacturer_id) REFERENCES public.manufacturers(id) ON DELETE SET NULL;
+
+
+--
 -- Name: products products_parent_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1221,4 +1230,5 @@ INSERT INTO public.schema_migrations (version) VALUES
     ('20250424134602'),
     ('20250425105010'),
     ('20250426084153'),
-    ('20250426084231');
+    ('20250426084231'),
+    ('20250426093226');

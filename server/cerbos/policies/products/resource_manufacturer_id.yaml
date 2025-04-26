@@ -1,0 +1,11 @@
+apiVersion: api.cerbos.dev/v1
+resourcePolicy:
+  resource: products:manufacturer_id
+  version: default
+  rules:
+  - actions: [ view, list ]
+    effect: EFFECT_ALLOW
+    roles: [ '*' ]
+  - actions: [ create ]
+    effect: EFFECT_ALLOW
+    roles: [ owner, manager ]

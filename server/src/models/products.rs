@@ -18,6 +18,7 @@ pub struct InsertProduct {
     pub category_id: Uuid,
     pub subcategory_id: Option<Uuid>,
     pub image_id: Option<Uuid>,
+    pub manufacturer_id: Option<Uuid>,
     pub weight_unit: Option<WeightUnits>,
     pub volume_unit: Option<VolumeUnits>,
 }

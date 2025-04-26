@@ -30,8 +30,8 @@ async fn create_product(
             "INSERT INTO products
         (title, description, category_id, barcode, weight,
         volume, subcategory_id, image_id,
-        company_id, weight_unit, volume_unit)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING id;",
+        company_id, weight_unit, volume_unit, manufacturer_id)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING id;",
             &[
                 &payload.title,
                 &payload.description,
@@ -44,6 +44,7 @@ async fn create_product(
                 &session.user.company_id,
                 &payload.weight_unit.map(|e| e.to_string()),
                 &payload.volume_unit.map(|e| e.to_string()),
+                &payload.manufacturer_id,
             ],
         )
         .await
