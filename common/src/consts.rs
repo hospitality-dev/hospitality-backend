@@ -65,11 +65,12 @@ pub const PRODUCTS_FIELDS: [&str; 18] = [
 ];
 
 pub const LOCATIONS_AVAILABLE_PRODUCTS_FIELDS: [&str; 3] = ["id", "product_id", "location_id"];
-pub const LOCATIONS_PRODUCTS_FIELDS: [&str; 5] = [
+pub const LOCATIONS_PRODUCTS_FIELDS: [&str; 6] = [
     "id",
     "available_product_id",
     "location_id",
     "expiration_date",
+    "packing_date",
     "purchase_item_id",
 ];
 pub const LOCATIONS_USERS_FIELDS: [&str; 4] = ["id", "user_id", "location_id", "role_id"];
