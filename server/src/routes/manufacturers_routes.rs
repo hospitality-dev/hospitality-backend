@@ -33,5 +33,8 @@ async fn list_manufacturers(
 }
 
 pub fn manufacturers_routes() -> Router<AppState> {
-    return Router::new().nest("/manufacturers", Router::new());
+    return Router::new().nest(
+        "/manufacturers",
+        Router::new().route("/list", get(list_manufacturers)),
+    );
 }
