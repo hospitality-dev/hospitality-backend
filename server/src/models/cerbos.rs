@@ -1,3 +1,4 @@
+use itertools::Itertools;
 use reqwest::{Client, StatusCode};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -169,8 +170,17 @@ impl CerbosCheck {
                 match c.actions.get(&self.action.to_string()) {
                     Some(act) => {
                         if act == &ActionEffect::EffectAllow {
-                            if let Some(kind) = c.resource.kind.split(":").nth(1) {
-                                fields.push(kind.to_string());
+                            let mut split = c.resource.kind.split(":");
+                            if c.resource.kind.contains(":relation:") {
+                                fields.push(format!(
+                                    "{}.{}",
+                                    split.nth(2).unwrap_or_default(),
+                                    // ! nth(2) consumes itself and all previous elements get discarded
+                                    // ! thus nth(0) is used as it is the last remaining element
+                                    split.nth(0).unwrap_or_default()
+                                ));
+                            } else {
+                                fields.push(split.nth(1).unwrap_or_default().to_string());
                             }
                         }
                     }

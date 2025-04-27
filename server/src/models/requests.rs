@@ -18,6 +18,8 @@ pub struct QueryParams {
     pub sort_field: Option<String>,
     #[serde(default = "default_sort_type")]
     pub sort_type: Option<SortType>,
+    #[serde(default = "default_none")]
+    pub relations: Option<String>,
 }
 
 fn default_page() -> i64 {

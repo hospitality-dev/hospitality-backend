@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use axum::{
     extract::{Path, State},
     routing::{delete, get, post},
@@ -7,7 +9,7 @@ use serde_json::Value;
 use uuid::Uuid;
 
 use crate::{
-    enums::errors::AppError,
+    enums::{errors::AppError, models::Models},
     middlware::crud_middleware::AllowedFieldsType,
     models::{
         auth::AuthSession,
@@ -16,8 +18,8 @@ use crate::{
         state::AppState,
     },
     traits::db_traits::{SerializeList, SerializeToJson},
+    utils::db_utils::format_hashset_select_string,
 };
-
 async fn create_product(
     State(state): State<AppState>,
     Extension(session): Extension<AuthSession>,
@@ -208,60 +210,80 @@ async fn list_product_by_category(
 }
 
 async fn list_product_by_category_active(
-    Extension(fields): Extension<AllowedFieldsType>,
-
+    Extension(mut fields): Extension<HashSet<String>>,
+    Extension(fields_string): Extension<AllowedFieldsType>,
     Extension(session): Extension<AuthSession>,
     Path(category_id): Path<Uuid>,
     State(state): State<AppState>,
 ) -> RouteResponse<Value> {
     let conn = &state.get_db_conn().await?;
 
+    let mut joins = String::from("");
+    let has_brands = fields.contains("brands.title");
+
+    if has_brands == true {
+        fields.insert("brands.title as brand_title".into());
+        joins.push_str(" LEFT JOIN brands ON products.brand_id = brands.id ");
+    }
+    if fields.contains("manufacturers.title") {
+        if has_brands == false {
+            joins.push_str(" LEFT JOIN brands ON products.brand_id = brands.id ");
+            fields.insert("manufacturers.title as manufacturer_title".into());
+        } else {
+            fields.insert("manufacturers.title as manufacturer_title".into());
+        }
+        joins.push_str(" LEFT JOIN manufacturers ON brands.parent_id = manufacturers.id ");
+    }
+
+    fields.remove("brands.title");
+    fields.remove("manufacturers.title");
+
+    let stmt = format!(
+        "SELECT
+            {fields}, COUNT(locations_products.id),
+            (
+                SELECT EXISTS
+                    (
+                        SELECT 1
+                        FROM
+                            locations_products
+                        WHERE
+                            expiration_date <= NOW() + INTERVAL '7 days'
+                                AND
+                            locations_products.product_id = products.id
+                    )
+            ) as has_about_to_expire
+        FROM
+            products
+        INNER JOIN locations_available_products
+            ON locations_available_products.product_id = products.id
+        LEFT JOIN locations_products
+            ON locations_products.product_id = products.id
+        {joins}
+        WHERE
+            products.category_id = $1
+                    AND
+                (
+                    (
+                        products.company_id = $2
+                            AND
+                        locations_available_products.location_id = $3
+                    )
+                        OR
+                    products.company_id IS NULL
+                )
+        GROUP BY
+            {fields_string}
+        ORDER BY
+            products.title;",
+        fields = format_hashset_select_string(&Models::Products, &fields),
+        joins = joins,
+        fields_string = fields_string
+    );
+
     let rows = conn
         .query(
-            &format!(
-                "SELECT
-                    {fields}, brands.title as brand_title,
-                    manufacturers.title as manufacturer_title, COUNT(locations_products.id),
-                    (
-                        SELECT EXISTS
-                            (
-                                SELECT 1
-                                FROM
-                                    locations_products
-                                WHERE
-                                    expiration_date <= NOW() + INTERVAL '7 days'
-                                        AND
-                                    locations_products.product_id = products.id
-                            )
-                    ) as has_about_to_expire
-                FROM
-                    products
-                INNER JOIN locations_available_products
-                    ON locations_available_products.product_id = products.id
-                LEFT JOIN locations_products
-                    ON locations_products.product_id = products.id
-                LEFT JOIN brands
-                    ON products.brand_id = brands.id
-                LEFT JOIN manufacturers
-                    ON brands.parent_id = manufacturers.id
-                WHERE
-                    products.category_id = $1
-                            AND
-                        (
-                            (
-                                products.company_id = $2
-                                    AND
-                                locations_available_products.location_id = $3
-                            )
-                                OR
-                            products.company_id IS NULL
-                        )
-                GROUP BY
-                    {fields}, brands.title, manufacturers.title
-                ORDER BY
-                    products.title;",
-                fields = fields
-            ),
+            &stmt,
             &[
                 &category_id,
                 &session.user.company_id,

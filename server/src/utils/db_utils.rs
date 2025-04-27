@@ -11,7 +11,6 @@ use crate::{
     models::response::AppErrorResponse,
     traits::model_traits::AllowedFields,
 };
-
 pub async fn db_conn(db_pool: &Pool) -> Result<Object> {
     info!(action = "ESTABLISH DB CONNECTION");
     let connection = db_pool.get().await?;
@@ -40,7 +39,7 @@ impl<'a> WhereBuilder<'a> {
         value: &Option<Value>,
     ) -> Result<(String, Vec<String>), AppErrorResponse> {
         if let Some(value) = value {
-            let allowed_fields = self.model.get_allowed_fields().unwrap_or_default();
+            let allowed_fields = self.model.get_allowed_fields();
 
             let sql = self.parse_condition(&Some(value.to_owned()), &allowed_fields)?;
 
@@ -150,10 +149,30 @@ impl<'a> WhereBuilder<'a> {
     }
 }
 
-pub fn get_select_string(model: &Models, fields: Vec<String>) -> String {
+pub fn get_select_string(model: &Models, fields: &Vec<String>) -> String {
     return fields
         .iter()
-        .map(|s| format!("{}.{}", model.to_string(), s))
+        .map(|s| {
+            if s.contains(".") {
+                return s.to_owned();
+            } else {
+                return format!("{}.{}", model.to_string(), s);
+            }
+        })
         .collect::<Vec<String>>()
-        .join(", ");
+        .join(",");
+}
+
+pub fn format_hashset_select_string(model: &Models, fields: &HashSet<String>) -> String {
+    return fields
+        .iter()
+        .map(|s| {
+            if s.contains(".") {
+                return s.to_owned();
+            } else {
+                return format!("{}.{}", model.to_string(), s);
+            }
+        })
+        .collect::<Vec<String>>()
+        .join(",");
 }

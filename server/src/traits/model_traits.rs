@@ -1,11 +1,10 @@
-use std::collections::HashSet;
-
-use anyhow::Result;
-
-use crate::models::response::AppErrorResponse;
+use std::collections::{HashMap, HashSet};
 
 pub trait AllowedFields {
-    fn get_allowed_fields(&self) -> Result<HashSet<&str>, AppErrorResponse>;
+    fn get_allowed_fields(&self) -> HashSet<&str>;
+}
+pub trait AllowedRelations {
+    fn get_allowed_relations_and_fields(&self) -> HashMap<&str, HashSet<&str>>;
 }
 
 pub trait SelectableFields: AllowedFields {

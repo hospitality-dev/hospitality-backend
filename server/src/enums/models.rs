@@ -1,19 +1,22 @@
-use std::{collections::HashSet, str::FromStr};
+use std::{
+    collections::{HashMap, HashSet},
+    str::FromStr,
+};
 
 use garde::rules::AsStr;
 use serde::{Deserialize, Serialize};
 use strum::VariantNames;
 
-use crate::{
-    models::response::AppErrorResponse,
-    traits::model_traits::{AllowedFields, SelectableFields},
-};
-use common::consts::{
-    BRANDS_FIELDS, CONTACTS_FIELDS, COUNTRIES_FIELDS, FILES_FIELDS,
-    LOCATIONS_AVAILABLE_PRODUCTS_FIELDS, LOCATIONS_FIELDS, LOCATIONS_PRODUCTS_FIELDS,
-    LOCATIONS_USERS_FIELDS, MANUFACTURERS_FIELDS, PRODUCTS_CATEGORIES_FIELDS, PRODUCTS_FIELDS,
-    PURCHASES_FIELDS, PURCHASE_ITEMS_FIELDS, ROLES_FIELDS, STORES_FIELDS, SUPPLIERS_FIELDS,
-    USERS_FIELDS,
+use crate::traits::model_traits::{AllowedFields, AllowedRelations, SelectableFields};
+use common::{
+    consts::{
+        BRANDS_FIELDS, CONTACTS_FIELDS, COUNTRIES_FIELDS, FILES_FIELDS,
+        LOCATIONS_AVAILABLE_PRODUCTS_FIELDS, LOCATIONS_FIELDS, LOCATIONS_PRODUCTS_FIELDS,
+        LOCATIONS_USERS_FIELDS, MANUFACTURERS_FIELDS, PRODUCTS_CATEGORIES_FIELDS, PRODUCTS_FIELDS,
+        PURCHASES_FIELDS, PURCHASE_ITEMS_FIELDS, ROLES_FIELDS, STORES_FIELDS, SUPPLIERS_FIELDS,
+        USERS_FIELDS,
+    },
+    relation_consts::PRODUCTS_RELATIONS,
 };
 
 #[derive(Clone, Debug, Serialize, Deserialize, VariantNames, PartialEq, Eq)]
@@ -124,8 +127,8 @@ impl FromStr for Models {
 }
 
 impl AllowedFields for Models {
-    fn get_allowed_fields(&self) -> Result<HashSet<&str>, AppErrorResponse> {
-        Ok(match self {
+    fn get_allowed_fields(&self) -> HashSet<&str> {
+        match self {
             &Models::Users => HashSet::from_iter(USERS_FIELDS),
             &Models::Roles => HashSet::from_iter(ROLES_FIELDS),
             &Models::Locations => HashSet::from_iter(LOCATIONS_FIELDS),
@@ -147,7 +150,16 @@ impl AllowedFields for Models {
             &Models::Manufacturers => HashSet::from_iter(MANUFACTURERS_FIELDS),
             &Models::Brands => HashSet::from_iter(BRANDS_FIELDS),
             &Models::Unknown(_) => HashSet::new(),
-        })
+        }
+    }
+}
+
+impl AllowedRelations for Models {
+    fn get_allowed_relations_and_fields(&self) -> std::collections::HashMap<&str, HashSet<&str>> {
+        match self {
+            Models::Products => PRODUCTS_RELATIONS.clone(),
+            _ => HashMap::new(),
+        }
     }
 }
 

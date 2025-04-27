@@ -10,6 +10,7 @@ use axum::{
 };
 
 use axum_extra::extract::PrivateCookieJar;
+use convert_case::Casing;
 use tracing::{error, info};
 use uuid::Uuid;
 
@@ -21,9 +22,10 @@ use crate::{
         requests::QueryParams,
         response::{AppErrorResponse, AppResponse},
     },
-    traits::model_traits::{AllowedFields, SelectableFields},
+    traits::model_traits::{AllowedFields, AllowedRelations, SelectableFields},
     utils::{
         db_utils::get_select_string,
+        request_utils::extract_relations,
         server_utils::{extract_action_from_url, extract_action_id},
         transform_utils::bytes_to_json_value,
     },
@@ -115,7 +117,7 @@ pub async fn permission_check(
     };
 
     //* Fields which are allowed to be extracted from the database in general */
-    let model_allowed_fields = model.get_allowed_fields().unwrap();
+    let model_allowed_fields = model.get_allowed_fields();
     //* Fields which have been requested */
     let query_fields = Models::get_fields_from_query_string(fields);
     let query_fields: HashSet<&str> = query_fields.iter().map(|f| f.as_str()).collect();
@@ -127,6 +129,7 @@ pub async fn permission_check(
             return Ok(AppResponse::default_response(serde_json::json!([])).into_response());
         }
     }
+
     let resource_id: Uuid = extract_action_id(&action)
         .map(|id| id.to_owned())
         .unwrap_or(Uuid::nil());
@@ -146,6 +149,7 @@ pub async fn permission_check(
     let bytes = body::to_bytes(body, MAX)
         .await
         .map_err(AppError::critical_error)?;
+
     let resources: Vec<CerbosResource> = match action {
         Actions::Create => {
             if model == Models::Files {
@@ -164,14 +168,17 @@ pub async fn permission_check(
                     .keys()
                     .map(|k| CerbosResource {
                         id: action.to_string(),
-                        kind: format!("{}:{}", model.to_string(), k),
+                        kind: format!(
+                            "{}:{}",
+                            model.to_string(),
+                            k.to_case(convert_case::Case::Snake)
+                        ),
                         attr: None,
                         scope: None,
                     })
                     .collect()
             }
         }
-
         Actions::Archive(id) | Actions::Delete(id) => {
             vec![CerbosResource {
                 id: id.to_string(),
@@ -189,7 +196,11 @@ pub async fn permission_check(
                 .keys()
                 .map(|k| CerbosResource {
                     id: action.to_string(),
-                    kind: format!("{}:{}", model.to_string(), k),
+                    kind: format!(
+                        "{}:{}",
+                        model.to_string(),
+                        k.to_case(convert_case::Case::Snake)
+                    ),
                     attr: None,
                     scope: None,
                 })
@@ -202,15 +213,49 @@ pub async fn permission_check(
             scope: None,
         }],
 
-        _ => model_allowed_fields
-            .intersection(&query_fields)
-            .map(|s| CerbosResource {
-                id: format!("{}-{}", resource_id, s),
-                kind: format!("{}:{}", model.to_string(), s),
-                attr: None,
-                scope: None,
-            })
-            .collect(),
+        _ => {
+            //* Relations and their fields which are allowed
+            let allowed_relations = model.get_allowed_relations_and_fields();
+            //* Relations and their fields which are requested
+            let relations = extract_relations(&query.0.relations, allowed_relations);
+
+            let mut to_check: Vec<CerbosResource> = model_allowed_fields
+                .intersection(&query_fields)
+                .map(|s| CerbosResource {
+                    id: format!("{}-{}", resource_id, s.to_case(convert_case::Case::Snake)),
+                    kind: format!(
+                        "{}:{}",
+                        model.to_string(),
+                        s.to_case(convert_case::Case::Snake)
+                    ),
+                    attr: None,
+                    scope: None,
+                })
+                .collect();
+
+            for relation in relations {
+                for field in relation.1 {
+                    to_check.push(CerbosResource {
+                        id: format!(
+                            "{}-{}-{}",
+                            resource_id,
+                            relation.0,
+                            field.to_case(convert_case::Case::Snake)
+                        ),
+                        kind: format!(
+                            "{}:relation:{}:{}",
+                            model.to_string(),
+                            relation.0,
+                            field.to_case(convert_case::Case::Snake)
+                        ),
+                        attr: None,
+                        scope: None,
+                    });
+                }
+            }
+
+            to_check
+        }
     };
 
     let permission_check = CerbosCheck {
@@ -251,8 +296,11 @@ pub async fn permission_check(
                         .unwrap_or(crate::enums::roles::Roles::None)
                 )));
             }
-            let allowed_fields: AllowedFieldsType = get_select_string(&model, allowed_fields);
-            parts.extensions.insert(allowed_fields);
+
+            let fields_string: AllowedFieldsType = get_select_string(&model, &allowed_fields);
+            parts.extensions.insert(fields_string);
+            let fields: HashSet<String> = HashSet::from_iter(allowed_fields);
+            parts.extensions.insert(fields);
         }
         _ => {}
     };

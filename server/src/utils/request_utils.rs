@@ -1,6 +1,9 @@
-use std::str::FromStr;
+use std::{
+    collections::{HashMap, HashSet},
+    str::FromStr,
+};
 
-use serde_json::Value;
+use serde_json::{Map, Value};
 use tokio_postgres::types::ToSql;
 use uuid::Uuid;
 
@@ -43,4 +46,43 @@ pub fn convert_filter_type(input: &String) -> Box<dyn ToSql + Sync + Send> {
     } else {
         Box::new(input.to_owned()) as Box<dyn ToSql + Sync + Send>
     }
+}
+
+pub fn extract_relations(
+    input: &Option<String>,
+    allowed_relations: HashMap<&str, HashSet<&str>>,
+) -> HashMap<String, HashSet<String>> {
+    if input.is_none() {
+        return HashMap::new();
+    }
+    let input_relations = input.as_ref().unwrap();
+
+    let json = Value::from_str(&input_relations).unwrap_or_default();
+
+    let blank_map = Map::new();
+    let json = json.as_object().unwrap_or(&blank_map);
+
+    let relations = json
+        .iter()
+        .filter_map(|item| {
+            // * relation -> Map<MODEL, FIELDS[]>
+            if let Some(relation) = allowed_relations.get(item.0.as_str()) {
+                let fields: HashSet<String> = HashSet::from_iter(
+                    item.1
+                        .as_array()
+                        .unwrap_or(&Vec::new())
+                        .iter()
+                        .map(|v| v.as_str().unwrap_or_default()),
+                )
+                .intersection(relation)
+                .map(|item| item.to_string())
+                .collect();
+                Some((item.0.to_owned(), fields))
+            } else {
+                None
+            }
+        })
+        .collect::<HashMap<String, HashSet<String>>>();
+
+    return relations;
 }
