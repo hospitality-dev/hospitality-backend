@@ -116,13 +116,15 @@ async fn list_purchase_items_to_modify(
             "SELECT purchase_items.id, products.id as product_id,
             purchase_items.quantity, purchase_items.unit_of_measurement,
             products.weight, products.weight_unit, products.volume, products.volume_unit,
-            COALESCE(products.title, purchase_items.title) as title
+            COALESCE(products.title, purchase_items.title) as title, brands.title AS brand_title
                 FROM
                     purchase_items
                 LEFT JOIN products_aliases
                     ON products_aliases.title = purchase_items.title
                 LEFT JOIN products
                     ON products_aliases.product_id = products.id
+                LEFT JOIN brands
+                    ON products.brand_id = brands.id
                  WHERE
                     purchase_items.parent_id = $1
                         AND
