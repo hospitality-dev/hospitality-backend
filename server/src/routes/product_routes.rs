@@ -236,7 +236,7 @@ async fn list_product_by_category_active(
                     ) as has_about_to_expire
                 FROM
                     products
-                LEFT JOIN locations_available_products
+                INNER JOIN locations_available_products
                     ON locations_available_products.product_id = products.id
                 LEFT JOIN locations_products
                     ON locations_products.product_id = products.id
