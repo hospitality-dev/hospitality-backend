@@ -1,5 +1,6 @@
 use axum::http::StatusCode;
 use thiserror::Error;
+use tokio_postgres::Error as DBError;
 use tracing::{error, warn};
 
 use crate::models::response::AppErrorResponse;
@@ -61,9 +62,8 @@ impl AppError {
         };
     }
     #[track_caller]
-    pub fn db_error(err: impl ToString) -> AppErrorResponse {
+    pub fn db_error(err: DBError) -> AppErrorResponse {
         let location = std::panic::Location::caller();
-
         error!(
             message = err.to_string(),
             kind = "DATABASE ERROR",
