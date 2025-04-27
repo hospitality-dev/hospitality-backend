@@ -108,10 +108,21 @@ services:
       - internal
     depends_on:
       - loki
+  appsmith:
+    image: appsmith/appsmith-ce
+    container_name: appsmith
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    volumes:
+      - appsmith-stacks:/appsmith-stacks
+    networks:
+      - internal
 volumes:
   postgres_data:
   valkey_data:
   nominatim_data:
+  appsmith-stacks:
 networks:
   internal:
     driver: bridge
