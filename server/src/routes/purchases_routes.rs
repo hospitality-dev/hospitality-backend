@@ -5,6 +5,7 @@ use axum::{
 };
 use postgres_types::ToSql;
 use serde_json::Value;
+use tracing::debug;
 use uuid::Uuid;
 
 use crate::{
@@ -42,7 +43,7 @@ async fn create_purchase(
 
     let mut conn = state.get_db_conn().await?;
     let tx = conn.transaction().await.map_err(AppError::db_error)?;
-
+    debug!("QUERYING SUPPLIER ID");
     let supplier_id: Uuid = tx
         .query_one(
             "SELECT id FROM suppliers WHERE title = $1;",
@@ -52,7 +53,9 @@ async fn create_purchase(
         .map_err(AppError::db_error)?
         .try_get("id")
         .map_err(AppError::default_response)?;
+    debug!("END QUERYING SUPPLIER ID");
 
+    debug!("QUERYING STORE ID");
     let store_id: Uuid = tx
         .query_one(
             "INSERT INTO stores (title, parent_id, is_default) VALUES (TRIM($1), $2, FALSE) ON CONFLICT (parent_id, title)
@@ -64,6 +67,7 @@ async fn create_purchase(
         .map_err(AppError::db_error)?
         .try_get("id")
         .map_err(AppError::default_response)?;
+    debug!("END QUERYING STORE ID");
 
     let payment_type = if let Some(payment) = p.invoice_request.payments.get(0) {
         payment.payment_type
