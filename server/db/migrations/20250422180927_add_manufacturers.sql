@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS
         updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
         deleted_at TIMESTAMP WITH TIME ZONE,
         title TEXT NOT NULL,
-        owner_id UUID REFERENCES users (id) ON DELETE CASCADE,
+        owner_id UUID REFERENCES users (id) ON DELETE CASCADE
     );
 
 -- migrate:down

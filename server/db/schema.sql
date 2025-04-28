@@ -22,7 +22,7 @@ DECLARE
 BEGIN
     SELECT id INTO owner_role_id
     FROM roles
-    WHERE title = 'owner' AND is_default = TRUE
+    WHERE title = 'owner' AND company_id IS NULL
     LIMIT 1;
 
     INSERT INTO locations_users (user_id, location_id, role_id) VALUES (NEW.owner_id, NEW.id, owner_role_id);
@@ -47,7 +47,7 @@ CREATE TABLE public.brands (
     deleted_at timestamp with time zone,
     title text NOT NULL,
     parent_id uuid NOT NULL,
-    is_default boolean DEFAULT false NOT NULL,
+    owner_id uuid,
     company_id uuid
 );
 
@@ -230,7 +230,7 @@ CREATE TABLE public.manufacturers (
     updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
     deleted_at timestamp with time zone,
     title text NOT NULL,
-    is_default boolean DEFAULT false NOT NULL,
+    owner_id uuid,
     company_id uuid
 );
 
@@ -321,8 +321,7 @@ CREATE TABLE public.products_categories (
     deleted_at timestamp with time zone,
     title text NOT NULL,
     parent_id uuid,
-    company_id uuid,
-    is_default boolean NOT NULL
+    company_id uuid
 );
 
 
@@ -398,8 +397,7 @@ CREATE TABLE public.roles (
     updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
     deleted_at timestamp without time zone,
     title text NOT NULL,
-    company_id uuid,
-    is_default boolean DEFAULT false NOT NULL
+    company_id uuid
 );
 
 
@@ -424,8 +422,7 @@ CREATE TABLE public.stores (
     title text NOT NULL,
     parent_id uuid NOT NULL,
     owner_id uuid,
-    company_id uuid,
-    is_default boolean DEFAULT false NOT NULL
+    company_id uuid
 );
 
 
@@ -474,7 +471,6 @@ CREATE TABLE public.suppliers (
     updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
     deleted_at timestamp with time zone,
     title text NOT NULL,
-    is_default boolean DEFAULT false,
     owner_id uuid,
     company_id uuid
 );
@@ -821,6 +817,14 @@ ALTER TABLE ONLY public.brands
 
 
 --
+-- Name: brands brands_owner_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.brands
+    ADD CONSTRAINT brands_owner_id_fkey FOREIGN KEY (owner_id) REFERENCES public.users(id) ON DELETE CASCADE;
+
+
+--
 -- Name: brands brands_parent_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -994,6 +998,14 @@ ALTER TABLE ONLY public.manufacturers
 
 ALTER TABLE ONLY public.manufacturers_contacts
     ADD CONSTRAINT manufacturers_contacts_parent_id_fkey FOREIGN KEY (parent_id) REFERENCES public.suppliers(id) ON DELETE CASCADE;
+
+
+--
+-- Name: manufacturers manufacturers_owner_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.manufacturers
+    ADD CONSTRAINT manufacturers_owner_id_fkey FOREIGN KEY (owner_id) REFERENCES public.users(id) ON DELETE CASCADE;
 
 
 --

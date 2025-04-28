@@ -10,82 +10,58 @@ CREATE TABLE IF NOT EXISTS
         );
 
 INSERT INTO
-        roles (id, title, is_default)
+        roles (id, title)
 VALUES
-        (
-                'ce9d72a4-f196-4306-acb1-f905e032222a',
-                'owner',
-                TRUE
-        ),
+        ('ce9d72a4-f196-4306-acb1-f905e032222a', 'owner'),
         (
                 '735530aa-17e9-4f74-baf1-3547dd200566',
-                'general_manager',
-                TRUE
+                'general_manager'
         ),
         (
                 'b8b9792f-353e-4fe2-a1e1-6c3b52c016f5',
-                'location_manager',
-                TRUE
+                'location_manager'
         ),
         (
                 '7e8e9ae7-cb07-493c-acab-4952a637f107',
-                'human_relations',
-                TRUE
+                'human_relations'
         ),
         (
                 '48996e0f-8ee4-4a96-aed8-caf9c107509d',
-                'head_chef',
-                TRUE
+                'head_chef'
         ),
-        (
-                '2ccab95a-ce95-4115-96f6-879457f02f84',
-                'chef',
-                TRUE
-        ),
+        ('2ccab95a-ce95-4115-96f6-879457f02f84', 'chef'),
         (
                 'd4d256f3-da01-4b00-a144-53e6c1f5fd44',
-                'receptionist',
-                TRUE
+                'receptionist'
         ),
         (
                 'cee98f61-e36d-47ea-a339-1b2d229975e9',
-                'housekeeping',
-                TRUE
+                'housekeeping'
         ),
         (
                 '9663491f-fdab-4b70-881c-ae2ad3a6ac74',
-                'maintenance',
-                TRUE
+                'maintenance'
         ),
         (
                 '12915dc4-7012-4b90-9d20-ccc3e93f2b90',
-                'accounting',
-                TRUE
+                'accounting'
         ),
         (
                 '4a23add1-c035-42e4-ae16-8225d45f5185',
-                'host/ess',
-                TRUE
+                'host/ess'
         ),
         (
                 'ddd69845-59ce-4948-bad3-d28e84ddffae',
-                'server/waiter',
-                TRUE
+                'server/waiter'
         ),
         (
                 'a38829b0-6bb0-4d8d-82fc-b898106a5af9',
-                'bartender',
-                TRUE
+                'bartender'
         ),
-        (
-                '3ad5ee15-c70f-4bab-8134-6cfc8d2c49dc',
-                'cashier',
-                TRUE
-        ),
+        ('3ad5ee15-c70f-4bab-8134-6cfc8d2c49dc', 'cashier'),
         (
                 'ed403937-9cf0-4627-9002-29954c376469',
-                'employee',
-                TRUE
+                'employee'
         );
 
 -- migrate:down

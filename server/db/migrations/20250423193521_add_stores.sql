@@ -24,17 +24,15 @@ CREATE TABLE IF NOT EXISTS
     );
 
 -- INSERT INTO
---     suppliers (id, title, is_default)
+--     suppliers (id, title)
 -- VALUES
 --     (
 --         '70e652b0-3658-4753-b657-c2d35269f77f',
---         'DELHAIZE SERBIA DOO',
---         TRUE
+--         'DELHAIZE SERBIA DOO'
 --     ),
 --     (
 --         '728d6f74-b83d-4ee2-a15d-70c31c64ad36',
---         'LIDL SRBIJA KD',
---         TRUE
+--         'LIDL SRBIJA KD'
 --     );
 -- migrate:down
 DROP TABLE IF EXISTS stores;

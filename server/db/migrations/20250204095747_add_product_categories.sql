@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS
         deleted_at TIMESTAMPTZ,
         title TEXT NOT NULL,
         parent_id UUID REFERENCES products_categories (id) ON DELETE CASCADE,
-        company_id UUID REFERENCES companies (id) ON DELETE CASCADE,
+        company_id UUID REFERENCES companies (id) ON DELETE CASCADE
     );
 
 -- migrate:down

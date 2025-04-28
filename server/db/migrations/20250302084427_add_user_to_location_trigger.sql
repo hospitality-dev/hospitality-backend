@@ -6,7 +6,7 @@ DECLARE
 BEGIN
     SELECT id INTO owner_role_id
     FROM roles
-    WHERE title = 'owner' AND is_default = TRUE
+    WHERE title = 'owner' AND company_id IS NULL
     LIMIT 1;
 
     INSERT INTO locations_users (user_id, location_id, role_id) VALUES (NEW.owner_id, NEW.id, owner_role_id);
