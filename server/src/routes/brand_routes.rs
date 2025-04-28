@@ -1,5 +1,5 @@
 use axum::{
-    extract::{Path, State},
+    extract::{Path, Query, State},
     routing::{get, post},
     Extension, Json, Router,
 };
@@ -12,6 +12,7 @@ use crate::{
     models::{
         auth::AuthSession,
         brands::InsertBrand,
+        requests::QueryParams,
         response::{AppResponse, RouteResponse},
         state::AppState,
     },
@@ -44,9 +45,11 @@ async fn list_brands(
     State(state): State<AppState>,
     Extension(fields): Extension<AllowedFieldsType>,
     Extension(session): Extension<AuthSession>,
+    query: Query<QueryParams>,
     Path(parent_id): Path<Uuid>,
 ) -> RouteResponse<Value> {
     let conn = &state.get_db_conn().await?;
+    let sort = query.to_query_sort();
     let stmt = format!(
         "SELECT {}
         FROM
@@ -58,8 +61,10 @@ async fn list_brands(
                 company_id = $1
             )
                 AND
-            parent_id = $2;",
-        fields
+            parent_id = $2
+            {sort};",
+        fields,
+        sort = sort
     );
     let rows = conn
         .query(&stmt, &[&session.user.company_id.unwrap(), &parent_id])
