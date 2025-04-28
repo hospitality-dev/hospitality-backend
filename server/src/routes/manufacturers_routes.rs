@@ -1,5 +1,5 @@
 use axum::{
-    extract::State,
+    extract::{Query, State},
     routing::{get, post},
     Extension, Json, Router,
 };
@@ -12,6 +12,7 @@ use crate::{
     models::{
         auth::AuthSession,
         manufacturers::InsertManufacturer,
+        requests::QueryParams,
         response::{AppResponse, RouteResponse},
         state::AppState,
     },
@@ -40,8 +41,10 @@ async fn list_manufacturers(
     State(state): State<AppState>,
     Extension(fields): Extension<AllowedFieldsType>,
     Extension(session): Extension<AuthSession>,
+    query: Query<QueryParams>,
 ) -> RouteResponse<Value> {
     let conn = &state.get_db_conn().await?;
+    let sort = query.to_query_sort();
     let stmt = format!(
         "SELECT {}
         FROM
@@ -49,8 +52,10 @@ async fn list_manufacturers(
         WHERE
             company_id IS NULL
                 OR
-            company_id = $1;",
-        fields
+            company_id = $1
+            {sort};",
+        fields,
+        sort = sort
     );
     let rows = conn
         .query(&stmt, &[&session.user.company_id.unwrap()])
