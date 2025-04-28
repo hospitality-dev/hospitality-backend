@@ -160,7 +160,7 @@ CREATE TABLE public.locations (
 CREATE TABLE public.locations_available_brands (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
     location_id uuid NOT NULL,
-    brands_id uuid NOT NULL
+    brand_id uuid NOT NULL
 );
 
 
@@ -619,11 +619,27 @@ ALTER TABLE ONLY public.files
 
 
 --
+-- Name: locations_available_brands locations_available_brands_location_id_brand_id_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.locations_available_brands
+    ADD CONSTRAINT locations_available_brands_location_id_brand_id_key UNIQUE (location_id, brand_id);
+
+
+--
 -- Name: locations_available_brands locations_available_brands_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.locations_available_brands
     ADD CONSTRAINT locations_available_brands_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: locations_available_manufacturers locations_available_manufacture_location_id_manufacturer_id_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.locations_available_manufacturers
+    ADD CONSTRAINT locations_available_manufacture_location_id_manufacturer_id_key UNIQUE (location_id, manufacturer_id);
 
 
 --
@@ -648,6 +664,14 @@ ALTER TABLE ONLY public.locations_available_products
 
 ALTER TABLE ONLY public.locations_available_products
     ADD CONSTRAINT locations_available_products_product_id_location_id_key UNIQUE (product_id, location_id);
+
+
+--
+-- Name: locations_available_suppliers locations_available_suppliers_location_id_suppplier_id_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.locations_available_suppliers
+    ADD CONSTRAINT locations_available_suppliers_location_id_suppplier_id_key UNIQUE (location_id, suppplier_id);
 
 
 --
@@ -954,11 +978,11 @@ ALTER TABLE ONLY public.files
 
 
 --
--- Name: locations_available_brands locations_available_brands_brands_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: locations_available_brands locations_available_brands_brand_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.locations_available_brands
-    ADD CONSTRAINT locations_available_brands_brands_id_fkey FOREIGN KEY (brands_id) REFERENCES public.brands(id) ON DELETE CASCADE;
+    ADD CONSTRAINT locations_available_brands_brand_id_fkey FOREIGN KEY (brand_id) REFERENCES public.brands(id) ON DELETE CASCADE;
 
 
 --

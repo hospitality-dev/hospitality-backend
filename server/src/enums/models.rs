@@ -11,10 +11,10 @@ use crate::traits::model_traits::{AllowedFields, AllowedRelations, SelectableFie
 use common::{
     consts::{
         BRANDS_FIELDS, CONTACTS_FIELDS, COUNTRIES_FIELDS, FILES_FIELDS,
-        LOCATIONS_AVAILABLE_PRODUCTS_FIELDS, LOCATIONS_FIELDS, LOCATIONS_PRODUCTS_FIELDS,
-        LOCATIONS_USERS_FIELDS, MANUFACTURERS_FIELDS, PRODUCTS_CATEGORIES_FIELDS, PRODUCTS_FIELDS,
-        PURCHASES_FIELDS, PURCHASE_ITEMS_FIELDS, ROLES_FIELDS, STORES_FIELDS, SUPPLIERS_FIELDS,
-        USERS_FIELDS,
+        LOCATIONS_AVAILABLE_BRANDS_FIELDS, LOCATIONS_AVAILABLE_PRODUCTS_FIELDS, LOCATIONS_FIELDS,
+        LOCATIONS_PRODUCTS_FIELDS, LOCATIONS_USERS_FIELDS, MANUFACTURERS_FIELDS,
+        PRODUCTS_CATEGORIES_FIELDS, PRODUCTS_FIELDS, PURCHASES_FIELDS, PURCHASE_ITEMS_FIELDS,
+        ROLES_FIELDS, STORES_FIELDS, SUPPLIERS_FIELDS, USERS_FIELDS,
     },
     relation_consts::PRODUCTS_RELATIONS,
 };
@@ -40,6 +40,7 @@ pub enum Models {
     Stores,
     Manufacturers,
     LocationsAvailableManufacturers,
+    LocationsAvailableBrands,
     Brands,
     Unknown(String),
 }
@@ -73,6 +74,7 @@ impl ToString for Models {
             Models::LocationsAvailableManufacturers => {
                 "locations_available_manufacturers".to_string()
             }
+            Models::LocationsAvailableBrands => "locations_available_brands".to_string(),
             Models::Unknown(name) => format!("UNKNOWN MODEL - {}", name),
         }
     }
@@ -99,6 +101,7 @@ impl AsStr for Models {
             Models::Manufacturers => "manufacturers",
             Models::Brands => "brands",
             Models::LocationsAvailableManufacturers => "locations_available_manufacturers",
+            Models::LocationsAvailableBrands => "locations_available_brands",
             Models::Unknown(_) => "unknown",
         }
     }
@@ -126,6 +129,7 @@ impl FromStr for Models {
             "stores" => Ok(Models::Stores),
             "manufacturers" => Ok(Models::Manufacturers),
             "locations-available-manufacturers" => Ok(Models::LocationsAvailableManufacturers),
+            "locations-available-brands" => Ok(Models::LocationsAvailableBrands),
             "brands" => Ok(Models::Brands),
             _ => Ok(Models::Unknown(s.to_string())),
         }
@@ -158,9 +162,9 @@ impl AllowedFields for Models {
             &Models::LocationsAvailableManufacturers => {
                 HashSet::from_iter(LOCATIONS_AVAILABLE_PRODUCTS_FIELDS)
             }
-            // &Models::LocationsAvailableProducts => {
-            // HashSet::from_iter(LOCATIONS_AVAILABLE_PRODUCTS_FIELDS)
-            // }
+            &Models::LocationsAvailableBrands => {
+                HashSet::from_iter(LOCATIONS_AVAILABLE_BRANDS_FIELDS)
+            }
             &Models::Unknown(_) => HashSet::new(),
         }
     }

@@ -24,7 +24,7 @@ use reqwest::{
 };
 use routes::{
     auth_routes::auth_routes, brand_routes::brand_routes, contacts_routes::contacts_routes,
-    file_routes::file_routes,
+    file_routes::file_routes, locations_available_brands_routes::locations_available_brands_routes,
     locations_available_manufacturers_routes::locations_available_manufacturer_routes,
     locations_available_products_routes::locations_available_products_routes,
     locations_products_routes::location_products_routes, locations_routes::locations_routes,
@@ -192,7 +192,6 @@ pub async fn app() -> Result<Router> {
                 .merge(product_routes())
                 .merge(products_categories_routes())
                 .merge(location_products_routes())
-                .merge(locations_available_products_routes())
                 .merge(roles_routes())
                 .merge(locations_users_routes())
                 .merge(contacts_routes())
@@ -201,9 +200,11 @@ pub async fn app() -> Result<Router> {
                 .merge(suppliers_routes())
                 .merge(stores_routes())
                 .merge(manufacturers_routes())
-                .merge(locations_available_manufacturer_routes())
                 .merge(brand_routes())
                 .merge(purchase_items_routes())
+                .merge(locations_available_manufacturer_routes())
+                .merge(locations_available_brands_routes())
+                .merge(locations_available_products_routes())
                 .layer(from_fn_with_state(state.clone(), permission_check))
                 // TODO: ADD PERMISSIONS MIDDLEWARE TO URL ROUTES
                 .merge(url_routes())

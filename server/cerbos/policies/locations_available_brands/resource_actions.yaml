@@ -1,0 +1,22 @@
+apiVersion: api.cerbos.dev/v1
+resourcePolicy:
+  resource: locations_available_brands
+  version: default
+  rules:
+
+  - actions: [ create, view, list, update, archive, delete ]
+    effect: EFFECT_ALLOW
+    roles: [ owner, manager ]
+    condition:
+      match:
+        any:
+          of:
+          - expr: R.attr.company_id == P.attr.company_id
+          - expr: R.id == P.attr.location_id
+
+  - actions: [ view, list ]
+    effect: EFFECT_ALLOW
+    roles: [ employee ]
+    condition:
+      match:
+        expr: R.attr.location_id == P.attr.location_id

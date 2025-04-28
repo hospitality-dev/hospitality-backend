@@ -3,6 +3,7 @@ pub mod brands;
 pub mod cerbos;
 pub mod contacts;
 pub mod locations;
+pub mod locations_available_brands;
 pub mod locations_available_manufacturers;
 pub mod locations_available_products;
 pub mod locations_products;

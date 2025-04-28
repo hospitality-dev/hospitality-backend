@@ -195,3 +195,5 @@ pub const BRANDS_FIELDS: [&str; 7] = [
 
 pub const LOCATIONS_AVAILABLE_MANUFACTURERS_FIELDS: [&str; 3] =
     ["id", "manufacturer_id", "location_id"];
+
+pub const LOCATIONS_AVAILABLE_BRANDS_FIELDS: [&str; 3] = ["id", "brand_id", "location_id"];
