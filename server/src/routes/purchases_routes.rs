@@ -46,8 +46,12 @@ async fn create_purchase(
     debug!("QUERYING SUPPLIER ID");
     let supplier_id: Uuid = tx
         .query_one(
-            "SELECT id FROM suppliers WHERE title = $1;",
-            &[&p.invoice_request.business_name],
+            "INSERT INTO suppliers (title, owner_id, company_id) VALUES ($1, $2, $3) ON CONFLICT (title) DO UPDATE SET title = suppliers.title RETURNING id;",
+            &[
+                &p.invoice_request.business_name,
+                &session.user.id,
+                &session.user.company_id.unwrap(),
+            ],
         )
         .await
         .map_err(AppError::db_error)?

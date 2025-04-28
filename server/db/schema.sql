@@ -778,6 +778,14 @@ ALTER TABLE ONLY public.suppliers
 
 
 --
+-- Name: suppliers unique_title_company_id_constraint; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.suppliers
+    ADD CONSTRAINT unique_title_company_id_constraint UNIQUE (title);
+
+
+--
 -- Name: users_contacts users_contacts_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1296,4 +1304,5 @@ INSERT INTO public.schema_migrations (version) VALUES
     ('20250426094232'),
     ('20250426115053'),
     ('20250426115232'),
-    ('20250426115240');
+    ('20250426115240'),
+    ('20250428111506');
