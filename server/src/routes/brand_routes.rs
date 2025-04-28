@@ -27,10 +27,11 @@ async fn create_brand(
     let conn = &state.get_db_conn().await?;
     let id: Uuid = conn
         .query_one(
-            "INSERT INTO brands (title, parent_id, company_id) VALUES ($1, $2, $3) RETURNING id;",
+            "INSERT INTO brands (title, parent_id, owner_id, company_id) VALUES ($1, $2, $3, $4) RETURNING id;",
             &[
                 &payload.title,
                 &payload.parent_id,
+                &session.user.id,
                 &session.user.company_id.unwrap(),
             ],
         )

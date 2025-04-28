@@ -27,8 +27,8 @@ async fn create_manufacturer(
     let conn = &state.get_db_conn().await?;
     let id: Uuid = conn
         .query_one(
-            "INSERT INTO manufacturers (title, company_id) VALUES ($1, $2) RETURNING id;",
-            &[&payload.title, &session.user.company_id.unwrap()],
+            "INSERT INTO manufacturers (title, owner_id, company_id) VALUES ($1, $2, $3) RETURNING id;",
+            &[&payload.title, &session.user.id, &session.user.company_id.unwrap()],
         )
         .await
         .map_err(AppError::db_error)?
