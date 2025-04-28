@@ -5,6 +5,7 @@ pub mod locations;
 pub mod locations_available_products;
 pub mod locations_products;
 pub mod locations_users;
+pub mod manufacturers;
 pub mod permissions;
 pub mod products;
 pub mod products_categories;
