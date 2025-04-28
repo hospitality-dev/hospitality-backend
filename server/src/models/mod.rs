@@ -16,5 +16,6 @@ pub mod response;
 pub mod roles;
 pub mod search;
 pub mod state;
+pub mod suppliers;
 pub mod url_responses;
 pub mod users;
