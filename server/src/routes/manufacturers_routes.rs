@@ -26,7 +26,7 @@ async fn create_manufacturer(
     let conn = &state.get_db_conn().await?;
     let id: Uuid = conn
         .query_one(
-            "INSERT INTO manufacturers () VALUES () RETURNING id;",
+            "INSERT INTO manufacturers (title, company_id) VALUES ($1, $2) RETURNING id;",
             &[&payload.title, &session.user.company_id.unwrap()],
         )
         .await
