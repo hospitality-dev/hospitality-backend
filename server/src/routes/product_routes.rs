@@ -180,9 +180,12 @@ async fn list_product_by_category(
     let rows = conn
         .query(
             &format!(
-                "SELECT {fields}, brands.title as brand_title, manufacturers.title as manufacturer_title
+                "SELECT {fields}, locations_available_products.id AS availability_id
+                brands.title as brand_title, manufacturers.title as manufacturer_title
                 FROM
                     products
+                LEFT JOIN locations_available_products
+                    ON locations_available_products.product_id = products.id
                 LEFT JOIN brands
                     ON products.brand_id = brands.id
                 LEFT JOIN manufacturers
