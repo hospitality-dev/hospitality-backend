@@ -39,6 +39,7 @@ pub enum Models {
     Suppliers,
     Stores,
     Manufacturers,
+    LocationsAvailableManufacturers,
     Brands,
     Unknown(String),
 }
@@ -69,6 +70,9 @@ impl ToString for Models {
             Models::Stores => "stores".to_string(),
             Models::Manufacturers => "manufacturers".to_string(),
             Models::Brands => "brands".to_string(),
+            Models::LocationsAvailableManufacturers => {
+                "locations_available_manufacturers".to_string()
+            }
             Models::Unknown(name) => format!("UNKNOWN MODEL - {}", name),
         }
     }
@@ -94,6 +98,7 @@ impl AsStr for Models {
             Models::Stores => "stores",
             Models::Manufacturers => "manufacturers",
             Models::Brands => "brands",
+            Models::LocationsAvailableManufacturers => "locations_available_manufacturers",
             Models::Unknown(_) => "unknown",
         }
     }
@@ -120,6 +125,7 @@ impl FromStr for Models {
             "suppliers" => Ok(Models::Suppliers),
             "stores" => Ok(Models::Stores),
             "manufacturers" => Ok(Models::Manufacturers),
+            "locations-available-manufacturers" => Ok(Models::LocationsAvailableManufacturers),
             "brands" => Ok(Models::Brands),
             _ => Ok(Models::Unknown(s.to_string())),
         }
@@ -149,6 +155,12 @@ impl AllowedFields for Models {
             &Models::Stores => HashSet::from_iter(STORES_FIELDS),
             &Models::Manufacturers => HashSet::from_iter(MANUFACTURERS_FIELDS),
             &Models::Brands => HashSet::from_iter(BRANDS_FIELDS),
+            &Models::LocationsAvailableManufacturers => {
+                HashSet::from_iter(LOCATIONS_AVAILABLE_PRODUCTS_FIELDS)
+            }
+            // &Models::LocationsAvailableProducts => {
+            // HashSet::from_iter(LOCATIONS_AVAILABLE_PRODUCTS_FIELDS)
+            // }
             &Models::Unknown(_) => HashSet::new(),
         }
     }

@@ -2,6 +2,7 @@ pub mod auth_routes;
 pub mod brand_routes;
 pub mod contacts_routes;
 pub mod file_routes;
+pub mod locations_available_manufacturers_routes;
 pub mod locations_available_products_routes;
 pub mod locations_products_routes;
 pub mod locations_routes;

@@ -46,9 +46,11 @@ async fn list_manufacturers(
     let conn = &state.get_db_conn().await?;
     let sort = query.to_query_sort();
     let stmt = format!(
-        "SELECT {}
+        "SELECT {}, locations_available_manufacturers.id AS availability_id
         FROM
             manufacturers
+        LEFT JOIN locations_available_manufacturers
+            ON manufacturers.id = locations_available_manufacturers.manufacturer_id
         WHERE
             company_id IS NULL
                 OR

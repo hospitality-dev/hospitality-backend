@@ -25,6 +25,7 @@ use reqwest::{
 use routes::{
     auth_routes::auth_routes, brand_routes::brand_routes, contacts_routes::contacts_routes,
     file_routes::file_routes,
+    locations_available_manufacturers_routes::locations_available_manufacturer_routes,
     locations_available_products_routes::locations_available_products_routes,
     locations_products_routes::location_products_routes, locations_routes::locations_routes,
     locations_users_routes::locations_users_routes, manufacturers_routes::manufacturers_routes,
@@ -200,6 +201,7 @@ pub async fn app() -> Result<Router> {
                 .merge(suppliers_routes())
                 .merge(stores_routes())
                 .merge(manufacturers_routes())
+                .merge(locations_available_manufacturer_routes())
                 .merge(brand_routes())
                 .merge(purchase_items_routes())
                 .layer(from_fn_with_state(state.clone(), permission_check))

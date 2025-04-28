@@ -192,3 +192,6 @@ pub const BRANDS_FIELDS: [&str; 7] = [
     "parent_id",
     "owner_id",
 ];
+
+pub const LOCATIONS_AVAILABLE_MANUFACTURERS_FIELDS: [&str; 3] =
+    ["id", "manufacturer_id", "location_id"];

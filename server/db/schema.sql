@@ -958,7 +958,7 @@ ALTER TABLE ONLY public.files
 --
 
 ALTER TABLE ONLY public.locations_available_brands
-    ADD CONSTRAINT locations_available_brands_brands_id_fkey FOREIGN KEY (brands_id) REFERENCES public.suppliers(id) ON DELETE CASCADE;
+    ADD CONSTRAINT locations_available_brands_brands_id_fkey FOREIGN KEY (brands_id) REFERENCES public.brands(id) ON DELETE CASCADE;
 
 
 --
@@ -982,7 +982,7 @@ ALTER TABLE ONLY public.locations_available_manufacturers
 --
 
 ALTER TABLE ONLY public.locations_available_manufacturers
-    ADD CONSTRAINT locations_available_manufacturers_manufacturer_id_fkey FOREIGN KEY (manufacturer_id) REFERENCES public.suppliers(id) ON DELETE CASCADE;
+    ADD CONSTRAINT locations_available_manufacturers_manufacturer_id_fkey FOREIGN KEY (manufacturer_id) REFERENCES public.manufacturers(id) ON DELETE CASCADE;
 
 
 --
