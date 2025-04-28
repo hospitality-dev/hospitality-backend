@@ -24,11 +24,9 @@ async fn list_roles(
         FROM
             roles
         WHERE
-            (
-                (company_id IS NULL OR is_default = TRUE)
-                    OR
-                (company_id = $1)
-            );",
+            company_id IS NULL
+                OR
+            company_id = $1;",
         fields
     );
 

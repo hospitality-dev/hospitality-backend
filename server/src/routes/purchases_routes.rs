@@ -58,7 +58,7 @@ async fn create_purchase(
     debug!("QUERYING STORE ID");
     let store_id: Uuid = tx
         .query_one(
-            "INSERT INTO stores (title, parent_id, is_default) VALUES (TRIM($1), $2, FALSE) ON CONFLICT (parent_id, title)
+            "INSERT INTO stores (title, parent_id) VALUES (TRIM($1), $2) ON CONFLICT (parent_id, title)
             DO UPDATE SET title = stores.title
             RETURNING stores.id;",
             &[&p.invoice_request.location_name, &supplier_id],

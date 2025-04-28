@@ -29,7 +29,7 @@ pub const PRODUCTS_CATEGORIES_FIELDS: [&str; 8] = [
     "deleted_at",
     "title",
     "parent_id",
-    "is_default",
+    "owner_id",
     "company_id",
 ];
 pub const LOCATIONS_FIELDS: [&str; 8] = [
@@ -179,8 +179,8 @@ pub const MANUFACTURERS_FIELDS: [&str; 6] = [
     "created_at",
     "deleted_at",
     "company_id",
+    "owner_id",
     "title",
-    "is_default",
 ];
 
 pub const BRANDS_FIELDS: [&str; 7] = [
@@ -189,6 +189,6 @@ pub const BRANDS_FIELDS: [&str; 7] = [
     "deleted_at",
     "company_id",
     "title",
-    "is_default",
     "parent_id",
+    "owner_id",
 ];

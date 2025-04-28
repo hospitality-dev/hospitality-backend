@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS
         deleted_at TIMESTAMP WITH TIME ZONE,
         title TEXT NOT NULL,
         parent_id UUID NOT NULL REFERENCES manufacturers (id) ON DELETE CASCADE,
-        is_default BOOLEAN NOT NULL DEFAULT FALSE,
+        owner_id UUID REFERENCES users (id) ON DELETE CASCADE,
         company_id UUID REFERENCES companies (id) ON DELETE CASCADE
     );
 

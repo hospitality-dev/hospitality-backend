@@ -8,7 +8,6 @@ CREATE TABLE IF NOT EXISTS
         title TEXT NOT NULL,
         parent_id UUID REFERENCES products_categories (id) ON DELETE CASCADE,
         company_id UUID REFERENCES companies (id) ON DELETE CASCADE,
-        is_default BOOLEAN NOT NULL
     );
 
 -- migrate:down

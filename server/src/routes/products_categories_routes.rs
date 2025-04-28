@@ -27,8 +27,8 @@ async fn create_products_categories(
     let row = conn
         .query_one(
             "INSERT INTO products_categories
-     (title, parent_id, company_id, is_default)
-     VALUES ($1, $2, $3, FALSE)
+     (title, parent_id, company_id)
+     VALUES ($1, $2, $3)
      RETURNING id;",
             &[&payload.title, &payload.parent_id, &payload.company_id],
         )

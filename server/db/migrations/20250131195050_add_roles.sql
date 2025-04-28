@@ -6,8 +6,7 @@ CREATE TABLE IF NOT EXISTS
                 updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
                 deleted_at timestamp,
                 title TEXT NOT NULL,
-                company_id UUID REFERENCES companies (id) ON DELETE CASCADE,
-                is_default BOOLEAN NOT NULL DEFAULT FALSE
+                company_id UUID REFERENCES companies (id) ON DELETE CASCADE
         );
 
 INSERT INTO

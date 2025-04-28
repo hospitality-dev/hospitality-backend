@@ -1,9 +1,0 @@
-apiVersion: api.cerbos.dev/v1
-resourcePolicy:
-  resource: roles:is_default
-  version: default
-  rules:
-
-  - actions: [ view, list ]
-    effect: EFFECT_ALLOW
-    roles: [ '*' ]

@@ -5,7 +5,8 @@ CREATE TABLE IF NOT EXISTS
         created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
         deleted_at TIMESTAMP WITH TIME ZONE,
-        title TEXT NOT NULL
+        title TEXT NOT NULL,
+        owner_id UUID REFERENCES users (id) ON DELETE CASCADE,
     );
 
 -- migrate:down

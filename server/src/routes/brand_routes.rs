@@ -53,21 +53,12 @@ async fn list_brands(
             brands
         WHERE
             (
-                is_default = TRUE
-                    AND
                 company_id IS NULL
-            )
-                OR
-            (
-                is_default = FALSE
-                    AND
-                company_id IS NOT NULL
-                    AND
+                    OR
                 company_id = $1
             )
                 AND
-            parent_id = $2;
-            ;",
+            parent_id = $2;",
         fields
     );
     let rows = conn

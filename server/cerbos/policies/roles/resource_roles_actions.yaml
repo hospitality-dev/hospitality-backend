@@ -20,4 +20,3 @@ resourcePolicy:
           of:
           - expr: R.attr.company_id == P.attr.company_id
           - expr: R.attr.company_id == null
-          - expr: R.attr.is_default == true

@@ -47,19 +47,9 @@ async fn list_manufacturers(
         FROM
             manufacturers
         WHERE
-            (
-                is_default = TRUE
-                    AND
-                company_id IS NULL
-            )
+            company_id IS NULL
                 OR
-            (
-                is_default = FALSE
-                    AND
-                company_id IS NOT NULL
-                    AND
-                company_id = $1
-            );",
+            company_id = $1;",
         fields
     );
     let rows = conn

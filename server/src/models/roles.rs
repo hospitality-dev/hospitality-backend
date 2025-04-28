@@ -9,5 +9,4 @@ pub struct Roles {
     pub updated_at: DateTime<Utc>,
     pub deleted_at: DateTime<Utc>,
     pub title: Uuid,
-    pub is_default: bool,
 }

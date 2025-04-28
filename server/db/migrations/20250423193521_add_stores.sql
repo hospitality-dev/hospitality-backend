@@ -6,7 +6,6 @@ CREATE TABLE IF NOT EXISTS
         updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
         deleted_at TIMESTAMP WITH TIME ZONE,
         title TEXT NOT NULL,
-        is_default BOOLEAN DEFAULT FALSE,
         owner_id UUID REFERENCES users (id) ON DELETE CASCADE,
         company_id UUID REFERENCES companies (id) ON DELETE CASCADE
     );
@@ -21,7 +20,6 @@ CREATE TABLE IF NOT EXISTS
         parent_id UUID NOT NULL REFERENCES suppliers (id) ON DELETE CASCADE,
         owner_id UUID REFERENCES users (id) ON DELETE CASCADE,
         company_id UUID REFERENCES companies (id) ON DELETE CASCADE,
-        is_default BOOLEAN NOT NULL DEFAULT FALSE,
         UNIQUE (parent_id, title)
     );
 
