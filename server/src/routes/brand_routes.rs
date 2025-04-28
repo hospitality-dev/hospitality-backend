@@ -1,7 +1,7 @@
 use axum::{
     extract::{Path, State},
-    routing::get,
-    Extension, Router,
+    routing::{get, post},
+    Extension, Json, Router,
 };
 use serde_json::Value;
 use uuid::Uuid;
@@ -11,11 +11,34 @@ use crate::{
     middlware::crud_middleware::AllowedFieldsType,
     models::{
         auth::AuthSession,
+        brands::InsertBrand,
         response::{AppResponse, RouteResponse},
         state::AppState,
     },
     traits::db_traits::SerializeList,
 };
+
+async fn create_brand(
+    Extension(session): Extension<AuthSession>,
+    State(state): State<AppState>,
+    Json(payload): Json<InsertBrand>,
+) -> RouteResponse<Uuid> {
+    let conn = &state.get_db_conn().await?;
+    let id: Uuid = conn
+        .query_one(
+            "INSERT INTO brands (title, parent_id, company_id) VALUES ($1, $2, $3) RETURNING id;",
+            &[
+                &payload.title,
+                &payload.parent_id,
+                &session.user.company_id.unwrap(),
+            ],
+        )
+        .await
+        .map_err(AppError::db_error)?
+        .get("id");
+
+    return Ok(AppResponse::default_response(id));
+}
 
 async fn list_brands(
     State(state): State<AppState>,
@@ -58,6 +81,8 @@ async fn list_brands(
 pub fn brand_routes() -> Router<AppState> {
     return Router::new().nest(
         "/brands",
-        Router::new().route("/list/{parent_id}", get(list_brands)),
+        Router::new()
+            .route("/list/{parent_id}", get(list_brands))
+            .route("/", post(create_brand)),
     );
 }

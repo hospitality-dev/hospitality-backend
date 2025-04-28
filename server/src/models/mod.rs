@@ -1,4 +1,5 @@
 pub mod auth;
+pub mod brands;
 pub mod cerbos;
 pub mod contacts;
 pub mod locations;
