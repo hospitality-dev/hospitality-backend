@@ -18,7 +18,7 @@ use crate::{
         state::AppState,
         suppliers::{InsertSupplier, UpdateSupplier},
     },
-    traits::db_traits::SerializeList,
+    traits::db_traits::{SerializeList, SerializeToJson},
 };
 
 async fn create_supplier(
@@ -43,6 +43,31 @@ async fn create_supplier(
     return Ok(AppResponse::default_response(id));
 }
 
+pub async fn read_supplier(
+    Extension(fields): Extension<AllowedFieldsType>,
+    State(state): State<AppState>,
+    Path(id): Path<Uuid>,
+) -> RouteResponse<Value> {
+    let conn = &state.get_db_conn().await?;
+
+    let row = conn
+        .query_one(
+            &format!(
+                "SELECT {}
+                FROM
+                    suppliers
+                WHERE id = $1;",
+                fields
+            ),
+            &[&id],
+        )
+        .await
+        .map_err(AppError::db_error)?;
+
+    return Ok(AppResponse::default_response(
+        row.serialize_row_to_json(true),
+    ));
+}
 pub async fn list_suppliers(
     Extension(session): Extension<AuthSession>,
     Extension(fields): Extension<AllowedFieldsType>,
@@ -80,13 +105,15 @@ pub async fn update_supplier(
     Json(payload): Json<UpdateSupplier>,
 ) -> RouteResponse<Uuid> {
     let mut conn = state.get_db_conn().await?;
+
     let location_row = conn
         .query_one(
-            "SELECT company_id FROM locations WHERE locations.id = $1;",
+            "SELECT company_id FROM suppliers WHERE suppliers.id = $1;",
             &[&id],
         )
         .await
         .map_err(AppError::critical_error)?;
+
     let company_id: Uuid = location_row.get("company_id");
 
     let principal = session.user.to_principal();
@@ -225,6 +252,7 @@ pub fn suppliers_routes() -> Router<AppState> {
         "/suppliers",
         Router::new()
             .route("/", post(create_supplier))
+            .route("/{id}", get(read_supplier))
             .route("/list", get(list_suppliers))
             .route("/{id}", patch(update_supplier)),
     );
