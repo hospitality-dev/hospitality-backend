@@ -79,10 +79,15 @@ async fn create_purchase(
         "INSERT INTO stores_contacts (parent_id, value, title, contact_type, is_primary)
             SELECT $1, TRIM($2), 'Store address', 'work_address', TRUE
             WHERE NOT EXISTS (
-            SELECT 1 FROM stores_contacts WHERE parent_id = $1);",
+            SELECT 1 FROM stores_contacts WHERE parent_id = $1
+            );",
         &[
             &store_id,
-            &format!("{} | {}", p.invoice_request.address, p.invoice_request.city),
+            &format!(
+                "{} | {}",
+                p.invoice_request.address.trim(),
+                p.invoice_request.city.trim()
+            ),
         ],
     )
     .await
