@@ -73,6 +73,22 @@ async fn create_purchase(
         .map_err(AppError::default_response)?;
     debug!("END QUERYING STORE ID");
 
+    debug!("INSERTING STORE ADDRESS IF DOESN'T EXIST");
+
+    tx.execute(
+        "INSERT INTO stores_contacts (parent_id, value, title, contact_type, is_primary)
+            SELECT $1, TRIM($2), 'Store address', 'work_address', TRUE
+            WHERE NOT EXISTS (
+            SELECT 1 FROM stores_contacts WHERE parent_id = $1);",
+        &[
+            &store_id,
+            &format!("{} | {}", p.invoice_request.address, p.invoice_request.city),
+        ],
+    )
+    .await
+    .map_err(AppError::db_error)?;
+    debug!("END INSERTING STORE ADDRESS IF DOESN'T EXIST");
+
     let payment_type = if let Some(payment) = p.invoice_request.payments.get(0) {
         payment.payment_type
     } else {
