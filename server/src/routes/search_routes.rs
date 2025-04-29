@@ -1,5 +1,4 @@
 use axum::{
-    debug_handler,
     extract::{Query, State},
     middleware::from_fn_with_state,
     routing::get,
@@ -17,7 +16,6 @@ use crate::{
     },
 };
 
-#[debug_handler]
 async fn search_addresses(
     query: Query<SearchQueryParams>,
     State(state): State<AppState>,
