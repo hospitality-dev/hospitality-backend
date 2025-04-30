@@ -4,6 +4,7 @@ use axum::{
     routing::get,
     Router,
 };
+use serde_json::Value;
 
 use crate::{
     enums::errors::AppError,
@@ -14,6 +15,7 @@ use crate::{
         search::AddressesSearch,
         state::AppState,
     },
+    traits::db_traits::SerializeList,
 };
 
 async fn search_addresses(
@@ -50,11 +52,29 @@ async fn search_addresses(
     Ok(AppResponse::default_response(filtered_data))
 }
 
+async fn search_manufacturers(
+    query: Query<SearchQueryParams>,
+    State(state): State<AppState>,
+) -> RouteResponse<Value> {
+    let conn = &state.get_db_conn().await?;
+
+    let rows = conn
+        .query(
+            "SELECT id, title FROM manufacturers WHERE title ILIKE $1;",
+            &[&format!("%{}%", query.0.search_query)],
+        )
+        .await
+        .map_err(AppError::db_error)?;
+
+    return Ok(AppResponse::default_response(rows.serialize_list(true)));
+}
+
 pub fn search_routes(state: &AppState) -> Router<AppState> {
     return Router::new().nest(
         "/search",
         Router::new()
             .route("/addresses", get(search_addresses))
+            .route("/manufacturers", get(search_manufacturers))
             .layer(from_fn_with_state(state.clone(), search_permission_check)),
     );
 }
