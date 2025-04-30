@@ -24,8 +24,10 @@ async fn create_brand(
     State(state): State<AppState>,
     Json(payload): Json<InsertBrand>,
 ) -> RouteResponse<Uuid> {
-    let conn = &state.get_db_conn().await?;
-    let id: Uuid = conn
+    let mut conn = state.get_db_conn().await?;
+    let tx = conn.transaction().await.map_err(AppError::db_error)?;
+
+    let id: Uuid = tx
         .query_one(
             "INSERT INTO brands (title, parent_id, owner_id, company_id) VALUES ($1, $2, $3, $4) RETURNING id;",
             &[
@@ -39,6 +41,14 @@ async fn create_brand(
         .map_err(AppError::db_error)?
         .get("id");
 
+    tx.execute(
+        "INSERT INTO locations_available_brands (brand_id, location_id) VALUES ($1, $2);",
+        &[&id, &session.user.location_id.unwrap()],
+    )
+    .await
+    .map_err(AppError::db_error)?;
+
+    tx.commit().await.map_err(AppError::db_error)?;
     return Ok(AppResponse::default_response(id));
 }
 
