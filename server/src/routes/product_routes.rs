@@ -180,7 +180,7 @@ async fn list_product_by_category(
     let rows = conn
         .query(
             &format!(
-                "SELECT {fields}, locations_available_products.id AS availability_id
+                "SELECT {fields}, locations_available_products.id AS availability_id,
                 brands.title as brand_title, manufacturers.title as manufacturer_title
                 FROM
                     products
@@ -199,7 +199,7 @@ async fn list_product_by_category(
                         products.company_id IS NULL
                     )
                 GROUP BY
-                    {fields}, brand_title, manufacturer_title
+                    {fields}, brand_title, manufacturer_title, locations_available_products.id
                 ORDER BY
                     products.title;",
                 fields = fields
