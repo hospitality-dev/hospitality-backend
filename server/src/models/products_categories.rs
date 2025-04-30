@@ -9,6 +9,4 @@ pub struct InsertProductCategory {
     pub title: String,
     #[garde(skip)]
     pub parent_id: Option<Uuid>,
-    #[garde(skip)]
-    pub company_id: Uuid,
 }

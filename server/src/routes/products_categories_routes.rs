@@ -20,6 +20,7 @@ use crate::{
 
 async fn create_products_categories(
     State(state): State<AppState>,
+    Extension(session): Extension<AuthSession>,
     Json(payload): Json<InsertProductCategory>,
 ) -> RouteResponse<Uuid> {
     let conn = &state.get_db_conn().await?;
@@ -30,7 +31,11 @@ async fn create_products_categories(
      (title, parent_id, company_id)
      VALUES ($1, $2, $3)
      RETURNING id;",
-            &[&payload.title, &payload.parent_id, &payload.company_id],
+            &[
+                &payload.title,
+                &payload.parent_id,
+                &session.user.company_id.unwrap(),
+            ],
         )
         .await
         .map_err(AppError::critical_error)?;
