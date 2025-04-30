@@ -10,5 +10,18 @@ CREATE TABLE IF NOT EXISTS
         company_id UUID REFERENCES companies (id) ON DELETE CASCADE
     );
 
+-- INSERT INTO
+--     products_categories (title)
+-- VALUES
+--     ('Meat'),
+--     ('Dairy'),
+--     ('Fruit'),
+--     ('Frozen'),
+--     ('Vegetables'),
+--     ('Legumes'),
+--     ('Fish'),
+--     ('Non-Alcoholic drinks'),
+--     ('Alcoholic drinks'),
+--     ('Other');
 -- migrate:down
 DROP TABLE IF EXISTS products_categories;
