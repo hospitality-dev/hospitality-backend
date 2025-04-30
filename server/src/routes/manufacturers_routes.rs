@@ -24,8 +24,9 @@ async fn create_manufacturer(
     State(state): State<AppState>,
     Json(payload): Json<InsertManufacturer>,
 ) -> RouteResponse<Uuid> {
-    let conn = &state.get_db_conn().await?;
-    let id: Uuid = conn
+    let mut conn = state.get_db_conn().await?;
+    let tx = conn.transaction().await.map_err(AppError::db_error)?;
+    let id: Uuid = tx
         .query_one(
             "INSERT INTO manufacturers (title, owner_id, company_id) VALUES ($1, $2, $3) RETURNING id;",
             &[&payload.title, &session.user.id, &session.user.company_id.unwrap()],
@@ -33,6 +34,10 @@ async fn create_manufacturer(
         .await
         .map_err(AppError::db_error)?
         .get("id");
+
+    tx.execute("INSERT INTO locations_available_manufacturers (manufacturer_id, location_id) VALUES ($1, $2);", &[&id, &session.user.location_id.unwrap()]).await.map_err(AppError::db_error)?;
+
+    tx.commit().await.map_err(AppError::db_error)?;
 
     return Ok(AppResponse::default_response(id));
 }
