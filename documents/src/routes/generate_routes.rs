@@ -15,7 +15,7 @@ use tokio::process::Command;
 use uuid::Uuid;
 
 use crate::enums::error::AppError;
-use crate::models::payloads::{ProductInventoryReport, ProductQRCodes, Purchase};
+use crate::models::payloads::{ContactQRCode, ProductInventoryReport, ProductQRCodes, Purchase};
 use crate::models::state::AppState;
 use common::consts::PRESIGN_DURATION;
 use common::utils::date_time_utils::convert_to_tz;
@@ -143,7 +143,10 @@ async fn generate_product_qr_codes(
             payload.company_id, payload.location_id, id
         );
         let mut metadata = HashMap::new();
-        metadata.insert("title".to_string(), "inventory-report".to_string());
+        metadata.insert(
+            "title".to_string(),
+            format!("QR Codes - {}", &payload.title),
+        );
         metadata.insert("author".to_string(), "HMS".to_string());
         state
             .s3_client
@@ -250,6 +253,78 @@ async fn generate_purchase_bill(
     }
 }
 
+async fn generate_contact_qr_code(
+    State(state): State<AppState>,
+    Json(payload): Json<ContactQRCode>,
+) -> Result<impl IntoResponse, String> {
+    let output_file = NamedTempFile::new().unwrap();
+    let output_path = output_file.path().to_str().unwrap();
+
+    let formatted = format!("{}{}", payload.prefix.unwrap_or_default(), payload.contact);
+
+    let status = Command::new("typst")
+        .arg("compile")
+        .arg("./src/templates/contact-qr-code.typ")
+        .arg("--input")
+        .arg(format!("contact={}", &formatted))
+        .arg("--input")
+        .arg(format!("title={}", &payload.title))
+        .arg("--font-path")
+        .arg("./src/fonts")
+        .arg("--format")
+        .arg("pdf")
+        .arg(output_path)
+        .status()
+        .await
+        .unwrap();
+
+    if status.success() {
+        let pdf_bytes = std::fs::read(&output_path).unwrap();
+
+        let id = Uuid::new_v4();
+        let key = format!(
+            "{}/{}/qr-codes/{}",
+            payload.company_id, payload.location_id, id
+        );
+        let mut metadata = HashMap::new();
+        metadata.insert(
+            "title".to_string(),
+            format!("Contact QR Code {}", payload.contact_id),
+        );
+        metadata.insert("author".to_string(), "HMS".to_string());
+        state
+            .s3_client
+            .put_object()
+            .bucket(&state.s3_name)
+            .key(&key)
+            .body(pdf_bytes.into())
+            .set_metadata(Some(metadata))
+            .acl(aws_sdk_s3::types::ObjectCannedAcl::Private)
+            .content_type("application/pdf")
+            .tagging("ttl=1")
+            .send()
+            .await
+            .unwrap();
+
+        let command = &state
+            .s3_client
+            .get_object()
+            .bucket(&state.s3_name)
+            .key(key)
+            .presigned(PresigningConfig::expires_in(PRESIGN_DURATION).unwrap())
+            .await
+            .unwrap();
+
+        let url = command.uri();
+
+        return Ok(serde_json::json!({"id": id, "url": url.to_string()})
+            .to_string()
+            .into_response());
+    } else {
+        return Err(AppError::generate_response(status.to_string()));
+    }
+}
+
 async fn generate_from_template(State(state): State<AppState>) -> Result<(), ()> {
     let form = reqwest::multipart::Form::new()
         .text("-o", "my.pdf")
@@ -282,6 +357,7 @@ pub fn generate_routes() -> Router<AppState> {
         Router::new()
             .route("/inventory-report", post(generate_inventory_report))
             .route("/products/qr-codes", post(generate_product_qr_codes))
+            .route("/contact/qr-codes", post(generate_contact_qr_code))
             .route("/purchases/bill", post(generate_purchase_bill))
             .route("/from-template", get(generate_from_template)),
     );

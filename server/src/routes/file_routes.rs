@@ -18,6 +18,7 @@ use crate::{
     enums::{
         errors::AppError,
         files::{FileCategories, FileTypes},
+        models::ModelsWithContacts,
     },
     middlware::crud_middleware::AllowedFieldsType,
     models::{
@@ -453,6 +454,54 @@ async fn product_qr_codes(
         .rqw_client
         .post(format!(
             "{}/api/v1/generate/products/qr-codes",
+            &state.document_server_url
+        ))
+        .header("x-documents-api-key", &state.documents_api_key)
+        .json(&payload)
+        .send()
+        .await
+        .map_err(AppError::critical_error)?;
+
+    let response = report_req
+        .json::<GenerateFileResponse>()
+        .await
+        .map_err(AppError::critical_error)?;
+
+    return Ok(Redirect::to(&format!(
+        "{}/api/v1/url/qr-codes/{}",
+        &state.server_url, &response.id
+    )));
+}
+
+async fn contact_qr_codes(
+    Extension(session): Extension<AuthSession>,
+    State(state): State<AppState>,
+    Path((model, id)): Path<(ModelsWithContacts, Uuid)>,
+) -> Result<Redirect, AppErrorResponse> {
+    let conn = &state.get_db_conn().await?;
+
+    let contact_row = conn
+        .query_one(
+            &format!(
+                "SELECT id, title, contact_type, prefix FROM {}.contacts WHERE id = $1;",
+                model.to_string()
+            ),
+            &[&id],
+        )
+        .await
+        .map_err(AppError::critical_error)?;
+
+    let id: Uuid = contact_row.get("id");
+    let contact: String = contact_row.get("title");
+    let contact_type: String = contact_row.get("contact_type");
+    let prefix: Option<String> = contact_row.get("prefix");
+
+    let payload = json!({"contact": contact, "contactType": contact_type, "prefix": prefix, "id": id, "companyId": session.user.company_id, "locationId": session.user.location_id});
+
+    let report_req = state
+        .rqw_client
+        .post(format!(
+            "{}/api/v1/generate/contact/qr-codes",
             &state.document_server_url
         ))
         .header("x-documents-api-key", &state.documents_api_key)

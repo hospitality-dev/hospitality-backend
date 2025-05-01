@@ -193,3 +193,15 @@ impl SelectableFields for Models {
             .collect::<HashSet<String>>()
     }
 }
+
+#[derive(Debug, strum_macros::Display, Serialize, Deserialize, VariantNames)]
+#[strum(serialize_all = "snake_case")]
+
+pub enum ModelsWithContacts {
+    Companies,
+    Locations,
+    Users,
+    Manufacturers,
+    Stores,
+    Suppliers,
+}

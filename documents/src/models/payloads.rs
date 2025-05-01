@@ -58,3 +58,15 @@ pub struct Purchase {
     pub company_id: Uuid,
     pub location_id: Uuid,
 }
+
+#[derive(Serialize, Deserialize, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct ContactQRCode {
+    pub contact_id: Uuid,
+    pub contact: String,
+    pub contact_type: String,
+    pub title: String,
+    pub prefix: Option<String>,
+    pub company_id: Uuid,
+    pub location_id: Uuid,
+}
