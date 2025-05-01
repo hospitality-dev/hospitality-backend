@@ -478,12 +478,35 @@ async fn contact_qr_codes(
     State(state): State<AppState>,
     Path((model, id)): Path<(ModelsWithContacts, Uuid)>,
 ) -> Result<Redirect, AppErrorResponse> {
+    let exists = state
+        .s3_client
+        .head_object()
+        .bucket(&state.s3_name)
+        .key(format!(
+            "{}/{}/qr-codes/{}",
+            session.user.company_id.unwrap(),
+            session.user.location_id.unwrap(),
+            id
+        ))
+        .send()
+        .await;
+    if exists.is_ok() {
+        return Ok(Redirect::to(&format!(
+            "{}/api/v1/url/qr-codes/{}",
+            &state.server_url, &id
+        )));
+    }
+
     let conn = &state.get_db_conn().await?;
 
     let contact_row = conn
         .query_one(
             &format!(
-                "SELECT id, title, contact_type, prefix FROM {}.contacts WHERE id = $1;",
+                "SELECT suppliers_contacts.id, suppliers_contacts.title AS title,
+                suppliers.title AS supplier_title, value, contact_type, prefix FROM {}_contacts
+                INNER JOIN suppliers
+                    ON suppliers_contacts.parent_id = suppliers.id
+                 WHERE suppliers_contacts.id = $1;",
                 model.to_string()
             ),
             &[&id],
@@ -492,11 +515,13 @@ async fn contact_qr_codes(
         .map_err(AppError::critical_error)?;
 
     let id: Uuid = contact_row.get("id");
-    let contact: String = contact_row.get("title");
+    let contact: String = contact_row.get("value");
+    let supplier_title: String = contact_row.get("supplier_title");
+    let title: String = contact_row.get("title");
     let contact_type: String = contact_row.get("contact_type");
     let prefix: Option<String> = contact_row.get("prefix");
 
-    let payload = json!({"contact": contact, "contactType": contact_type, "prefix": prefix, "id": id, "companyId": session.user.company_id, "locationId": session.user.location_id});
+    let payload = json!({"contact": contact, "title": format!("{} - {}", supplier_title, title), "contactType": contact_type, "prefix": prefix, "id": id, "companyId": session.user.company_id, "locationId": session.user.location_id});
 
     let report_req = state
         .rqw_client
@@ -662,6 +687,7 @@ pub fn file_routes() -> Router<AppState> {
                     Router::new()
                         .route("/products/reports", get(product_inventory_report))
                         .route("/products/qr-codes/{id}", get(product_qr_codes))
+                        .route("/contact/{model}/qr-codes/{id}", get(contact_qr_codes))
                         .route("/purchases/bill/reports/{id}", get(purchases_bill)),
                 ),
         )

@@ -260,7 +260,14 @@ async fn generate_contact_qr_code(
     let output_file = NamedTempFile::new().unwrap();
     let output_path = output_file.path().to_str().unwrap();
 
-    let formatted = format!("{}{}", payload.prefix.unwrap_or_default(), payload.contact);
+    let formatted = format!(
+        "{}{}",
+        payload
+            .prefix
+            .map(|p| format!("tel:+{}", p))
+            .unwrap_or_default(),
+        payload.contact
+    );
 
     let status = Command::new("typst")
         .arg("compile")
@@ -281,15 +288,14 @@ async fn generate_contact_qr_code(
     if status.success() {
         let pdf_bytes = std::fs::read(&output_path).unwrap();
 
-        let id = Uuid::new_v4();
         let key = format!(
             "{}/{}/qr-codes/{}",
-            payload.company_id, payload.location_id, id
+            payload.company_id, payload.location_id, payload.id
         );
         let mut metadata = HashMap::new();
         metadata.insert(
             "title".to_string(),
-            format!("Contact QR Code {}", payload.contact_id),
+            format!("Contact QR Code {}", payload.id),
         );
         metadata.insert("author".to_string(), "HMS".to_string());
         state
@@ -317,10 +323,16 @@ async fn generate_contact_qr_code(
 
         let url = command.uri();
 
-        return Ok(serde_json::json!({"id": id, "url": url.to_string()})
-            .to_string()
-            .into_response());
+        return Ok(
+            serde_json::json!({"id": payload.id, "url": url.to_string()})
+                .to_string()
+                .into_response(),
+        );
     } else {
+        tracing::error!(
+            "ERROR GENERATING CONTACT QR CODE - {}",
+            status.code().unwrap()
+        );
         return Err(AppError::generate_response(status.to_string()));
     }
 }

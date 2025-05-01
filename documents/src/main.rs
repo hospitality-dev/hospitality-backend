@@ -1,7 +1,8 @@
 use anyhow::Result;
 use aws_sdk_s3::config::{BehaviorVersion, Credentials, Region};
 use axum::{
-    Router,
+    Json, Router,
+    body::Bytes,
     extract::{MatchedPath, Request},
     http::{
         HeaderValue, Method,
@@ -10,7 +11,7 @@ use axum::{
             CONTENT_SECURITY_POLICY_REPORT_ONLY, CONTENT_TYPE,
         },
     },
-    middleware::from_fn_with_state,
+    middleware::{from_fn, from_fn_with_state},
     routing::get,
     serve,
 };
@@ -18,6 +19,7 @@ use dotenv::{dotenv, var};
 use middleware::request_middleware::block_request;
 use models::state::AppState;
 use routes::generate_routes::generate_routes;
+use serde_json::json;
 use tokio::net::TcpListener;
 use tower_http::{
     cors::{AllowOrigin, CorsLayer},
@@ -26,6 +28,14 @@ use tower_http::{
 use tracing::debug_span;
 use tracing_loki::url::Url;
 use tracing_subscriber::{EnvFilter, layer::SubscriberExt, util::SubscriberInitExt};
+
+use std::usize::MAX;
+
+use axum::{
+    body::{Body, to_bytes},
+    http::StatusCode,
+    response::{IntoResponse, Response},
+};
 
 mod enums;
 mod middleware;
@@ -183,6 +193,7 @@ async fn app() -> Result<Router> {
         .layer(from_fn_with_state(state.clone(), block_request))
         .with_state(state)
         .layer(cors)
+        .layer(from_fn(map_extractor_errors))
         .layer(
             TraceLayer::new_for_http().make_span_with(|request: &Request<_>| {
                 let matched_path = request
@@ -202,4 +213,43 @@ async fn app() -> Result<Router> {
             }),
         );
     Ok(app)
+}
+
+pub async fn map_extractor_errors(
+    req: Request,
+    next: axum::middleware::Next,
+) -> Result<Response, String> {
+    let (parts, body) = req.into_parts();
+
+    let bytes = to_bytes(body, MAX).await.map_err(|e| e.to_string())?;
+
+    let request = Request::from_parts(parts, Body::from(bytes.clone()));
+    let response = next.run(request).await;
+    let status = response.status();
+
+    match status {
+        StatusCode::OK => Ok(response),
+        StatusCode::UNAUTHORIZED | StatusCode::FORBIDDEN => Ok(response.status().into_response()),
+        _ => {
+            let b = response.into_body();
+
+            let bytes = to_bytes(b, MAX).await.map_err(|e| {
+                tracing::error!("ERROR CONVERTING BODY TO STRING - {}", e.to_string());
+                e.to_string()
+            })?;
+
+            let error_response_string = print_body(bytes).await;
+            tracing::error!("ERROR - {}", error_response_string);
+
+            Ok(
+                Json(json!({"ok": false, "data": {}, "message": error_response_string}))
+                    .into_response(),
+            )
+        }
+    }
+}
+
+async fn print_body(bytes: Bytes) -> String {
+    let str = String::from_utf8_lossy(&bytes).into_owned();
+    str
 }

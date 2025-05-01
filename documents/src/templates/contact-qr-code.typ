@@ -11,12 +11,10 @@
     #v(0.5cm)
   ]
 
-  // Import JSON data if provided
-  let items = json(bytes(sys.inputs.at("json")))
 
-  block(width: 100%)[
-    #tiaoma.barcode(item.url, "QRCode", options: (scale(100%))),
-  ]
+  align(center)[#block(width: 100%)[
+      #tiaoma.barcode(contact, "QRCode", options: (scale: 5.0))
+    ]]
 }
 
 #show: doc => qr-codes-grid(

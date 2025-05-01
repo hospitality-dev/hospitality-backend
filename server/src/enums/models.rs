@@ -195,6 +195,7 @@ impl SelectableFields for Models {
 }
 
 #[derive(Debug, strum_macros::Display, Serialize, Deserialize, VariantNames)]
+#[serde(rename_all = "lowercase")]
 #[strum(serialize_all = "snake_case")]
 
 pub enum ModelsWithContacts {
