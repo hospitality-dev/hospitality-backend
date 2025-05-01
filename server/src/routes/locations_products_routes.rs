@@ -261,6 +261,42 @@ async fn list_location_products_group_by_expiration(
     return Ok(AppResponse::default_response(rows.serialize_list(true)));
 }
 
+async fn list_all_location_products_group_by_expiration(
+    State(state): State<AppState>,
+    Extension(session): Extension<AuthSession>,
+) -> RouteResponse<Value> {
+    let conn = state.get_db_conn().await?;
+    let statement = format!(
+        "
+    SELECT
+        locations_products.product_id, expiration_date, products.title,
+        products.volume, products.volume_unit, products.weight, products.weight_unit,
+        purchases.purchased_at, locations_products.created_at, COUNT(*)
+    FROM
+        locations_products
+    INNER JOIN products
+        ON locations_products.product_id = products.id
+    LEFT JOIN purchase_items
+        ON locations_products.purchase_item_id = purchase_items.id
+    LEFT JOIN purchases
+        ON purchase_items.parent_id = purchases.id
+    WHERE
+        locations_products.location_id = $1
+    GROUP BY
+        expiration_date, locations_products.product_id, products.volume,
+        products.volume_unit, products.weight, products.weight_unit,
+        purchases.purchased_at, locations_products.created_at, products.title
+    ORDER BY
+        expiration_date;"
+    );
+    let rows = conn
+        .query(&statement, &[&session.user.location_id.unwrap()])
+        .await
+        .map_err(AppError::critical_error)?;
+
+    return Ok(AppResponse::default_response(rows.serialize_list(true)));
+}
+
 async fn delete_location_products_amount(
     State(state): State<AppState>,
     Extension(session): Extension<AuthSession>,
@@ -344,6 +380,10 @@ pub fn location_products_routes() -> Router<AppState> {
             .route(
                 "/purchase-items",
                 post(create_location_products_from_purchase_items),
+            )
+            .route(
+                "/list/grouped/expiration-date",
+                get(list_all_location_products_group_by_expiration),
             )
             .route(
                 "/list/{id}/grouped/expiration-date",
