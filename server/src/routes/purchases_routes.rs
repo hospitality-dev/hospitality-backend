@@ -1,5 +1,5 @@
 use axum::{
-    extract::State,
+    extract::{Query, State},
     routing::{get, post},
     Extension, Json, Router,
 };
@@ -14,6 +14,7 @@ use crate::{
     models::{
         auth::AuthSession,
         purchases::{InsertPurchase, InvoiceData},
+        requests::QueryParams,
         response::{AppResponse, RouteResponse},
         state::AppState,
     },
@@ -179,7 +180,9 @@ async fn list_purchases(
     State(state): State<AppState>,
     Extension(session): Extension<AuthSession>,
     Extension(fields): Extension<AllowedFieldsType>,
+    query: Query<QueryParams>,
 ) -> RouteResponse<Value> {
+    let sort = query.to_query_sort();
     let conn = state.get_db_conn().await?;
     let rows = conn
         .query(
@@ -193,8 +196,10 @@ async fn list_purchases(
             LEFT JOIN suppliers
                 ON suppliers.id = stores.parent_id
             WHERE
-                location_id = $1;",
-                fields
+                location_id = $1
+            {sort};",
+                fields,
+                sort = sort
             ),
             &[&session.user.location_id.unwrap()],
         )
