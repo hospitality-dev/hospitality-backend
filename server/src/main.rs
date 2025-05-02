@@ -32,8 +32,8 @@ use routes::{
     product_routes::product_routes, products_categories_routes::products_categories_routes,
     purchase_items_routes::purchase_items_routes, purchases_routes::purchases_routes,
     resource_routes::resource_routes, roles_routes::roles_routes, search_routes::search_routes,
-    stores_routes::stores_routes, suppliers_routes::suppliers_routes, url_routes::url_routes,
-    users_routes::users_routes,
+    statistics_routes::statistics_routes, stores_routes::stores_routes,
+    suppliers_routes::suppliers_routes, url_routes::url_routes, users_routes::users_routes,
 };
 use tokio::net::TcpListener;
 use tokio_postgres::NoTls;
@@ -210,6 +210,8 @@ pub async fn app() -> Result<Router> {
                 .merge(url_routes())
                 // TODO: ADD PERMISSIONS MIDDLEWARE TO RESOURCE ROUTES
                 .merge(resource_routes())
+                // TODO: ADD PERMISSIONS MIDDLEWARE TO STATISTICS ROUTES
+                .merge(statistics_routes())
                 //* Has own permissions and logging middleware
                 .merge(search_routes(&state))
                 .layer(from_fn_with_state(state.clone(), session_check))
