@@ -1,7 +1,7 @@
 use std::str::FromStr;
 
 use crate::utils::transform_utils::camel_case_keys;
-use chrono::{DateTime, Utc};
+use chrono::{DateTime, NaiveDate, Utc};
 use rust_decimal::prelude::ToPrimitive;
 use rust_decimal::Decimal;
 use serde_json::{json, Map, Value};
@@ -31,8 +31,12 @@ impl SerializeToJson for Row {
                     text.map_or(Value::Null, |t| Value::String(t.to_string()))
                 }
                 &Type::TIMESTAMPTZ => {
-                    let timestemp: Option<DateTime<Utc>> = self.get(col_idx);
-                    timestemp.map_or(Value::Null, |t| Value::String(t.to_rfc3339()))
+                    let timestamp: Option<DateTime<Utc>> = self.get(col_idx);
+                    timestamp.map_or(Value::Null, |t| Value::String(t.to_rfc3339()))
+                }
+                &Type::DATE => {
+                    let date: Option<NaiveDate> = self.get(col_idx);
+                    date.unwrap_or_default().to_string().into()
                 }
                 &Type::INT2 => {
                     let int: Option<i16> = self.get(col_idx);
