@@ -11,6 +11,30 @@ SET client_min_messages = warning;
 SET row_security = off;
 
 --
+-- Name: get_available_products(uuid); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.get_available_products(loc_id uuid) RETURNS TABLE(id uuid, product_id uuid, location_id uuid)
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+    RETURN QUERY
+    SELECT locations_available_products.id,  locations_available_products.product_id, locations_available_products.location_id
+    FROM
+    locations_available_products
+    INNER JOIN products ON products.id = locations_available_products.product_id
+    LEFT JOIN locations_available_brands
+      ON products.brand_id = locations_available_brands.brand_id
+    LEFT JOIN locations_available_manufacturers
+      ON products.manufacturer_id = locations_available_manufacturers.manufacturer_id
+    WHERE locations_available_products.location_id = loc_id
+      AND (products.brand_id IS NULL OR locations_available_brands.location_id = loc_id)
+      AND (products.manufacturer_id IS NULL OR locations_available_manufacturers.location_id = loc_id);
+END;
+$$;
+
+
+--
 -- Name: insert_location_user(); Type: FUNCTION; Schema: public; Owner: -
 --
 
@@ -1437,4 +1461,5 @@ INSERT INTO public.schema_migrations (version) VALUES
     ('20250428111506'),
     ('20250428112217'),
     ('20250428113343'),
-    ('20250428113347');
+    ('20250428113347'),
+    ('20250503094130');
