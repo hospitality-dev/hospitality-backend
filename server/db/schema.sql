@@ -1158,7 +1158,7 @@ ALTER TABLE ONLY public.manufacturers
 --
 
 ALTER TABLE ONLY public.manufacturers_contacts
-    ADD CONSTRAINT manufacturers_contacts_parent_id_fkey FOREIGN KEY (parent_id) REFERENCES public.suppliers(id) ON DELETE CASCADE;
+    ADD CONSTRAINT manufacturers_contacts_parent_id_fkey FOREIGN KEY (parent_id) REFERENCES public.manufacturers(id) ON DELETE CASCADE;
 
 
 --

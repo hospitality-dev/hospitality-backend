@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS
         contact_type TEXT NOT NULL,
         prefix TEXT,
         value TEXT NOT NULL,
-        parent_id UUID NOT NULL REFERENCES suppliers (id) ON DELETE CASCADE,
+        parent_id UUID NOT NULL REFERENCES manufacturers (id) ON DELETE CASCADE,
         latitude DECIMAL(9, 6),
         longitude DECIMAL(9, 6),
         place_id INT,
