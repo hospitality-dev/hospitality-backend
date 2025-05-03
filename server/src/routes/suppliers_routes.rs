@@ -26,8 +26,11 @@ async fn create_supplier(
     State(state): State<AppState>,
     Json(payload): Json<InsertSupplier>,
 ) -> RouteResponse<Uuid> {
-    let conn = &state.get_db_conn().await?;
-    let id: Uuid = conn
+    let mut conn = state.get_db_conn().await?;
+    let tx: deadpool_postgres::Transaction<'_> =
+        conn.transaction().await.map_err(AppError::critical_error)?;
+
+    let id: Uuid = tx
         .query_one(
             "INSERT INTO suppliers (title, owner_id, company_id) VALUES ($1, $2, $3) RETURNING id;",
             &[
@@ -39,6 +42,46 @@ async fn create_supplier(
         .await
         .map_err(AppError::db_error)?
         .get("id");
+
+    if let Some(contacts) = payload.contacts {
+        let contact_statement = tx
+            .prepare(
+                "INSERT INTO suppliers_contacts
+        (
+            id, parent_id, title, prefix, value, is_public,
+            place_id, latitude, longitude, bounding_box, contact_type,
+            iso_3, is_primary
+        )
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13);",
+            )
+            .await
+            .map_err(AppError::critical_error)?;
+
+        for contact in contacts {
+            tx.execute(
+                &contact_statement,
+                &[
+                    &contact.id.unwrap_or(Uuid::new_v4()),
+                    &id, // this is the parent_id i.e. location's id
+                    &contact.title,
+                    &contact.prefix,
+                    &contact.value,
+                    &contact.is_public,
+                    &contact.place_id,
+                    &contact.latitude,
+                    &contact.longitude,
+                    &contact.bounding_box,
+                    &contact.contact_type.to_string(),
+                    &contact.iso_3,
+                    &contact.is_primary,
+                ],
+            )
+            .await
+            .map_err(AppError::critical_error)?;
+        }
+    }
+
+    let _ = tx.commit().await.map_err(AppError::critical_error)?;
 
     return Ok(AppResponse::default_response(id));
 }

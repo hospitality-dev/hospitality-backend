@@ -6,6 +6,7 @@ use super::contacts::MutatorContact;
 #[serde(rename_all = "camelCase")]
 pub struct InsertSupplier {
     pub title: String,
+    pub contacts: Option<Vec<MutatorContact>>,
 }
 
 #[derive(Deserialize)]
