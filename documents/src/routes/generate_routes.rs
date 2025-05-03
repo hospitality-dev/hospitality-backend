@@ -26,14 +26,15 @@ async fn generate_inventory_report(
     let mapped = payload.items
         .iter()
         .map(|item| {
+            let days_to_check = item.expiration_days+1;
             json!({
                 "title": item.title,
                 "expirationDate": convert_to_tz(item.expiration_date, Tz::Europe__Belgrade).format("%d.%m.%y").to_string(),
                 "hasAboutToExpire": item.has_about_to_expire,
                 "count": item.count,
-                "expirationDays": if item.expiration_days+1 <= 7 {
+                "expirationDays": if days_to_check > 0 && days_to_check <= 7 {
                     format!("| in {} day(s)", item.expiration_days+1)
-                } else {format!("")}
+                } else if days_to_check < 0 {format!("| {} day(s) ago", days_to_check.abs())} else {format!("")}
             })
         })
         .collect();

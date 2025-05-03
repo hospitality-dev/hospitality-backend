@@ -10,7 +10,7 @@ pub struct ProductInventoryCount {
     pub has_about_to_expire: bool,
     pub expiration_date: DateTime<Utc>,
     pub title: String,
-    pub expiration_days: u64,
+    pub expiration_days: i64,
 }
 
 #[derive(Serialize, Deserialize, Clone)]
