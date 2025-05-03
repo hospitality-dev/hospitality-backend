@@ -35,6 +35,43 @@ async fn create_manufacturer(
         .map_err(AppError::db_error)?
         .get("id");
 
+    if let Some(contacts) = payload.contacts {
+        let contact_statement = tx
+            .prepare(
+                "INSERT INTO manufacturers_contacts
+            (
+                id, parent_id, title, prefix, value, is_public,
+                place_id, latitude, longitude, bounding_box, contact_type,
+                iso_3, is_primary
+            )
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13);",
+            )
+            .await
+            .map_err(AppError::critical_error)?;
+
+        for contact in contacts {
+            tx.execute(
+                &contact_statement,
+                &[
+                    &contact.id.unwrap_or(Uuid::new_v4()),
+                    &id, // this is the parent_id i.e. location's id
+                    &contact.title,
+                    &contact.prefix,
+                    &contact.value,
+                    &contact.is_public,
+                    &contact.place_id,
+                    &contact.latitude,
+                    &contact.longitude,
+                    &contact.bounding_box,
+                    &contact.contact_type.to_string(),
+                    &contact.iso_3,
+                    &contact.is_primary,
+                ],
+            )
+            .await
+            .map_err(AppError::critical_error)?;
+        }
+    }
     tx.execute("INSERT INTO locations_available_manufacturers (manufacturer_id, location_id) VALUES ($1, $2);", &[&id, &session.user.location_id.unwrap()]).await.map_err(AppError::db_error)?;
 
     tx.commit().await.map_err(AppError::db_error)?;
