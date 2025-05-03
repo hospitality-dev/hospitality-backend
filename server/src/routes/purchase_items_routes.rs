@@ -62,7 +62,7 @@ async fn read_purchase_item(
     ));
 }
 
-async fn list_purchase_items(
+async fn list_purchase_items_parent_id(
     State(state): State<AppState>,
     Extension(session): Extension<AuthSession>,
     Extension(fields): Extension<AllowedFieldsType>,
@@ -104,6 +104,45 @@ async fn list_purchase_items(
     return Ok(AppResponse::default_response(rows.serialize_list(true)));
 }
 
+// async fn list_purchase_items_all(
+//     State(state): State<AppState>,
+//     Extension(session): Extension<AuthSession>,
+//     Extension(fields): Extension<AllowedFieldsType>,
+// ) -> RouteResponse<Value> {
+//     let conn = state.get_db_conn().await?;
+
+//     let mut select_fields = format!(
+//         "SELECT {} FROM purchase_items WHERE location_id = $1;",
+//         fields
+//     );
+
+//     if fields.contains("purchase_items.title") {
+//         let replacement = "COALESCE(products.title, purchase_items.title) as title";
+//         select_fields = fields.replace("purchase_items.title", replacement);
+//     }
+
+//     let rows = conn
+//         .query(
+//             &format!(
+//                 "SELECT {}, products.weight, products.weight_unit, products.volume, products.volume_unit
+//                 FROM
+//                     purchase_items
+//                 LEFT JOIN products_aliases
+//                     ON products_aliases.title = purchase_items.title
+//                 LEFT JOIN products
+//                     ON products_aliases.product_id = products.id
+//                  WHERE
+//                     purchase_items.location_id = $1;",
+//                 select_fields
+//             ),
+//             &[ &session.user.location_id.unwrap()],
+//         )
+//         .await
+//         .map_err(AppError::db_error)?;
+
+//     return Ok(AppResponse::default_response(rows.serialize_list(true)));
+// }
+
 async fn list_purchase_items_to_modify(
     State(state): State<AppState>,
     Extension(session): Extension<AuthSession>,
@@ -141,7 +180,8 @@ pub fn purchase_items_routes() -> Router<AppState> {
     return Router::new().nest(
         "/purchase-items",
         Router::new()
-            .route("/list/{parent_id}", get(list_purchase_items))
+            .route("/list/{parent_id}", get(list_purchase_items_parent_id))
+            // .route("/list", get(list_purchase_items_all))
             .route(
                 "/list/{parent_id}/modify",
                 get(list_purchase_items_to_modify),
